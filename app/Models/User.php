@@ -21,6 +21,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',     // Sudah benar
+        'id_store', // Sudah benar
     ];
 
     /**
@@ -45,4 +47,14 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-}
+
+    // PINDAHKAN FUNGSI INI KE DALAM CLASS
+    /**
+     * Mendefinisikan relasi ke model Store.
+     * Satu User (kasir) hanya memiliki satu Store.
+     */
+    public function store()
+    {
+        return $this->belongsTo(Store::class, 'id_store', 'id_store');
+    }
+} 
