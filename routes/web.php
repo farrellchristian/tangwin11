@@ -2,9 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardRedirectController; // <-- 1. TAMBAHKAN INI
-use App\Http\Controllers\Admin\DashboardController as AdminDashboard; // <-- 2. TAMBAHKAN INI
-use App\Http\Controllers\Kasir\DashboardController as KasirDashboard; // <-- 3. TAMBAHKAN INI
+use App\Http\Controllers\DashboardRedirectController; 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard; 
+use App\Http\Controllers\Kasir\DashboardController as KasirDashboard;
+use App\Http\Controllers\Admin\InformationController;
+use App\Http\Controllers\Admin\ServiceController;
+use App\Http\Controllers\Admin\ProductController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -31,7 +34,13 @@ Route::get('/dashboard', DashboardRedirectController::class) // <-- 4. UBAH INI
 Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     
     // Rute: /admin/dashboard
-    Route::get('/dashboard', AdminDashboard::class)->name('dashboard'); // <-- 5. BUAT INI
+    Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
+    Route::get('/informasi', InformationController::class)->name('informasi.index');
+    
+    // Rute CRUD Services
+    Route::resource('services', ServiceController::class);
+    // Rute CRUD Products
+    Route::resource('products', ProductController::class);
     
     // (Nanti rute admin lain seperti /admin/laporan bisa ditambah di sini)
 });
