@@ -8,6 +8,7 @@ use App\Http\Controllers\Kasir\DashboardController as KasirDashboard;
 use App\Http\Controllers\Admin\InformationController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\FoodController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -41,6 +42,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('services', ServiceController::class);
     // Rute CRUD Products
     Route::resource('products', ProductController::class);
+    // Rute CRUD Foods
+    Route::resource('foods', FoodController::class);
     
     // (Nanti rute admin lain seperti /admin/laporan bisa ditambah di sini)
 });

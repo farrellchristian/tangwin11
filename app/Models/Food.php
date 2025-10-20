@@ -10,11 +10,16 @@ class Food extends Model
 {
     use HasFactory, SoftDeletes;
 
+    /**
+     * Nama tabel yang terhubung ke model ini.
+     */
+    protected $table = 'foods'; // <-- TAMBAHKAN BARIS INI
+
     protected $fillable = [
         'food_name',
         'price',
         'stock_available',
-        'id_store', 
+        'id_store',
     ];
 
     public function store()

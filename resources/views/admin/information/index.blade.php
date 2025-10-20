@@ -65,7 +65,7 @@
                     </div>
                 </a>
 
-                <a href="#" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200">
+                <a href="{{ route('admin.foods.index') }}" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200">
                     <div class="p-6 text-gray-900">
                         <div class="flex items-center">
                             
