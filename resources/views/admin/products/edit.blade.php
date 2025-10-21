@@ -18,7 +18,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
 
-                    <form method="POST" action="{{ route('admin.products.update', $product->id) }}"> @csrf
+                    <form method="POST" action="{{ route('admin.products.update', $product->id_product) }}"> @csrf
                         @method('PUT') <div>
                             <label for="id_store" class="block text-sm font-medium text-gray-700">Toko</label>
                             <select id="id_store" name="id_store" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">

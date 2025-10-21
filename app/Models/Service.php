@@ -10,6 +10,8 @@ class Service extends Model
 {
     use HasFactory, SoftDeletes; 
 
+    protected $primaryKey = 'id_service';
+
     /**
      * Kolom yang boleh diisi secara massal.
      */

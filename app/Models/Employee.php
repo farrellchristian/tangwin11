@@ -9,6 +9,8 @@ class Employee extends Model
 {
     use HasFactory;
 
+    protected $primaryKey = 'id_employee';
+
     /**
      * Kolom yang boleh diisi secara massal.
      */

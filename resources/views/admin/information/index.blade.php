@@ -17,7 +17,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                <a href="#" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200">
+                <a href="{{ route('admin.employees.index') }}" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200">
                     <div class="p-6 text-gray-900">
                         <div class="flex items-center">
                             

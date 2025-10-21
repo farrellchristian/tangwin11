@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\InformationController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\FoodController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\PosController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,8 +23,37 @@ Route::get('/', function () {
 | Ini "membajak" rute /dashboard bawaan Breeze.
 | Sekarang ia akan memanggil DashboardRedirectController kita.
 */
-Route::get('/dashboard', DashboardRedirectController::class) // <-- 4. UBAH INI
+Route::get('/dashboard', DashboardRedirectController::class)
     ->middleware(['auth', 'verified'])->name('dashboard');
+
+
+/*
+|--------------------------------------------------------------------------
+| Rute Fitur Kasir (POS)
+|--------------------------------------------------------------------------
+| Bisa diakses oleh Admin dan Kasir
+*/
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
+
+    // Rute untuk menampilkan halaman pilih karyawan SETELAH admin pilih toko
+    Route::get('/pos/select-employee/{store}', [PosController::class, 'showSelectEmployee'])
+         ->name('pos.select-employee');
+
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
+    Route::get('/pos/select-employee/{store}', [PosController::class, 'showSelectEmployee'])->name('pos.select-employee');
+
+    // Rute untuk menampilkan halaman transaksi utama
+    Route::get('/pos/transaction/{store}/{employee}', [PosController::class, 'showTransactionPage'])
+         ->name('pos.transaction'); // <-- TAMBAHKAN INI
+
+    // (Nanti rute simpan transaksi)
+    Route::post('/pos/store-transaction', [PosController::class, 'storeTransaction'])
+         ->name('pos.store-transaction');
+});
 
 
 /*
@@ -32,7 +63,7 @@ Route::get('/dashboard', DashboardRedirectController::class) // <-- 4. UBAH INI
 | Semua URL di sini akan dimulai dengan /admin
 | dan hanya bisa diakses oleh user yang terotentikasi.
 */
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Rute: /admin/dashboard
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
@@ -44,6 +75,8 @@ Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(
     Route::resource('products', ProductController::class);
     // Rute CRUD Foods
     Route::resource('foods', FoodController::class);
+    // Rute CRUD Employees
+    Route::resource('employees', EmployeeController::class);
     
     // (Nanti rute admin lain seperti /admin/laporan bisa ditambah di sini)
 });

@@ -10,6 +10,8 @@ class Food extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $primaryKey = 'id_food';
+
     /**
      * Nama tabel yang terhubung ke model ini.
      */
