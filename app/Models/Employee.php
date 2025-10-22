@@ -11,9 +11,6 @@ class Employee extends Model
 
     protected $primaryKey = 'id_employee';
 
-    /**
-     * Kolom yang boleh diisi secara massal.
-     */
     protected $fillable = [
         'employee_name',
         'photo_path',
@@ -22,24 +19,25 @@ class Employee extends Model
         'join_date',
         'exit_date',
         'is_active',
-        'id_store', // Penting untuk relasi
+        'id_store',
+        'daily_expense_limit', // <-- TAMBAHKAN INI
     ];
 
-    /**
-     * Tipe data bawaan untuk kolom tertentu.
-     */
     protected $casts = [
         'join_date' => 'date',
         'exit_date' => 'date',
         'is_active' => 'boolean',
+        'daily_expense_limit' => 'decimal:2', // <-- TAMBAHKAN INI
     ];
 
-    /**
-     * Mendefinisikan relasi ke model Store.
-     * Satu Employee dimiliki oleh satu Store.
-     */
     public function store()
     {
         return $this->belongsTo(Store::class, 'id_store', 'id_store');
+    }
+
+    // (Opsional) Relasi ke Expenses jika diperlukan
+    public function expenses()
+    {
+        return $this->hasMany(Expense::class, 'id_employee', 'id_employee');
     }
 }
