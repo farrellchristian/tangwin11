@@ -12,17 +12,17 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('expenses', function (Blueprint $table) {
-            $table->id('id_expense'); // Primary key
-            $table->text('description'); // Keterangan pengeluaran
-            $table->decimal('amount', 15, 2); // Jumlah pengeluaran
-            $table->timestamp('expense_date')->useCurrent(); // Tanggal pengeluaran
+            $table->id('id_expense');
+            $table->text('description');
+            $table->decimal('amount', 15, 2);
+            $table->timestamp('expense_date')->useCurrent();
 
-            // Foreign Keys
-            $table->foreignId('id_employee')->constrained('employees', 'id_employee')->cascadeOnDelete(); // Karyawan yg melakukan
-            $table->foreignId('id_store')->constrained('stores', 'id_store')->cascadeOnDelete(); // Toko tempat pengeluaran
-            $table->foreignId('id_user')->constrained('users')->cascadeOnDelete(); // Akun kasir yg menginput
+            $table->foreignId('id_employee')->constrained('employees', 'id_employee')->cascadeOnDelete();
+            $table->foreignId('id_store')->constrained('stores', 'id_store')->cascadeOnDelete();
+            $table->foreignId('id_user')->constrained('users')->cascadeOnDelete();
 
-            $table->timestamps(); // created_at, updated_at
+            $table->softDeletes(); // <-- TAMBAHKAN INI
+            $table->timestamps();
         });
     }
 
@@ -31,6 +31,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('expenses', function (Blueprint $table) {
+            $table->dropSoftDeletes(); // <-- TAMBAHKAN INI
+        });
         Schema::dropIfExists('expenses');
     }
 };

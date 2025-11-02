@@ -13,6 +13,8 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\Kasir\ExpenseController as KasirExpenseController;
 use App\Http\Controllers\Admin\ExpenseController as AdminExpenseController;
+use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\TransactionController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -97,12 +99,34 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     // Rute untuk Riwayat Pengeluaran & Setting Limit
     Route::get('/expenses', [AdminExpenseController::class, 'index'])->name('expenses.index');
     // Rute untuk menyimpan update limit karyawan (via AJAX/Fetch nanti)
-    Route::put('/employees/{employee}/update-limit', [AdminExpenseController::class, 'updateLimit'])
-         ->name('employees.update-limit');
+    Route::put('/employees/{employee}/update-limit', [AdminExpenseController::class, 'updateLimit']) ->name('employees.update-limit');
     // Rute CRUD standar untuk mengelola data expense (KECUALI index)
     Route::resource('expenses', AdminExpenseController::class)->except(['index']);
-    
-    // (Nanti rute admin lain seperti /admin/laporan bisa ditambah di sini)
+    // Rute untuk Soft Delete Transaksi
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+    // --- RUTE API UNTUK FILTER DINAMIS ---
+    Route::prefix('expenses/filters')->name('expenses.filters.')->group(function () {
+        Route::get('/months/{year}', [AdminExpenseController::class, 'getAvailableMonths'])->name('months');
+        Route::get('/days/{year}/{month}', [AdminExpenseController::class, 'getAvailableDays'])->name('days');
+        Route::get('/weeks/{year}/{month}', [AdminExpenseController::class, 'getAvailableWeeks'])->name('weeks');
+    });
+    // Rute untuk Halaman Laporan Utama
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+    // --- RUTE API BARU UNTUK FILTER LAPORAN ---
+    Route::prefix('reports/filters')->name('reports.filters.')->group(function () {
+        Route::get('/months/{year}', [ReportController::class, 'getAvailableMonths'])->name('months');
+        Route::get('/days/{year}/{month}', [ReportController::class, 'getAvailableDays'])->name('days');
+        Route::get('/weeks/{year}/{month}', [ReportController::class, 'getAvailableWeeks'])->name('weeks');
+    });
+
+    // --- RUTE API BARU UNTUK MODAL LAPORAN ---
+    Route::prefix('reports/details')->name('reports.details.')->group(function () {
+        Route::get('/income', [ReportController::class, 'getIncomeDetails'])->name('income');
+        Route::get('/expenditure', [ReportController::class, 'getExpenditureDetails'])->name('expenditure');
+        Route::get('/profit-loss', [ReportController::class, 'getProfitLossDetails'])->name('profit-loss');
+        Route::get('/transaction/{transaction}', [ReportController::class, 'getTransactionDetails'])->name('transaction');
+        Route::get('/expense/{expense}', [AdminExpenseController::class, 'show']) ->name('expense');
+    });
 });
 
 /*
