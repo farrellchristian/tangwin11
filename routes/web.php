@@ -15,6 +15,7 @@ use App\Http\Controllers\Kasir\ExpenseController as KasirExpenseController;
 use App\Http\Controllers\Admin\ExpenseController as AdminExpenseController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\TransactionController;
+use App\Http\Controllers\Admin\PaymentMethodController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -102,6 +103,8 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::put('/employees/{employee}/update-limit', [AdminExpenseController::class, 'updateLimit']) ->name('employees.update-limit');
     // Rute CRUD standar untuk mengelola data expense (KECUALI index)
     Route::resource('expenses', AdminExpenseController::class)->except(['index']);
+    // Rute CRUD Payment Methods
+    Route::resource('payment-methods', PaymentMethodController::class);
     // Rute untuk Soft Delete Transaksi
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
     // --- RUTE API UNTUK FILTER DINAMIS ---

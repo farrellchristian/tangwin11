@@ -81,6 +81,21 @@
                     </div>
                 </a>
 
+                <a href="{{ route('admin.payment-methods.index') }}" class="block bg-white overflow-hidden shadow-sm sm:rounded-lg hover:shadow-md transition-shadow duration-200">
+                <div class="p-6 text-gray-900">
+                    <div class="flex items-center">
+                        {{-- Ikon Baru (Google Material Symbol - credit card) --}}
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor" class="w-8 h-8 mr-4 text-indigo-600">
+                            <path d="M112.31-160q-29.92 0-51.11-21.19Q40-202.39 40-232.31v-495.38q0-29.93 21.19-51.12Q82.39-799.99 112.31-800h735.38q29.93 0 51.12 21.19 21.2 21.19 21.2 51.12v495.38q0 29.92-21.2 51.11-21.19 21.19-51.12 21.19H112.31ZM112-232.31h736v-221.53H112v221.53Zm0-313.84h736v-181.54H112v181.54Zm0 0v-181.54 181.54Zm0 313.84v-221.53 221.53Z"/>
+                        </svg>
+                        <div>
+                            <h3 class="text-lg font-semibold">Metode Pembayaran</h3>
+                            <p class="text-gray-500">Atur metode pembayaran (Cash, QRIS, dll.).</p>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
             </div> </div>
     </div>
 </x-app-layout>
