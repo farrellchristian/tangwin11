@@ -16,6 +16,11 @@ use App\Http\Controllers\Admin\ExpenseController as AdminExpenseController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\PaymentMethodController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\StoreController;
+use App\Http\Controllers\Admin\PresenceScheduleController;
+use App\Http\Controllers\PresenceController;
+use App\Http\Controllers\Admin\PresenceRecapController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -75,6 +80,20 @@ Route::middleware(['auth', 'verified'])->prefix('kasir/expenses')->name('kasir.e
     Route::post('/', [KasirExpenseController::class, 'store'])->name('store');
 });
 
+/*
+|--------------------------------------------------------------------------
+| Rute Fitur Presensi (Karyawan)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth', 'verified'])->prefix('presence')->name('presence.')->group(function () {
+    // Halaman utama presensi (pilih karyawan)
+    Route::get('/', [PresenceController::class, 'index'])->name('index');
+    // Aksi untuk check-in
+    Route::post('/check-in', [PresenceController::class, 'checkIn'])->name('check-in');
+    // Aksi untuk check-out (nanti)
+    // Route::post('/check-out', [PresenceController::class, 'checkOut'])->name('check-out');
+});
+
 
 /*
 |--------------------------------------------------------------------------
@@ -105,8 +124,20 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::resource('expenses', AdminExpenseController::class)->except(['index']);
     // Rute CRUD Payment Methods
     Route::resource('payment-methods', PaymentMethodController::class);
+    // Rute CRUD User Management
+    Route::resource('users', UserController::class);
+    // Rute CRUD Store Management
+    Route::resource('stores', StoreController::class);
     // Rute untuk Soft Delete Transaksi
     Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+    // Rute untuk CRUD Jadwal Presensi (Setting Presensi)
+    Route::resource('presence-schedules', PresenceScheduleController::class);
+    // Rute untuk Halaman Rekap Presensi
+    Route::get('presence-recap', [PresenceRecapController::class, 'index']) ->name('presence-recap.index');
+    // Rute API untuk mengambil karyawan berdasarkan toko
+    Route::get('employees/by-store/{store}', [EmployeeController::class, 'getEmployeesByStore'])
+         ->name('employees.by-store');
+
     // --- RUTE API UNTUK FILTER DINAMIS ---
     Route::prefix('expenses/filters')->name('expenses.filters.')->group(function () {
         Route::get('/months/{year}', [AdminExpenseController::class, 'getAvailableMonths'])->name('months');

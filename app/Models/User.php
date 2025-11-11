@@ -21,15 +21,16 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',     // Sudah benar
-        'id_store', // Sudah benar
+        'role',
+        'id_store',
+        'is_active', 
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
+    * The attributes that should be hidden for serialization.
+    *
+    * @var list<string>
+    */
     protected $hidden = [
         'password',
         'remember_token',
@@ -45,6 +46,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 

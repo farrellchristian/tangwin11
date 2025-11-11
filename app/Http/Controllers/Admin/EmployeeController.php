@@ -159,4 +159,19 @@ class EmployeeController extends Controller
         return redirect()->route('admin.employees.index')
                         ->with('success', 'Karyawan berhasil dinonaktifkan.');
     }
+
+    /**
+     * Mengambil daftar karyawan untuk filter dinamis.
+     */
+    public function getEmployeesByStore(Store $store)
+    {
+        // Ambil karyawan yang aktif dari toko yang diberikan
+        $employees = $store->employees()
+                           ->where('is_active', true)
+                           ->orderBy('employee_name')
+                           ->get(['id_employee', 'employee_name']); // Ambil kolom yang perlu saja
+
+        // Kembalikan sebagai JSON
+        return response()->json($employees);
+    }
 }

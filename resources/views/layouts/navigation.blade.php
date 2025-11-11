@@ -70,12 +70,57 @@
                 <span>Setting Reservasi</span>
             </a>
 
-            <a href="#" class="{{ $linkClasses }}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{{ $iconClasses }}">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 00-12 0m12 0a9.094 9.094 0 01-12 0m12 0A9.091 9.091 0 0112 21.75c-2.572 0-4.96-1.02-6.75-2.685M12 12.75a3 3 0 110-6 3 3 0 010 6z" />
+            {{-- AWAL BLOK PRESENSI BARU --}}
+        @php
+            // Cek apakah salah satu rute presensi (jadwal ATAU rekap) sedang aktif
+            $isPresenceActive = request()->routeIs('admin.presence-schedules.*') || request()->routeIs('admin.presence-recap.*');
+        @endphp
+
+        <div x-data="{ open: {{ $isPresenceActive ? 'true' : 'false' }} }">
+            
+            {{-- Tombol Dropdown Utama --}}
+            <button @click="open = !open" 
+                    class="{{ $linkClasses }} justify-between {{ $isPresenceActive ? $activeClasses : '' }}">
+                
+                <span class="flex items-center">
+                    {{-- Ikon 'Users' (Orang) untuk Presensi --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" fill="currentColor" class="{{ $iconClasses }}">
+                        <path d="M840-120v-640H120v320H40v-320q0-33 23.5-56.5T120-840h720q33 0 56.5 23.5T920-760v560q0 33-23.5 56.5T840-120ZM360-400q-66 0-113-47t-47-113q0-66 47-113t113-47q66 0 113 47t47 113q0 66-47 113t-113 47Zm0-80q33 0 56.5-23.5T440-560q0-33-23.5-56.5T360-640q-33 0-56.5 23.5T280-560q0 33 23.5 56.5T360-480ZM40-80v-112q0-34 17.5-62.5T104-298q62-31 126-46.5T360-360q66 0 130 15.5T616-298q29 15 46.5 43.5T680-192v112H40Zm80-80h480v-32q0-11-5.5-20T580-226q-54-27-109-40.5T360-280q-56 0-111 13.5T140-226q-9 5-14.5 14t-5.5 20v32Zm240-400Zm0 400Z"/>
+                    </svg>
+                    <span>Presensi</span>
+                </span>
+
+                {{-- Panah Dropdown (akan berputar) --}}
+                <svg class="w-4 h-4 transform transition-transform duration-200" :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                 </svg>
-                <span>Setting Presensi</span>
-            </a>
+            </button>
+
+            {{-- Konten Sub-menu (Sudah diperbarui) --}}
+            <div x-show="open" x-collapse class="bg-gray-900/50">   
+                
+                @php
+                    // Kelas dasar untuk sub-link (abu-abu)
+                    $subLinkClasses = 'flex items-center w-full pl-12 px-6 py-2 text-gray-400 transition-colors duration-200 hover:bg-gray-700 hover:text-white';
+                    // Kelas untuk sub-link yang aktif (putih)
+                    $subActiveClasses = 'text-white font-semibold'; 
+                @endphp
+                
+                {{-- Link 1: Jadwal Presensi --}}
+                <a href="{{ route('admin.presence-schedules.index') }}"
+                   class="{{ $subLinkClasses }} {{ request()->routeIs('admin.presence-schedules.*') ? $subActiveClasses : '' }}">
+                    <span>Jadwal Presensi</span> {{-- Titik dihapus --}}
+                </a>
+
+                {{-- Link 2: Rekap Presensi --}}
+                <a href="{{ route('admin.presence-recap.index') }}"
+                   class="{{ $subLinkClasses }} {{ request()->routeIs('admin.presence-recap.*') ? $subActiveClasses : '' }}">
+                    <span>Rekap Presensi</span>
+                </a>
+                
+            </div>
+        </div>
+        {{-- AKHIR BLOK PRESENSI BARU --}}
 
         @else
 
@@ -100,6 +145,15 @@
                     <path d="M480-536.16q41.92 0 70.96-29.03Q580-594.23 580-636.15q0-41.93-29.04-70.96-29.04-29.04-70.96-29.04-41.92 0-70.96 29.04Q380-678.08 380-636.15q0 41.92 29.04 70.96 29.04 29.03 70.96 29.03ZM212.69-412.31q-29.92 0-51.11-21.19-21.19-21.19-21.19-51.12v-303.07q0-29.92 21.19-51.12Q182.77-860 212.69-860h535q29.92 0 51.12 21.19Q820-817.61 820-787.69v303.07q0 29.93-21.19 51.12-21.2 21.19-51.12 21.19h-535ZM480.38-100l145.77-145.77-41.77-41.77-74 74v-143.38H450v143.38l-74-74-41.77 41.77L480.38-100Zm-280-444.61v59.99q0 5 3.66 8.66 3.65 3.65 8.65 3.65h60q0-29.92-21.19-51.11-21.19-21.19-51.12-21.19Zm487.31 72.3h60q5 0 8.66-3.65 3.65-3.66 3.65-8.66v-59.99q-29.92 0-51.11 21.19-21.2 21.19-21.2 51.11ZM760-727.69v-60q0-5-3.65-8.66-3.66-3.65-8.66-3.65h-60q0 29.92 21.2 51.11 21.19 21.2 51.11 21.2ZM272.69-800h-60q-5 0-8.65 3.65-3.66 3.66-3.66 8.66v60q29.93 0 51.12-21.2 21.19-21.19 21.19-51.11Z"/>
                  </svg>
                  <span>Input Pengeluaran</span>
+            </a>
+
+            {{-- TAMBAHKAN INI --}}
+            <a href="{{ route('presence.index') }}" 
+               class="{{ $linkClasses }} {{ request()->routeIs('presence.*') ? $activeClasses : '' }}">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{{ $iconClasses }}">
+                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Halaman Presensi</span>
             </a>
             
         @endif
