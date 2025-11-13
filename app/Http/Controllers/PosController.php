@@ -142,12 +142,16 @@ class PosController extends Controller
             'amount_paid' => 'nullable|numeric|min:0',
             'change_amount' => 'nullable|numeric|min:0',
             'tips' => 'nullable|numeric|min:0',
-            'cart' => 'required|array|min:1', // Pastikan cart tidak kosong
+            'cart' => 'required|array|min:1',
             'cart.*.id_item' => 'required|integer',
             'cart.*.item_type' => 'required|in:service,product,food',
-            'cart.*.id_employee' => 'nullable|exists:employees,id_employee', // Validasi employee per item
+            'cart.*.id_employee' => 'nullable|exists:employees,id_employee',
             'cart.*.quantity' => 'required|integer|min:1',
             'cart.*.price_at_sale' => 'required|numeric|min:0',
+            'cart.*.quantity' => 'required|integer|min:1',
+            'cart.*.price_at_sale' => 'required|numeric|min:0',
+            'status' => 'required|string|in:paid,pending,failed',
+            'order_id' => 'nullable|string|max:255'
         ]);
 
         // Gunakan Database Transaction untuk memastikan konsistensi data
@@ -164,8 +168,13 @@ class PosController extends Controller
                 'amount_paid' => $validatedData['amount_paid'],
                 'change_amount' => $validatedData['change_amount'],
                 'tips' => $validatedData['tips'],
-                'transaction_date' => now(), // Tanggal saat ini
-                'notes' => $request->input('notes'), // Ambil notes jika ada
+                'transaction_date' => now(),
+                'notes' => $request->input('notes'), 
+                'tips' => $validatedData['tips'],
+                'transaction_date' => now(), 
+                'notes' => $request->input('notes'),
+                'status' => $validatedData['status'],
+                'order_id' => $validatedData['order_id']
             ]);
 
             // 3. Simpan detail transaksi dan kurangi stok (jika perlu)
@@ -294,4 +303,26 @@ class PosController extends Controller
         }
     }
 
+    /**
+     * Mengecek status transaksi di Midtrans.
+     */
+    public function getPaymentStatus($order_id)
+    {
+        // 1. Set Konfigurasi Midtrans
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+
+        try {
+            // 2. Panggil API status Midtrans
+            $status = \Midtrans\Transaction::status($order_id);
+
+            // 3. Kembalikan statusnya ke frontend
+            return response()->json([
+                'status' => $status->transaction_status
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 404);
+        }
+    }
 }

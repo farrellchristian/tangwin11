@@ -67,6 +67,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rute baru untuk menangani pembuatan pembayaran QRIS
     Route::post('/pos/payment/qris', [PosController::class, 'createQrisPayment'])
          ->name('pos.payment.qris');
+
+    // Rute baru untuk mengecek status pembayaran
+    Route::get('/pos/payment/status/{order_id}', [PosController::class, 'getPaymentStatus'])
+        ->name('pos.payment.status');
 });
 
 

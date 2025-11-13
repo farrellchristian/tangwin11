@@ -343,6 +343,9 @@
                 qrisOrderId: '',
                 isProcessing: false,
 
+                pollingTimer: null,
+                pendingTransactionData: null,
+
                 showItemModal: false,
                 currentItemType: '',
                 modalTitle: '',
@@ -534,22 +537,19 @@
                     };
 
                     // **LOGIKA PERCABANGAN BARU**
-
                     if (this.paymentMethodId == cashMethodId) {
                         // --- 1. LOGIKA UNTUK CASH ---
-                        // Transaksi tunai langsung disimpan dengan status 'paid'
                         transactionData.status = 'paid'; 
                         transactionData.order_id = null;
                         this.executeSaveTransaction(transactionData);
 
                     } else if (this.paymentMethodId == qrisMethodId) {
                         // --- 2. LOGIKA BARU UNTUK QRIS ---
+                        this.pendingTransactionData = transactionData;
                         this.createQrisPayment(transactionData);
 
                     } else {
                         // --- 3. LOGIKA UNTUK METODE LAIN (misal Transfer) ---
-                        // Untuk saat ini, kita samakan dengan 'cash'
-                        // Nanti kita bisa kembangkan jika perlu
                         alert('Metode pembayaran ini belum di-support untuk alur otomatis, akan dicatat sebagai LUNAS.');
                         transactionData.status = 'paid';
                         transactionData.order_id = null;
@@ -650,12 +650,90 @@
                     this.qrisOrderId = orderId;
                     this.showQrisModal = true;
                     this.isProcessing = false; // Modal terbuka, proses 'pembuatan' selesai
+                    this.showQrisModal = true;
+                    this.isProcessing = false; 
+                    // MULAI TIMER POLLING
+                    this.startPollingStatus(orderId);
                 },
 
                 closePaymentModal() {
+                    // HENTIKAN TIMER JIKA MODAL DITUTUP MANUAL
+                    if (this.pollingTimer) clearInterval(this.pollingTimer);
+                    this.showQrisModal = false;
                     this.showQrisModal = false;
                     this.qrisImageUrl = '';
                     this.qrisOrderId = '';
+                },
+
+                /**
+                 * Fungsi baru: Memulai timer untuk mengecek status pembayaran.
+                 */
+                startPollingStatus(orderId) {
+                    // Hapus timer lama jika ada
+                    if (this.pollingTimer) clearInterval(this.pollingTimer);
+
+                    // Buat timer baru yang berjalan setiap 3 detik
+                    this.pollingTimer = setInterval(() => {
+
+                        // Panggil rute backend yang baru kita buat
+                        fetch(`/pos/payment/status/${orderId}`)
+                            .then(response => {
+                                if (!response.ok) throw new Error('Status tidak ditemukan');
+                                return response.json();
+                            })
+                            .then(data => {
+                                // Cek status dari Midtrans
+                                if (data.status === 'settlement') {
+                                    clearInterval(this.pollingTimer); // 1. Hentikan timer
+                                    alert('Pembayaran Berhasil!');     // 2. Beri notifikasi
+                                    this.isProcessing = true;        // 3. Tandai sedang sibuk
+
+                                    // 4. Panggil fungsi simpan ke DB
+                                    this.savePaidTransaction(orderId); 
+
+                                } else if (data.status === 'expire' || data.status === 'cancel' || data.status === 'deny') {
+                                    // --- PEMBAYARAN GAGAL / EXPIRED ---
+                                    clearInterval(this.pollingTimer); // 1. Hentikan timer
+                                    alert('Pembayaran Gagal atau Dibatalkan.');
+                                    this.isProcessing = false;
+                                    this.closePaymentModal();
+
+                                } else {
+                                    // --- MASIH PENDING ---
+                                    // Biarkan timer tetap berjalan...
+                                    console.log('Masih Menunggu Pembayaran (Polling)...');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error polling:', error);
+                                clearInterval(this.pollingTimer); // Hentikan jika ada error
+                            });
+
+                    }, 3000);
+                },
+
+                /**
+                 * Fungsi baru: Menyimpan transaksi setelah Polling sukses (Lunas).
+                 */
+                savePaidTransaction(orderId) {
+                    // Ambil data keranjang yang kita simpan sementara
+                    const dataToSave = this.pendingTransactionData;
+
+                    if (!dataToSave) {
+                        alert('Error: Data keranjang tidak ditemukan. Harap ulangi transaksi.');
+                        this.isProcessing = false;
+                        return;
+                    }
+
+                    // Set status dan order_id untuk disimpan
+                    dataToSave.status = 'paid';
+                    dataToSave.order_id = orderId;
+
+                    // Panggil fungsi simpan yang sudah ada
+                    this.executeSaveTransaction(dataToSave);
+
+                    // Bersihkan data sementara
+                    this.pendingTransactionData = null;
                 },
             }
         }
