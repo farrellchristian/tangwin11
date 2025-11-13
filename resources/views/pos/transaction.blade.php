@@ -259,6 +259,69 @@
                 </div>
             </div>
 
+            {{-- MODAL PEMBAYARAN QRIS BARU --}}
+            <div x-show="showQrisModal"
+                x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-50 overflow-y-auto"
+                aria-labelledby="modal-title"
+                role="dialog"
+                aria-modal="true"
+                style="display: none;">
+
+                <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                    {{-- Latar belakang gelap --}}
+                    <div x-show="showQrisModal"
+                        x-transition:enter="ease-out duration-300"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="ease-in duration-200"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+                        aria-hidden="true"></div>
+
+                    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                    {{-- Konten Modal --}}
+                    <div x-show="showQrisModal"
+                        x-transition:enter="ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                        x-transition:leave="ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        class="inline-block w-full max-w-sm p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
+
+                        <div class="flex justify-between items-center pb-3 border-b">
+                            <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Pembayaran QRIS</h3>
+                            <button @click="closePaymentModal()" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                            </button>
+                        </div>
+
+                        <div class="mt-4 text-center">
+                            <p class="text-sm text-gray-600 mb-2">Pindai QR Code di bawah ini untuk membayar:</p>
+                            <div class="flex justify-center">
+                                <img :src="qrisImageUrl" alt="QR Code Pembayaran" class="w-64 h-64 mx-auto border p-2 bg-gray-50">
+                            </div>
+                            <p class="font-bold text-xl text-indigo-600 mt-4">
+                                Total: <span x-text="'Rp ' + formatCurrency(totalAmount)"></span>
+                            </p>
+                            <p class="text-xs text-gray-500 mt-2">Order ID: <span x-text="qrisOrderId"></span></p>
+
+                            <div class="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded-md">
+                                <p class="font-semibold text-yellow-800">Menunggu Pembayaran...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -274,6 +337,11 @@
                 amountPaid: 0,
                 changeAmount: 0,
                 totalAmount: 0,
+
+                showQrisModal: false,
+                qrisImageUrl: '',
+                qrisOrderId: '',
+                isProcessing: false,
 
                 showItemModal: false,
                 currentItemType: '',
@@ -417,6 +485,7 @@
                 },
 
                 canSubmit() {
+                    if (this.isProcessing) return false; // Nonaktifkan jika sedang memproses
                     if (this.cart.length === 0) return false;
                     if (!this.paymentMethodId) return false;
 
@@ -434,16 +503,23 @@
 
                 submitTransaction() {
                     if (!this.canSubmit()) {
-                        alert('Periksa kembali pesanan dan pembayaran Anda.');
+                        alert('Periksa kembali pesanan atau tunggu proses selesai.');
                         return;
                     }
 
+                    this.isProcessing = true; // Mulai proses
+
+                    // Ambil ID untuk Cash dan Qris dari data PHP
+                    const cashMethodId = {{ $paymentMethods->firstWhere('method_name', 'Cash')?->id_payment_method ?? 'null' }};
+                    const qrisMethodId = {{ $paymentMethods->firstWhere('method_name', 'Qris')?->id_payment_method ?? 'null' }};
+
+                    // Siapkan data transaksi
                     const transactionData = {
                         _token: '{{ csrf_token() }}',
                         id_store: this.storeId,
                         id_employee_primary: this.primaryEmployeeId,
                         id_payment_method: this.paymentMethodId,
-                        total_amount: this.totalAmount,
+                        total_amount: this.totalAmount, // Ini adalah Subtotal + Tips
                         amount_paid: this.amountPaid,
                         change_amount: this.changeAmount,
                         tips: this.tips,
@@ -452,52 +528,135 @@
                             item_type: item.type,
                             id_employee: item.employeeId,
                             quantity: item.quantity,
-                            price_at_sale: item.price
+                            price_at_sale: item.price,
+                            name: item.name // Kirim nama untuk item_details
                         }))
                     };
 
-                    fetch("{{ route('pos.store-transaction') }}", {
+                    // **LOGIKA PERCABANGAN BARU**
+
+                    if (this.paymentMethodId == cashMethodId) {
+                        // --- 1. LOGIKA UNTUK CASH ---
+                        // Transaksi tunai langsung disimpan dengan status 'paid'
+                        transactionData.status = 'paid'; 
+                        transactionData.order_id = null;
+                        this.executeSaveTransaction(transactionData);
+
+                    } else if (this.paymentMethodId == qrisMethodId) {
+                        // --- 2. LOGIKA BARU UNTUK QRIS ---
+                        this.createQrisPayment(transactionData);
+
+                    } else {
+                        // --- 3. LOGIKA UNTUK METODE LAIN (misal Transfer) ---
+                        // Untuk saat ini, kita samakan dengan 'cash'
+                        // Nanti kita bisa kembangkan jika perlu
+                        alert('Metode pembayaran ini belum di-support untuk alur otomatis, akan dicatat sebagai LUNAS.');
+                        transactionData.status = 'paid';
+                        transactionData.order_id = null;
+                        this.executeSaveTransaction(transactionData);
+                        this.isProcessing = false;
+                    }
+                },
+
+                // Fungsi ini HANYA untuk menyimpan data ke DB (logika lama Anda)
+                executeSaveTransaction(transactionData) {
+                    const dataToSave = {
+                        ...transactionData,
+                        status: transactionData.status || 'paid',
+                        order_id: transactionData.order_id || null
+                    };
+
+                    fetch("{{ route('pos.store-transaction') }}", { 
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content') // Ambil CSRF dari meta tag
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
-                        body: JSON.stringify(transactionData)
+                        body: JSON.stringify(dataToSave) // Kirim data yang sudah lengkap
                     })
                     .then(response => {
-                         // Cek jika response OK tapi mungkin ada error validasi dari backend
-                         if (!response.ok) {
-                             return response.json().then(err => { throw err; }); // Lempar error JSON
-                         }
-                         return response.json();
+                        if (!response.ok) {
+                            return response.json().then(err => { throw err; });
+                        }
+                        return response.json();
                     })
                     .then(data => {
                         if (data.success) {
                             alert('Transaksi berhasil disimpan!');
-                            // Redirect ke halaman awal POS atau halaman struk (jika ada)
                             window.location.href = "{{ route('pos.index') }}";
                         } else {
-                            // Tampilkan pesan error spesifik dari backend jika ada
-                            alert('Error: ' + (data.message || 'Gagal menyimpan transaksi. Periksa kembali data.'));
+                            alert('Error: ' + (data.message || 'Gagal menyimpan transaksi.'));
                         }
                     })
                     .catch(error => {
-                        console.error('Error:', error);
-                         // Tampilkan pesan error validasi atau error server lainnya
-                        let errorMsg = 'Terjadi kesalahan saat mengirim data.';
+                        console.error('Error executeSaveTransaction:', error);
+                        let errorMsg = 'Terjadi kesalahan saat menyimpan data.';
                         if (error && error.errors) {
-                            // Jika ada error validasi dari Laravel
                             errorMsg = "Error Validasi:\n";
                             for (const field in error.errors) {
                                 errorMsg += `- ${error.errors[field].join(', ')}\n`;
                             }
                         } else if (error && error.message) {
-                             errorMsg = `Error: ${error.message}`;
+                            errorMsg = `Error: ${error.message}`;
                         }
                         alert(errorMsg);
+                    })
+                    .finally(() => {
+                        this.isProcessing = false; // Selesai proses
                     });
-                }
+                },
+
+                // Fungsi BARU untuk memanggil rute QRIS
+                createQrisPayment(transactionData) {
+                    fetch("{{ route('pos.payment.qris') }}", { // Panggil rute BARU
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify(transactionData) // Kirim data (tanpa status)
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(err => { throw err; });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            // BERHASIL! Kita dapat QR Code.
+                            this.openPaymentModal(data.qr_code_url, data.order_id);
+
+                            // (Langkah 4 Nanti): Simpan transaksi ke DB dengan status 'pending'
+                            // this.savePendingTransaction(transactionData, data.order_id);
+
+                        } else {
+                            alert('Error: ' + (data.message || 'Gagal membuat QRIS.'));
+                            this.isProcessing = false; // Selesai proses (gagal)
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error createQrisPayment:', error);
+                        alert('Terjadi kesalahan saat membuat QRIS: ' + (error.message || 'Error tidak diketahui'));
+                        this.isProcessing = false; // Selesai proses (gagal)
+                    });
+                },
+
+                // Fungsi BARU untuk membuka & menutup modal QRIS
+                openPaymentModal(qrUrl, orderId) {
+                    this.qrisImageUrl = qrUrl;
+                    this.qrisOrderId = orderId;
+                    this.showQrisModal = true;
+                    this.isProcessing = false; // Modal terbuka, proses 'pembuatan' selesai
+                },
+
+                closePaymentModal() {
+                    this.showQrisModal = false;
+                    this.qrisImageUrl = '';
+                    this.qrisOrderId = '';
+                },
             }
         }
     </script>

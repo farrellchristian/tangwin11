@@ -8,13 +8,15 @@ use App\Models\Service;
 use App\Models\Product;
 use App\Models\Food;
 use App\Models\PaymentMethod;
-use App\Models\Transaction; // <-- TAMBAHKAN INI
-use App\Models\TransactionDetail; // <-- TAMBAHKAN INI
+use App\Models\Transaction;
+use App\Models\TransactionDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\DB; 
 use Illuminate\Http\JsonResponse;
+use Midtrans\Config;
+use Midtrans\CoreApi;
 
 class PosController extends Controller
 {
@@ -217,6 +219,78 @@ class PosController extends Controller
             // Log errornya untuk debugging
             \Log::error('Error saving transaction: ' . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Terjadi kesalahan saat menyimpan transaksi.'], 500);
+        }
+    }
+
+    /**
+     * Membuat tagihan QRIS baru di Midtrans.
+     */
+    public function createQrisPayment(Request $request)
+    {
+        // 1. Validasi data yang masuk
+        // Kita tambahkan validasi untuk 'name' di dalam 'cart'
+        $validated = $request->validate([
+            'total_amount' => 'required|numeric|min:1',
+            'cart' => 'required|array',
+            'cart.*.name' => 'required|string', // Pastikan nama item ada
+            'cart.*.id_item' => 'required',
+            'cart.*.price_at_sale' => 'required|numeric',
+            'cart.*.quantity' => 'required|integer',
+            'id_store' => 'required|exists:stores,id_store',
+            'tips' => 'nullable|numeric|min:0',
+        ]);
+
+        // 2. Set Konfigurasi Midtrans dari file config/midtrans.php
+        Config::$serverKey = config('midtrans.server_key');
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized = config('midtrans.is_sanitized');
+        Config::$is3ds = config('midtrans.is_3ds');
+
+        // 3. Buat ID Transaksi Unik untuk Midtrans
+        // Kita akan gunakan ini nanti untuk mengecek status
+        $orderId = 'TANGWIN-' . $request->id_store . '-' . time();
+
+        // 4. Siapkan parameter untuk Midtrans
+        $params = [
+            'payment_type' => 'qris',
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => (float) $validated['total_amount'], // total_amount sudah termasuk tips
+            ],
+            'item_details' => [],
+        ];
+
+        // 5. Isi item_details dari cart
+        foreach ($validated['cart'] as $item) {
+            $params['item_details'][] = [
+                'id' => $item['id_item'],
+                'price' => (float) $item['price_at_sale'],
+                'quantity' => (int) $item['quantity'],
+                'name' => substr($item['name'], 0, 50), // Midtrans punya batas 50 char
+            ];
+        }
+
+        // 6. (PENTING) Saat ini kita belum menyimpan ke DB
+        // Kita akan lakukan ini NANTI setelah pembayaran lunas.
+        // Untuk sekarang, kita hanya buat QR code.
+
+        try {
+            // 7. Panggil CoreApi::charge untuk mendapatkan data QRIS
+            $charge = CoreApi::charge($params);
+
+            if (!$charge) {
+                return response()->json(['message' => 'Gagal membuat charge Midtrans'], 500);
+            }
+
+            // 8. Berhasil! Kembalikan data yang dibutuhkan frontend
+            return response()->json([
+                'success' => true,
+                'order_id' => $orderId, // ID untuk pengecekan status nanti
+                'qr_code_url' => $charge->actions[0]->url,
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 

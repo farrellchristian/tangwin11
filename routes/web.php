@@ -63,6 +63,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // (Nanti rute simpan transaksi)
     Route::post('/pos/store-transaction', [PosController::class, 'storeTransaction'])
          ->name('pos.store-transaction');
+
+    // Rute baru untuk menangani pembuatan pembayaran QRIS
+    Route::post('/pos/payment/qris', [PosController::class, 'createQrisPayment'])
+         ->name('pos.payment.qris');
 });
 
 
