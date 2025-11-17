@@ -305,19 +305,146 @@
                         </div>
 
                         <div class="mt-4 text-center">
-                            <p class="text-sm text-gray-600 mb-2">Pindai QR Code di bawah ini untuk membayar:</p>
-                            <div class="flex justify-center">
-                                <img :src="qrisImageUrl" alt="QR Code Pembayaran" class="w-64 h-64 mx-auto border p-2 bg-gray-50">
-                            </div>
-                            <p class="font-bold text-xl text-indigo-600 mt-4">
-                                Total: <span x-text="'Rp ' + formatCurrency(totalAmount)"></span>
-                            </p>
-                            <p class="text-xs text-gray-500 mt-2">Order ID: <span x-text="qrisOrderId"></span></p>
 
-                            <div class="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded-md">
-                                <p class="font-semibold text-yellow-800">Menunggu Pembayaran...</p>
+                            {{-- CSS UNTUK ANIMASI --}}
+                            {{-- CSS UNTUK ANIMASI (Checkmark DAN Barber Pole) --}}
+                        <style>
+                            /* CSS Animasi Checkmark (SUKSES) - Ini kode lama */
+                            .checkmark__circle {
+                                stroke-dasharray: 166;
+                                stroke-dashoffset: 166;
+                                stroke-width: 2;
+                                stroke-miterlimit: 10;
+                                stroke: #7ac142;
+                                fill: none;
+                                animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards
+                            }
+                            .checkmark {
+                                width: 100px;
+                                height: 100px;
+                                border-radius: 50%;
+                                display: block;
+                                stroke-width: 2;
+                                stroke: #fff;
+                                stroke-miterlimit: 10;
+                                margin: 0 auto;
+                                box-shadow: inset 0px 0px 0px #7ac142;
+                                animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both
+                            }
+                            .checkmark__check {
+                                transform-origin: 50% 50%;
+                                stroke-dasharray: 48;
+                                stroke-dashoffset: 48;
+                                animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards
+                            }
+                            @keyframes stroke {
+                                100% { stroke-dashoffset: 0 }
+                            }
+                            @keyframes scale {
+                                0%, 100% { transform: none }
+                                50% { transform: scale3d(1.1, 1.1, 1) }
+                            }
+                            @keyframes fill {
+                                100% { box-shadow: inset 0px 0px 0px 60px #7ac142 }
+                            }
+
+                            /* * ======================================
+                            * KODE BARU: CSS Animasi Barber Pole (PENDING)
+                            * ======================================
+                            */
+                            .barber-pole-spinner {
+                                width: 36px;  /* Sedikit lebih besar */
+                                height: 36px;
+                                border-radius: 50%;
+                                border: 3px solid #E5E7EB; /* Border abu-abu */
+                                background-color: #fff;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                                overflow: hidden; /* Sembunyikan garis yang keluar */
+                                position: relative;
+                            }
+
+                            .barber-pole-spinner::before {
+                                content: '';
+                                position: absolute;
+                                top: -50%; /* Mulai dari atas */
+                                left: 50%;
+                                width: 200%; /* Lebar besar agar bisa diagonal */
+                                height: 200%;
+
+                                /* Garis-garis ikonik barbershop! */
+                                background-image: repeating-linear-gradient(
+                                    -45deg,
+                                    #D00000, /* Barbershop Red */
+                                    #D00000 8px,
+                                    #ffffff 8px,
+                                    #ffffff 16px,
+                                    #0055A4 16px, /* Barbershop Blue */
+                                    #0055A4 24px,
+                                    #ffffff 24px,
+                                    #ffffff 32px
+                                );
+
+                                /* Animasi berputar */
+                                animation: spin-pole 2s linear infinite;
+                            }
+
+                            @keyframes spin-pole {
+                                from { transform: translateX(-25%) rotate(0deg); }
+                                to { transform: translateX(-25%) rotate(360deg); }
+                            }
+                        </style>
+
+                            {{-- 1. TAMPILAN SAAT MENUNGGU (PENDING) --}}
+                            <div x-show="paymentStatus === 'pending'" 
+                                x-transition:enter="ease-out duration-300"
+                                x-transition:leave="ease-in duration-200"
+                                class="w-full">
+
+                                {{-- Total Harga (Tetap di atas) --}}
+                                <p class="font-bold text-3xl text-indigo-600 mb-2">
+                                    <span x-text="'Rp ' + formatCurrency(totalAmount)"></span>
+                                </p>
+                                <p class="text-sm text-gray-500 mb-6">Pindai QR Code di bawah ini:</p>
+
+                                {{-- QR Code (dengan animasi denyut) --}}
+                                <div class="flex justify-center my-4">
+                                    <img :src="qrisImageUrl" alt="QR Code Pembayaran" 
+                                        class="w-64 h-64 mx-auto border-4 border-gray-100 p-2 bg-white rounded-lg shadow-lg pulse-qr">
+                                </div>
+
+                                <div class="mt-6 p-3 flex flex-col items-center justify-center text-sm text-gray-700">
+                                    {{-- Spinner Barber Pole (DIV Baru) --}}
+                                    <div class="barber-pole-spinner mb-3"></div>
+
+                                    <span class="font-semibold text-lg">Menunggu Pembayaran...</span>
+                                </div>
+
+                                <p class="text-xs text-gray-400 mt-4">Order ID: <span x-text="qrisOrderId"></span></p>
+
                             </div>
+
+                            {{-- 2. TAMPILAN SAAT SUKSES (SUCCESS) --}}
+                            <div x-show="paymentStatus === 'success'" 
+                                x-transition:enter="ease-out duration-300"
+                                x-transition:leave="ease-in duration-200"
+                                class="w-full py-8" style="display: none;">
+
+                                {{-- Animasi SVG Centang --}}
+                                <svg class="checkmark" xmlns="http://www.w.3.org/2000/svg" viewBox="0 0 52 52">
+                                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                                </svg>
+
+                                <p class="font-bold text-2xl text-gray-800 mt-4">
+                                    Pembayaran Berhasil!
+                                </p>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    Sedang menyimpan transaksi...
+                                </p>
+                            </div>
+
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -344,6 +471,7 @@
                 isProcessing: false,
 
                 pollingTimer: null,
+                paymentStatus: 'pending',
                 pendingTransactionData: null,
 
                 showItemModal: false,
@@ -560,9 +688,10 @@
 
                 // Fungsi ini HANYA untuk menyimpan data ke DB (logika lama Anda)
                 executeSaveTransaction(transactionData) {
+                    // Sekarang kita tambahkan 'status' dan 'order_id'
                     const dataToSave = {
                         ...transactionData,
-                        status: transactionData.status || 'paid',
+                        status: transactionData.status || 'paid', 
                         order_id: transactionData.order_id || null
                     };
 
@@ -573,7 +702,7 @@
                             'Accept': 'application/json',
                             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                         },
-                        body: JSON.stringify(dataToSave) // Kirim data yang sudah lengkap
+                        body: JSON.stringify(dataToSave) 
                     })
                     .then(response => {
                         if (!response.ok) {
@@ -583,7 +712,8 @@
                     })
                     .then(data => {
                         if (data.success) {
-                            alert('Transaksi berhasil disimpan!');
+                            // 'alert' SUDAH DIHAPUS DARI SINI
+                            // Langsung redirect setelah animasi
                             window.location.href = "{{ route('pos.index') }}";
                         } else {
                             alert('Error: ' + (data.message || 'Gagal menyimpan transaksi.'));
@@ -603,7 +733,7 @@
                         alert(errorMsg);
                     })
                     .finally(() => {
-                        this.isProcessing = false; // Selesai proses
+                        this.isProcessing = false; 
                     });
                 },
 
@@ -648,10 +778,10 @@
                 openPaymentModal(qrUrl, orderId) {
                     this.qrisImageUrl = qrUrl;
                     this.qrisOrderId = orderId;
-                    this.showQrisModal = true;
-                    this.isProcessing = false; // Modal terbuka, proses 'pembuatan' selesai
+                    this.paymentStatus = 'pending'; // RESET status ke pending
                     this.showQrisModal = true;
                     this.isProcessing = false; 
+
                     // MULAI TIMER POLLING
                     this.startPollingStatus(orderId);
                 },
@@ -669,47 +799,40 @@
                  * Fungsi baru: Memulai timer untuk mengecek status pembayaran.
                  */
                 startPollingStatus(orderId) {
-                    // Hapus timer lama jika ada
                     if (this.pollingTimer) clearInterval(this.pollingTimer);
 
-                    // Buat timer baru yang berjalan setiap 3 detik
                     this.pollingTimer = setInterval(() => {
-
-                        // Panggil rute backend yang baru kita buat
                         fetch(`/pos/payment/status/${orderId}`)
                             .then(response => {
                                 if (!response.ok) throw new Error('Status tidak ditemukan');
                                 return response.json();
                             })
                             .then(data => {
-                                // Cek status dari Midtrans
                                 if (data.status === 'settlement') {
-                                    clearInterval(this.pollingTimer); // 1. Hentikan timer
-                                    alert('Pembayaran Berhasil!');     // 2. Beri notifikasi
-                                    this.isProcessing = true;        // 3. Tandai sedang sibuk
+                                    clearInterval(this.pollingTimer);
+                                    this.isProcessing = true; 
+                                    this.paymentStatus = 'success'; 
 
-                                    // 4. Panggil fungsi simpan ke DB
-                                    this.savePaidTransaction(orderId); 
+                                    setTimeout(() => {
+                                        this.savePaidTransaction(orderId); 
+                                    }, 2000);
 
                                 } else if (data.status === 'expire' || data.status === 'cancel' || data.status === 'deny') {
-                                    // --- PEMBAYARAN GAGAL / EXPIRED ---
-                                    clearInterval(this.pollingTimer); // 1. Hentikan timer
+                                    clearInterval(this.pollingTimer); 
                                     alert('Pembayaran Gagal atau Dibatalkan.');
                                     this.isProcessing = false;
                                     this.closePaymentModal();
 
                                 } else {
-                                    // --- MASIH PENDING ---
-                                    // Biarkan timer tetap berjalan...
                                     console.log('Masih Menunggu Pembayaran (Polling)...');
                                 }
                             })
                             .catch(error => {
                                 console.error('Error polling:', error);
-                                clearInterval(this.pollingTimer); // Hentikan jika ada error
+                                clearInterval(this.pollingTimer); 
                             });
 
-                    }, 3000);
+                    }, 3000); 
                 },
 
                 /**
