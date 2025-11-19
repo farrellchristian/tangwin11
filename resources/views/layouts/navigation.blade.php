@@ -125,6 +125,51 @@
             </div>
             {{-- AKHIR BLOK MANAJEMEN DATA --}}
 
+            {{-- AWAL BLOK RESERVASI (BARU DENGAN DROPDOWN) --}}
+            @php
+                // Cek apakah salah satu rute reservasi sedang aktif
+                // Pastikan Anda menyesuaikan nama route di bawah ini sesuai project Anda
+                $isReservationActive = request()->routeIs('admin.reservations.*'); 
+            @endphp
+
+            <div x-data="{ open: {{ $isReservationActive ? 'true' : 'false' }} }">
+                
+                <button @click="open = !open" 
+                        class="{{ $linkClasses }} justify-between {{ $isReservationActive ? $activeClasses : '' }}">
+                    
+                    <span class="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{{ $iconClasses }}">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+                        </svg>
+                        <span>Reservasi</span>
+                    </span>
+
+                    <svg class="w-4 h-4 transform transition-transform duration-200" :class="{ 'rotate-180': open }" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+                    </svg>
+                </button>
+
+                <div x-show="open" x-collapse class="bg-gray-900/50"> 
+                    
+                    <a href="#" {{-- GANTI DENGAN ROUTE: route('admin.reservations.schedule') --}}
+                       class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservations.schedule') ? $subActiveClasses : '' }}">
+                        <span>Kelola Jadwal</span>
+                    </a>
+
+                    <a href="#" {{-- GANTI DENGAN ROUTE: route('admin.reservations.index') --}}
+                       class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservations.index') ? $subActiveClasses : '' }}">
+                        <span>Lihat Reservasi</span>
+                    </a>
+
+                    <a href="#" {{-- GANTI DENGAN ROUTE: route('admin.reservations.create') --}}
+                       class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservations.create') ? $subActiveClasses : '' }}">
+                        <span>Tambah Reservasi</span>
+                    </a>
+                    
+                </div>
+            </div>
+            {{-- AKHIR BLOK RESERVASI --}}
+
             {{-- AWAL BLOK PRESENSI --}}
             @php
                 $isPresenceActive = request()->routeIs('admin.presence-schedules.*') || request()->routeIs('admin.presence-recap.*');
@@ -164,15 +209,6 @@
             </div>
             {{-- AKHIR BLOK PRESENSI --}}
 
-            {{-- MENU RESERVASI (HANYA UNTUK ADMIN) --}}
-            <a href="#" 
-               class="{{ $linkClasses }} {{ request()->routeIs('admin.reservations.*') ? $activeClasses : '' }}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{{ $iconClasses }}">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
-                </svg>
-                <span>Reservasi</span>
-            </a>
-
             <div class="{{ $headingClasses }}">Sistem</div>
             
             {{-- AWAL BLOK PENGATURAN --}}
@@ -187,7 +223,7 @@
                     
                     <span class="flex items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{{ $iconClasses }}">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.227l.128-.054m-2.46 0c.09-.542.56-1.007 1.11-1.227l.128-.054M10.343 3.94l-.128.054a1.125 1.125 0 0 1-1.11 1.227m2.46 0l-.128.054a1.125 1.125 0 0 0-1.11 1.227m-2.46 0c.09-.542.56-1.007 1.11-1.227l.128-.054M10.343 3.94l-.128.054a1.125 1.125 0 0 1-1.11 1.227m2.46 0l-.128.054a1.125 1.125 0 0 0-1.11 1.227m2.46 0c-.09.542-.56 1.007-1.11 1.227l-.128.054m.001 2.46a1.125 1.125 0 0 1-1.11-1.227l-.128-.054m.001 2.46l-.128.054a1.125 1.125 0 0 0-1.11 1.227M13.657 3.94c-.09.542-.56 1.007-1.11 1.227l-.128.054m2.46 0c-.09.542-.56 1.007-1.11 1.227l-.128.054M13.657 3.94l.128-.054a1.125 1.125 0 0 1 1.11 1.227m-2.46 0l.128-.054a1.125 1.125 0 0 0 1.11 1.227m2.46 0c-.09.542-.56 1.007-1.11 1.227l-.128.054m-.001-2.46a1.125 1.125 0 0 1 1.11 1.227l.128.054m-.001-2.46l.128.054a1.125 1.125 0 0 0 1.11 1.227M12 6.875a5.125 5.125 0 1 0 0 10.25 5.125 5.125 0 0 0 0-10.25Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-1.007 1.11-1.227l.128-.054m-2.46 0c.09-.542.56-1.007 1.11-1.227l.128-.054M10.343 3.94l-.128.054a1.125 1.125 0 0 1-1.11 1.227m2.46 0l-.128.054a1.125 1.125 0 0 0-1.11 1.227m-2.46 0c.09-.542.56-1.007 1.11-1.227l.128-.054m.001 2.46a1.125 1.125 0 0 1-1.11-1.227l-.128-.054m.001 2.46l-.128.054a1.125 1.125 0 0 0-1.11 1.227M13.657 3.94c-.09.542-.56 1.007-1.11 1.227l-.128.054m2.46 0c-.09.542-.56 1.007-1.11 1.227l-.128.054M13.657 3.94l.128-.054a1.125 1.125 0 0 1 1.11 1.227m-2.46 0l.128-.054a1.125 1.125 0 0 0 1.11 1.227m2.46 0c-.09.542-.56 1.007-1.11 1.227l-.128.054m-.001-2.46a1.125 1.125 0 0 1 1.11 1.227l.128.054m-.001-2.46l.128.054a1.125 1.125 0 0 0 1.11 1.227M12 6.875a5.125 5.125 0 1 0 0 10.25 5.125 5.125 0 0 0 0-10.25Z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
                         </svg>
                         <span>Pengaturan</span>
                     </span>
@@ -217,7 +253,7 @@
             
             {{-- ================= BAGIAN KASIR ================= --}}
             
-            <div class="{{ $headingClasses }}">Navigasi Utama</div>
+            {{-- MENU RESERVASI SUDAH DIHAPUS DARI SINI --}}
 
             <a href="{{ route('kasir.dashboard') }}" 
                class="{{ $linkClasses }} {{ request()->routeIs('kasir.dashboard') ? $activeClasses : '' }}">
