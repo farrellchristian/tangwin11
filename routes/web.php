@@ -21,6 +21,7 @@ use App\Http\Controllers\Admin\StoreController;
 use App\Http\Controllers\Admin\PresenceScheduleController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\Admin\PresenceRecapController;
+use App\Http\Controllers\ReservationSlotController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -168,6 +169,25 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::get('/profit-loss', [ReportController::class, 'getProfitLossDetails'])->name('profit-loss');
         Route::get('/transaction/{transaction}', [ReportController::class, 'getTransactionDetails'])->name('transaction');
         Route::get('/expense/{expense}', [AdminExpenseController::class, 'show']) ->name('expense');
+    });
+
+    // === MANAJEMEN JADWAL (SLOT) ===
+    // Cukup tulis 'reservation' saja, karena sudah ada di dalam grup 'admin'
+    Route::prefix('reservation')->name('reservation.')->group(function () {
+        // Halaman Kelola Jadwal
+        Route::get('/slots', [ReservationSlotController::class, 'index'])->name('slots.index');
+        
+        // Simpan Jadwal Baru (Generate)
+        Route::post('/slots', [ReservationSlotController::class, 'store'])->name('slots.store');
+
+        // --- TAMBAHKAN INI UNTUK UPDATE ---
+        Route::put('/slots/{id}', [ReservationSlotController::class, 'update'])->name('slots.update');
+        
+        // Hapus Semua Jadwal (Reset)
+        Route::delete('/slots/reset', [ReservationSlotController::class, 'destroyAll'])->name('slots.destroyAll');
+        
+        // Hapus Satu Slot
+        Route::delete('/slots/{id}', [ReservationSlotController::class, 'destroy'])->name('slots.destroy');
     });
 });
 

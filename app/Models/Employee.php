@@ -40,4 +40,10 @@ class Employee extends Model
     {
         return $this->hasMany(Expense::class, 'id_employee', 'id_employee');
     }
+
+    // Tambahkan ini di dalam class Employee
+    public function slots()
+    {
+        return $this->belongsToMany(ReservationSlot::class, 'reservation_slot_employee', 'id_employee', 'id_slot');
+    }
 }
