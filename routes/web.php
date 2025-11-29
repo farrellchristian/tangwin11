@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\PresenceScheduleController;
 use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\Admin\PresenceRecapController;
 use App\Http\Controllers\ReservationSlotController;
+use App\Http\Controllers\ReservationController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -187,6 +188,20 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::delete('/slots/reset', [ReservationSlotController::class, 'destroyAll'])->name('slots.destroyAll');
         
         // Hapus Satu Slot
+        Route::delete('/slots/{id}', [ReservationSlotController::class, 'destroy'])->name('slots.destroy');
+    });
+    
+    // Group Admin Reservation
+    Route::prefix('reservation')->name('reservation.')->group(function () {
+
+        Route::get('/', [ReservationController::class, 'index'])->name('index');
+        Route::put('/{id}/status', [ReservationController::class, 'updateStatus'])->name('update-status');
+
+        // 2. KELOLA JADWAL (SLOTS)
+        Route::get('/slots', [ReservationSlotController::class, 'index'])->name('slots.index');
+        Route::post('/slots', [ReservationSlotController::class, 'store'])->name('slots.store');
+        Route::put('/slots/{id}', [ReservationSlotController::class, 'update'])->name('slots.update');
+        Route::delete('/slots/reset', [ReservationSlotController::class, 'destroyAll'])->name('slots.destroyAll');
         Route::delete('/slots/{id}', [ReservationSlotController::class, 'destroy'])->name('slots.destroy');
     });
 });

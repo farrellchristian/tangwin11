@@ -4,62 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Models\Reservation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReservationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        //
-    }
+        $query = Reservation::with(['service', 'employee', 'store']); 
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        // Urutkan: Terbaru di atas
+        $reservations = $query->orderBy('booking_date', 'desc')
+                              ->orderBy('booking_time', 'asc')
+                              ->paginate(10); 
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        return view('admin.reservation.index', compact('reservations'));
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Reservation $reservation)
+    
+    public function updateStatus(Request $request, $id)
     {
-        //
-    }
+        $reservation = Reservation::findOrFail($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Reservation $reservation)
-    {
-        //
-    }
+        $request->validate([
+            'status' => 'required|in:pending,approved,completed,canceled'
+        ]);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Reservation $reservation)
-    {
-        //
-    }
+        $reservation->update(['status' => $request->status]);
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Reservation $reservation)
-    {
-        //
+        return redirect()->back()->with('success', 'Status reservasi diperbarui.');
     }
 }

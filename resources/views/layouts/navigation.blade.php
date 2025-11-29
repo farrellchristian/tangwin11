@@ -125,11 +125,10 @@
             </div>
             {{-- AKHIR BLOK MANAJEMEN DATA --}}
 
-            {{-- AWAL BLOK RESERVASI (BARU DENGAN DROPDOWN) --}}
+            {{-- AWAL BLOK RESERVASI --}}
             @php
-                // Cek apakah salah satu rute reservasi sedang aktif
-                // Pastikan Anda menyesuaikan nama route di bawah ini sesuai project Anda
-                $isReservationActive = request()->routeIs('admin.reservations.*'); 
+                // Kita gunakan 'admin.reservation.*' (singular) sesuai route yang baru dibuat
+                $isReservationActive = request()->routeIs('admin.reservation.*'); 
             @endphp
 
             <div x-data="{ open: {{ $isReservationActive ? 'true' : 'false' }} }">
@@ -151,21 +150,19 @@
 
                 <div x-show="open" x-collapse class="bg-gray-900/50"> 
                     
-                    <a href="#" {{-- GANTI DENGAN ROUTE: route('admin.reservations.schedule') --}}
-                       class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservations.schedule') ? $subActiveClasses : '' }}">
+                    {{-- 1. KELOLA JADWAL (Slot) --}}
+                    {{-- Menggunakan route: admin.reservation.slots.index --}}
+                    <a href="{{ route('admin.reservation.slots.index') }}"
+                       class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservation.slots.*') ? $subActiveClasses : '' }}">
                         <span>Kelola Jadwal</span>
                     </a>
 
-                    <a href="#" {{-- GANTI DENGAN ROUTE: route('admin.reservations.index') --}}
-                       class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservations.index') ? $subActiveClasses : '' }}">
+                    {{-- 2. LIHAT RESERVASI (Daftar Booking) --}}
+                    {{-- Menggunakan route: admin.reservation.index --}}
+                    <a href="{{ route('admin.reservation.index') }}"
+                       class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservation.index') ? $subActiveClasses : '' }}">
                         <span>Lihat Reservasi</span>
                     </a>
-
-                    <a href="#" {{-- GANTI DENGAN ROUTE: route('admin.reservations.create') --}}
-                       class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservations.create') ? $subActiveClasses : '' }}">
-                        <span>Tambah Reservasi</span>
-                    </a>
-                    
                 </div>
             </div>
             {{-- AKHIR BLOK RESERVASI --}}
@@ -213,7 +210,7 @@
             
             {{-- AWAL BLOK PENGATURAN --}}
             @php
-                $isSettingsActive = request()->routeIs('admin.expenses.index') || request()->is('admin/reservations-setting'); 
+                $isSettingsActive = request()->routeIs('admin.expenses.index'); 
             @endphp
 
             <div x-data="{ open: {{ $isSettingsActive ? 'true' : 'false' }} }">
@@ -240,8 +237,8 @@
                         <span>Setting Pengeluaran</span>
                     </a>
 
-                    <a href="#" {{-- GANTI '#' DENGAN ROUTE YANG BENAR --}}
-                       class="{{ $subLinkClasses }} {{ request()->is('admin/reservations-setting') ? $subActiveClasses : '' }}"> {{-- GANTI request()->is(...) --}}
+                    <a href="#" 
+                       class="{{ $subLinkClasses }}">
                         <span>Setting Reservasi</span>
                     </a>
                     
@@ -253,8 +250,6 @@
             
             {{-- ================= BAGIAN KASIR ================= --}}
             
-            {{-- MENU RESERVASI SUDAH DIHAPUS DARI SINI --}}
-
             <a href="{{ route('kasir.dashboard') }}" 
                class="{{ $linkClasses }} {{ request()->routeIs('kasir.dashboard') ? $activeClasses : '' }}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{{ $iconClasses }}">
