@@ -43,14 +43,6 @@ Route::get('/dashboard', DashboardRedirectController::class)
 |--------------------------------------------------------------------------
 | Bisa diakses oleh Admin dan Kasir
 */
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
-
-    // Rute untuk menampilkan halaman pilih karyawan SETELAH admin pilih toko
-    Route::get('/pos/select-employee/{store}', [PosController::class, 'showSelectEmployee'])
-         ->name('pos.select-employee');
-
-});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/pos', [PosController::class, 'index'])->name('pos.index');
@@ -71,6 +63,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Rute baru untuk mengecek status pembayaran
     Route::get('/pos/payment/status/{order_id}', [PosController::class, 'getPaymentStatus'])
         ->name('pos.payment.status');
+
+    // Route Cetak Struk
+        Route::get('/pos/struk/{id}', [PosController::class, 'printStruk'])
+        ->name('pos.print-struk');
 });
 
 

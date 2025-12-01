@@ -325,4 +325,59 @@ class PosController extends Controller
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 404);
         }
     }
+
+    public function printStruk($id)
+    {
+        $transaction = \App\Models\Transaction::with([
+            'store',
+            'employee',         // Capster Utama (yang dipilih di awal)
+            'user',             // Kasir
+            'paymentMethod',
+            'details.service',
+            'details.product',
+            'details.food',
+            'details.employee'  // Capster per item (PENTING!)
+        ])->findOrFail($id);
+
+        // --- LOGIKA GROUPING ITEM ---
+        $groupedDetails = collect();
+
+        foreach ($transaction->details as $item) {
+            $key = $item->item_type . '-' . 
+                   ($item->id_service ?? $item->id_product ?? $item->id_food) . '-' . 
+                   $item->price_at_sale;
+
+            if ($groupedDetails->has($key)) {
+                // Jika sudah ada, tambahkan quantity dan subtotal
+                $existingItem = $groupedDetails->get($key);
+                $existingItem->quantity += $item->quantity;
+                $existingItem->subtotal += $item->subtotal;
+            } else {
+                // Jika belum, buat baru
+                $newItem = clone $item;
+                $groupedDetails->put($key, $newItem);
+            }
+        }
+
+        // --- LOGIKA KUMPULKAN SEMUA CAPSTER ---
+        // 1. Masukkan Capster Utama dulu
+        $capsters = collect([$transaction->employee->employee_name]);
+
+        // 2. Loop semua detail, ambil nama karyawan di setiap item (jika ada)
+        foreach ($transaction->details as $item) {
+            if ($item->employee) {
+                $capsters->push($item->employee->employee_name);
+            }
+        }
+
+        // 3. Hapus duplikat dan gabungkan jadi string
+        $capsterString = $capsters->unique()->implode(', ');
+
+        // Kirim data yang sudah diolah ke View
+        return view('pos.struk', [
+            'transaction' => $transaction,
+            'groupedDetails' => $groupedDetails,
+            'capsterString' => $capsterString
+        ]);
+    }
 }
