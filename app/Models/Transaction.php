@@ -4,20 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\SoftDeletes; // Tetap pakai SoftDeletes
 
 class Transaction extends Model
 {
     use HasFactory, SoftDeletes;
 
-    /**
-     * Nama primary key tabel ini.
-     */
     protected $primaryKey = 'id_transaction';
 
-    /**
-     * Kolom yang boleh diisi secara massal.
-     */
+    // Kita pertahankan fillable kamu yang lengkap
     protected $fillable = [
         'id_store',
         'id_employee_primary',
@@ -29,11 +24,11 @@ class Transaction extends Model
         'tips',
         'transaction_date',
         'notes',
+        'status',   // Tambahan: status (paid/pending)
+        'order_id'  // Tambahan: order_id (untuk Qris)
     ];
 
-    /**
-     * Tipe data bawaan untuk kolom tertentu.
-     */
+    // Kita pertahankan casts kamu
     protected $casts = [
         'transaction_date' => 'datetime',
         'total_amount' => 'decimal:2',
@@ -52,18 +47,21 @@ class Transaction extends Model
 
     /**
      * Relasi ke Karyawan Utama (Employee)
+     * PERBAIKAN: Namanya diganti jadi 'employee' agar sesuai Controller
      */
-    public function primaryEmployee()
+    public function employee()
     {
+        // Tetap mengacu ke 'id_employee_primary'
         return $this->belongsTo(Employee::class, 'id_employee_primary', 'id_employee');
     }
 
     /**
      * Relasi ke User (Kasir yg mencatat)
+     * PERBAIKAN: Namanya diganti jadi 'user' agar sesuai Controller
      */
-    public function cashierUser()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'id_user'); // Asumsi primary key User adalah 'id'
+        return $this->belongsTo(User::class, 'id_user');
     }
 
     /**
@@ -75,7 +73,7 @@ class Transaction extends Model
     }
 
     /**
-     * Relasi ke Detail Transaksi (TransactionDetail) - Satu transaksi punya banyak detail
+     * Relasi ke Detail Transaksi (TransactionDetail)
      */
     public function details()
     {

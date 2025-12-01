@@ -24,13 +24,15 @@ class Store extends Model
      */
     protected $fillable = [
         'store_name',
+        'address',
+        'phone_number',
         'is_active',
         'store_ip_address',   
         'enable_ip_validation',
     ];
     
     protected $casts = [
-        'is_active' => 'boolean', // <-- 2. TAMBAHKAN INI
+        'is_active' => 'boolean',
         'enable_ip_validation' => 'boolean',
     ];
 }
