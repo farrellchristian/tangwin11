@@ -553,26 +553,29 @@ class ReportController extends Controller
             'status' => $netProfitLoss >= 0 ? 'Laba' : 'Rugi',
         ]);
     }
+
     /**
-    * API: Mengambil rincian detail SATU transaksi untuk modal.
-    */
+     * API: Mengambil rincian detail SATU transaksi untuk modal.
+     */
     public function getTransactionDetails(Transaction $transaction): JsonResponse
     {
         try {
-            // Eager load semua relasi yang kita butuhkan untuk "struk"
-            $transaction->load(
-                'store', 
-                'primaryEmployee', // Capster utama
+            // Eager load semua relasi
+            $transaction->load([
+                'store',
+                'primaryEmployee',
                 'paymentMethod',
-                'details.service', // Detail item layanan
-                'details.product', // Detail item produk
-                'details.food',    // Detail item makanan
-                'details.employee' // Capster per item (jika beda)
-            );
+                'details.service',
+                'details.product',
+                'details.food',
+                'details.employee'
+            ]);
 
-            // Format data agar mudah dibaca oleh JavaScript
+            // Format data detail item
             $formattedDetails = $transaction->details->map(function ($detail) {
-                $itemName = 'N/A';
+                $itemName = 'Item Terhapus'; 
+                
+                // Cek null safe untuk relasi item
                 if ($detail->item_type === 'service' && $detail->service) {
                     $itemName = $detail->service->service_name;
                 } elseif ($detail->item_type === 'product' && $detail->product) {
@@ -587,22 +590,35 @@ class ReportController extends Controller
                     'quantity' => $detail->quantity,
                     'price_at_sale' => (float) $detail->price_at_sale,
                     'subtotal' => (float) $detail->subtotal,
-                    'employee_name' => $detail->employee->employee_name ?? 'N/A', // Capster per item
+                    // PENGAMAN 1: Null safe untuk detail karyawan
+                    'employee_name' => $detail->employee?->employee_name ?? '-', 
                 ];
             });
+
+            // Parsing tanggal
+            $transactionDate = $transaction->transaction_date instanceof \Carbon\Carbon 
+                ? $transaction->transaction_date 
+                : \Carbon\Carbon::parse($transaction->transaction_date);
 
             // Format data transaksi utama
             $formattedTransaction = [
                 'id' => $transaction->id_transaction,
-                'date' => $transaction->transaction_date->isoFormat('DD MMMM YYYY, HH:mm'),
-                'store_name' => $transaction->store->store_name ?? 'N/A',
-                'employee_name' => $transaction->primaryEmployee->employee_name ?? 'N/A',
-                'payment_method' => $transaction->paymentMethod->method_name ?? 'N/A',
-                'status' => 'Lunas', // Asumsi semua lunas
+                'date' => $transactionDate->isoFormat('DD MMMM YYYY, HH:mm'),
+                
+                // PENGAMAN 2: Tambahkan tanda tanya (?->) pada store
+                'store_name' => $transaction->store?->store_name ?? 'Toko Tidak Ditemukan',
+                
+                // PENGAMAN 3: Tambahkan tanda tanya (?->) pada primaryEmployee
+                'employee_name' => $transaction->primaryEmployee?->employee_name ?? 'Karyawan Tidak Ditemukan',
+                
+                // PENGAMAN 4: Tambahkan tanda tanya (?->) pada paymentMethod
+                'payment_method' => $transaction->paymentMethod?->method_name ?? 'Metode Hapus',
+                
+                'status' => ucfirst($transaction->status ?? 'paid'),
                 'total_amount' => (float) $transaction->total_amount,
                 'tips' => (float) $transaction->tips,
 
-                // Pisahkan detail berdasarkan tipe
+                // Pisahkan detail
                 'services' => $formattedDetails->where('item_type', 'service')->values(),
                 'products' => $formattedDetails->where('item_type', 'product')->values(),
                 'foods' => $formattedDetails->where('item_type', 'food')->values(),
@@ -614,8 +630,14 @@ class ReportController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error("Report API error getting transaction details: " . $e->getMessage());
-            return response()->json(['success' => false, 'message' => 'Gagal mengambil data transaksi.'], 500);
+            // Log error lengkap agar bisa dicek di storage/logs/laravel.log
+            \Log::error("Report API Error (ID: {$transaction->id_transaction}): " . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
+            return response()->json([
+                'success' => false, 
+                'message' => 'Gagal mengambil data: ' . $e->getMessage()
+            ], 500);
         }
     }
 } // Akhir Class
