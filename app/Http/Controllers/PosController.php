@@ -380,4 +380,37 @@ class PosController extends Controller
             'capsterString' => $capsterString
         ]);
     }
+
+    public function history(\Illuminate\Http\Request $request)
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $date = $request->input('date', date('Y-m-d'));
+        $query = \App\Models\Transaction::with(['employee', 'paymentMethod'])
+                    ->where('id_store', $user->id_store)
+                    ->whereDate('transaction_date', $date);
+        
+        // 2. Hitung Summary Hari Ini
+        $allToday = (clone $query)->get();
+
+        $summary = [
+            'total_trx'     => $allToday->count(),
+            'total_cash'    => $allToday->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
+            'total_digital' => $allToday->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name !== 'Cash')->sum('total_amount'),
+        ];
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('id_transaction', 'like', "%$search%")
+                  ->orWhereHas('employee', function($subQ) use ($search) {
+                      $subQ->where('employee_name', 'like', "%$search%");
+                  });
+            });
+        }
+
+        // 3. Ambil Data Tabel (Paginate biar rapi)
+        $transactions = $query->orderBy('transaction_date', 'desc')->paginate(10);
+
+        return view('pos.history', compact('transactions', 'summary', 'date'));
+    }
 }

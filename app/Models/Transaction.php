@@ -45,9 +45,10 @@ class Transaction extends Model
 
     /**
      * Relasi ke Karyawan Utama (Employee)
-     * PENTING: Nama fungsi UBAH ke 'primaryEmployee' agar sesuai Controller
+     * PERUBAHAN: Nama diganti dari 'primaryEmployee' menjadi 'employee'
+     * Supaya cocok dengan panggilan di Controller ($transaction->employee)
      */
-    public function primaryEmployee()
+    public function employee()
     {
         return $this->belongsTo(Employee::class, 'id_employee_primary', 'id_employee');
     }
@@ -61,8 +62,7 @@ class Transaction extends Model
     }
 
     /**
-     * Alias Relasi User (Untuk fitur Tips di ReportController)
-     * Controller memanggil 'cashierUser', jadi kita buatkan aliasnya ke 'user'
+     * Alias Relasi User (Jaga-jaga kalau ada controller lain yang pakai nama ini)
      */
     public function cashierUser()
     {

@@ -69,6 +69,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route Cetak Struk
         Route::get('/pos/struk/{id}', [PosController::class, 'printStruk'])
         ->name('pos.print-struk');
+
+    // Rute untuk melihat riwayat transaksi
+    Route::get('/pos/history', [PosController::class, 'history'])->name('pos.history');
 });
 
 
