@@ -41,30 +41,38 @@
             </aside>
             <div class="flex-1 flex flex-col overflow-hidden lg:ml-64">
                 
-                <header class="bg-white shadow">
-                    <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-                        
-                        <button @click="isSidebarOpen = !isSidebarOpen" class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500">
+                {{-- Cek apakah ada slot 'header' yang diisi dari view anak --}}
+                @if (isset($header))
+                    <header class="bg-white shadow">
+                        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+                            
+                            <button @click="isSidebarOpen = !isSidebarOpen" class="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500">
+                                <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                                    <path :class="{'hidden': isSidebarOpen, 'inline-flex': !isSidebarOpen }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                                    <path :class="{'hidden': !isSidebarOpen, 'inline-flex': isSidebarOpen }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            
+                            <div class="font-semibold text-xl text-gray-800 leading-tight">
+                                {{ $header }}
+                            </div>
+                            
+                            <div class="lg:hidden w-10"></div> 
+                        </div>
+                    </header>
+                @else
+                    {{-- Jika tidak ada header (seperti di Dashboard Admin baru kita), 
+                        kita TAMPILKAN TOMBOL TOGGLE SAJA secara absolute agar tidak makan tempat --}}
+                    <div class="lg:hidden absolute top-4 left-4 z-50">
+                        <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 rounded-md text-gray-500 bg-white shadow-md hover:bg-gray-100 focus:outline-none">
                             <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                                <path :class="{'hidden': isSidebarOpen, 'inline-flex': !isSidebarOpen }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                                <path :class="{'hidden': !isSidebarOpen, 'inline-flex': isSidebarOpen }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                             </svg>
                         </button>
-                        
-                        <div class="font-semibold text-xl text-gray-800 leading-tight">
-                            @isset($header)
-                                {{ $header }}
-                            @endisset
-                        </div>
-                        
-                        <div class="lg:hidden w-10"></div> 
-
                     </div>
-                </header>
+                @endif
                 <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-                    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                        {{ $slot }}
-                    </div>
+                    {{ $slot }}
                 </main>
                 </div>
             </div>

@@ -46,4 +46,12 @@ class Employee extends Model
     {
         return $this->belongsToMany(ReservationSlot::class, 'reservation_slot_employee', 'id_employee', 'id_slot');
     }
+
+    /**
+     * Relasi: Satu karyawan memiliki banyak transaksi (sebagai Capster Utama)
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'id_employee_primary', 'id_employee');
+    }
 }

@@ -2,35 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth; // <-- Import facade Auth
+use Illuminate\Support\Facades\Auth;
 
 class DashboardRedirectController extends Controller
 {
     /**
      * Handle the incoming request.
-     * Ini adalah "invokable" method, yang otomatis berjalan
-     * saat controller ini dipanggil.
      */
     public function __invoke(Request $request)
     {
-        // Cek role user yang sedang login
-        if (Auth::user()->role === 'admin') {
-            
-            // Jika 'admin', alihkan ke rute '/admin/dashboard'
-            // (Rute ini akan kita buat setelah ini)
-            return redirect('/admin/dashboard');
+        $user = Auth::user();
 
-        } elseif (Auth::user()->role === 'kasir') {
-            
-            // Jika 'kasir', alihkan ke rute '/kasir/dashboard'
-            // (Rute ini juga akan kita buat setelah ini)
-            return redirect('/kasir/dashboard');
-
-        } else {
-            // Jika ada role aneh (seharusnya tidak), paksa logout
-            Auth::logout();
-            return redirect('/login')->with('error', 'Role tidak valid.');
+        // 1. Jika role ADMIN -> Lempar ke Dashboard Admin
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        } 
+        
+        // 2. Jika role KASIR -> Lempar ke Dashboard Kasir
+        if ($user->role === 'kasir') {
+            return redirect()->route('kasir.dashboard');
         }
+
+        // 3. Jika role tidak jelas -> Tendang keluar (Logout)
+        Auth::logout();
+        return redirect()->route('login')->with('error', 'Role akun tidak valid.');
     }
 }

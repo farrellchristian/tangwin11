@@ -1,131 +1,173 @@
 <x-app-layout>
-    {{-- Slot untuk Header (Judul Halaman) --}}
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Halaman Presensi (Toko: {{ $store->store_name }})
-        </h2>
-    </x-slot>
+    {{-- Layout utama menggunakan h-screen (tinggi layar penuh) dan overflow-hidden (cegah scroll body) --}}
+    <div class="h-[calc(100vh-65px)] bg-gray-50 overflow-hidden flex flex-col" x-data="presenceClock()" x-init="startClock()">
+        
+        {{-- Container utama, padding disesuaikan agar tidak mepet --}}
+        <div class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+            
+            {{-- Header Ringkas --}}
+            <div class="flex justify-between items-center mb-6 shrink-0">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Presensi Karyawan</h2>
+                    <p class="text-sm text-gray-500">Check-in kehadiran Anda hari ini.</p>
+                </div>
+                <span class="px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold shadow-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    {{ $store->store_name }}
+                </span>
+            </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="w-full sm:max-w-lg mx-auto bg-white shadow-xl overflow-hidden sm:rounded-lg" 
-                 x-data="presenceClock()" x-init="startClock()">
+            {{-- Content Grid (Isi Utama) --}}
+            <div class="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-0">
                 
-                {{-- Ini adalah seluruh konten dari card lama kamu --}}
-                <div class="px-6 py-8">
-                    <div class="text-center mb-6">
-                        <div class="inline-block p-3 bg-indigo-100 rounded-full">
-                            {{-- Icon Presensi Baru --}}
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -960 960 960" class="w-12 h-12 text-indigo-600" fill="currentColor">
-                                <path d="M480.23-779.08q105.72 0 199.48 45.5 93.75 45.5 156.37 131.12 6.23 7.84 3.92 14.27-2.31 6.42-7.92 10.65-5.62 4.23-12.64 3.77-7.02-.45-12.29-7.77Q751.38-660.31 664.51-702q-86.86-41.69-184.28-41.69-97 0-182.38 42.07-85.39 42.08-141.77 120.08-5.62 8.23-12.85 8.85-7.23.61-12.85-4-5.65-4.23-6.86-10.58t3.63-13.19q62.39-84.23 155.15-131.42 92.77-47.2 197.93-47.2Zm.02 94q134.21 0 230.63 89.45 96.43 89.45 96.43 221.63 0 49.18-34.83 82.13-34.83 32.95-84.86 32.95-49.85 0-85.77-32.95-35.93-32.95-35.93-82.13 0-33.77-25.06-57.04-25.07-23.27-59.86-23.27-35.1 0-60.4 23.17-25.29 23.16-25.29 57.14 0 98.15 58.27 163.92 58.27 65.77 149.27 91.77 8.05 2.64 10.95 8.8 2.89 6.16.89 13.2-2 6.16-7.23 10.77-5.23 4.62-13.84 2.62-102.47-26-168.08-102.94-65.62-76.95-65.62-188.14 0-49.23 35.62-82.46 35.61-33.23 85.49-33.23 49.87 0 85.07 33.23 35.21 33.23 35.21 82.46 0 33.98 25.65 57.14 25.65 23.17 60.54 23.17 34.88 0 59.65-23.27 24.77-23.27 24.77-57.04 0-116.98-85.88-196.64-85.89-79.67-205.12-79.67t-204.8 79.78q-85.58 79.78-85.58 195.91 0 24.2 5.08 60.49 5.07 36.28 21.69 84.28 2.61 7.85-.31 13.89-2.92 6.04-10.15 9.04-7.23 3-13.77-.14-6.54-3.15-9.16-10.32-15.38-40.16-22.07-78.27-6.7-38.12-6.7-78.35 0-132.18 95.94-221.63 95.94-89.45 229.16-89.45Zm.75-192q63.49 0 124.01 15.5t117.07 44.5q8.61 4.62 9.92 11.04 1.31 6.42-1.31 12.66-2.61 6.23-9.04 9.46-6.42 3.23-14.5-1-52.61-28.16-109.68-42.46-57.07-14.31-116.66-14.31-58.58 0-114.96 14.27-56.39 14.27-108.54 42.5-6.08 3.84-13.12 1.73-7.04-2.12-10.27-8.96-3.23-6.85-1.8-12.77 1.42-5.93 8.26-10.16Q296-845.46 357-861.27q61-15.81 124-15.81Zm.02 289.39q92.21 0 158.25 61.73T705.31-374q0 7.96-4.87 12.83-4.86 4.86-12.82 4.86-6.85 0-12.27-4.86-5.43-4.87-5.43-12.83 0-75.77-56.06-127.04-56.07-51.27-132.85-51.27t-132.24 51.27q-55.46 51.27-55.46 127.01 0 81.8 28.38 138.49 28.39 56.69 82.39 114.39 6 6.07 5.42 13.11-.58 7.04-5.42 11.89-5.23 5.23-12.27 5.42-7.04.19-12.66-5.42-57.84-61.23-89.53-125.93-31.7-64.69-31.7-151.93 0-90.22 65.44-151.95 65.45-61.73 157.66-61.73Zm-1.48 196q7.92 0 12.84 5.31 4.93 5.3 4.93 12.38 0 76.18 54.57 124.94 54.58 48.75 127.74 48.75 7.92 0 18.92-1R 11-1 22.61-3 7.47-1.61 12.81 2.12 5.35 3.73 7.35 11.65 2 7.05-2.62 12.33-4.61 5.29-11.84 7.29-14.54 3.84-27.66 4.92-13.11 1.08-19.57 1.08-87.85 0-152.77-59.46-64.93-59.45-64.93-149.62 0-7.08 4.85-12.38 4.84-5.31 12.77-5.31Z"/>
+                {{-- KOLOM KIRI: Jam & Info (Scrollable jika konten panjang, tapi dalam container ini saja) --}}
+                <div class="flex flex-col gap-6 h-full overflow-y-auto pr-2 custom-scrollbar">
+                    
+                    {{-- Clock Card --}}
+                    <div class="bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl shadow-lg p-8 text-white relative overflow-hidden shrink-0 flex flex-col justify-center min-h-[280px]">
+                        <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10 blur-3xl"></div>
+                        <div class="absolute bottom-0 left-0 -ml-16 -mb-16 w-48 h-48 rounded-full bg-indigo-400 opacity-20 blur-2xl"></div>
+
+                        <div class="relative z-10">
+                            <p class="text-indigo-100 font-medium text-lg mb-1 opacity-90" x-text="currentDate"></p>
+                            <h1 class="text-6xl sm:text-7xl font-black tracking-tighter mb-4 leading-none" x-text="currentTime"></h1>
+                            
+                            <div class="flex items-center gap-3 mt-4">
+                                <div class="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] text-indigo-200 uppercase font-bold tracking-wider">Waktu Server</p>
+                                    <p class="text-xs font-semibold">WIB (Indonesia Barat)</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Info Card --}}
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex-1">
+                        <h3 class="font-bold text-gray-800 mb-4 flex items-center text-sm uppercase tracking-wide">
+                            <svg class="w-5 h-5 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Info Presensi
+                        </h3>
+                        <ul class="space-y-4 text-sm text-gray-600">
+                            <li class="flex gap-3">
+                                <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0"></div>
+                                <p>Status kehadiran tercatat otomatis saat tombol ditekan.</p>
+                            </li>
+                            <li class="flex gap-3">
+                                <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0"></div>
+                                <p>Keterlambatan dihitung berdasarkan jadwal shift toko.</p>
+                            </li>
+                            <li class="flex gap-3">
+                                <div class="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-2 shrink-0"></div>
+                                <p>Hubungi Admin jika salah pilih nama atau jadwal tidak sesuai.</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                {{-- KOLOM KANAN: Form (Center Vertically) --}}
+                <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 flex flex-col justify-center h-full">
+                    
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-indigo-50 mb-4 ring-4 ring-indigo-50">
+                            <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                        <h1 class="text-2xl font-bold text-gray-800 mt-3">Sistem Presensi</h1>
-                        <p class="text-sm text-gray-500">{{ $store->store_name }}</p>
+                        <h3 class="text-xl font-bold text-gray-900">Form Check-In</h3>
+                        <p class="text-sm text-gray-500 mt-1">Pilih nama Anda untuk melakukan absen masuk.</p>
                     </div>
 
-                    {{-- Jam Digital --}}
-                    <div class="text-center my-6">
-                        <p class="text-sm text-gray-600" x-text="currentDate"></p>
-                        <p class="text-5xl font-bold text-gray-800 tracking-wider" x-text="currentTime"></p>
-                    </div>
-
-                    {{-- Form Presensi --}}
-                    <form method="POST" action="{{ route('presence.check-in') }}">
-                        @csrf
-                        
-                        {{-- Notifikasi Error/Sukses --}}
+                    {{-- NOTIFIKASI (Compact) --}}
+                    <div class="space-y-2 mb-6">
                         @if (session('success'))
-                            <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                                <span class="block sm:inline">{{ session('success') }}</span>
+                            <div class="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center text-sm text-green-700 animate-pulse">
+                                <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                <span class="font-semibold">{{ session('success') }}</span>
                             </div>
                         @endif
-
-                        {{-- NOTIFIKASI BARU UNTUK 'TERLAMBAT' (WARNA ORANYE) --}}
                         @if (session('late'))
-                            <div class="mb-4 bg-orange-100 border border-orange-400 text-orange-700 px-4 py-3 rounded relative" role="alert">
-                                <span class="block sm:inline">{{ session('late') }}</span>
+                            <div class="p-3 bg-orange-50 border border-orange-200 rounded-lg flex items-center text-sm text-orange-700">
+                                <svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                <span class="font-semibold">{{ session('late') }}</span>
                             </div>
                         @endif
-
                         @if (session('error'))
-                            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                                <span class="block sm:inline">{{ session('error') }}</span>
+                            <div class="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center text-sm text-red-700">
+                                <svg class="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                <span class="font-semibold">{{ session('error') }}</span>
                             </div>
                         @endif
+                    </div>
 
-                        {{-- Dropdown Karyawan --}}
+                    <form method="POST" action="{{ route('presence.check-in') }}" class="space-y-5">
+                        @csrf
                         <div>
-                            <label for="id_employee" class="block text-sm font-medium text-gray-700">Nama Karyawan:</label>
-                            <select id="id_employee" name="id_employee" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
-                                <option value="">-- Pilih Nama Anda --</option>
-                                {{-- 
-                                  Catatan: Controller kamu harus mengirimkan variabel $employees 
-                                  dan $todayLogs (yang sudah ada di controller-mu) 
-                                --}}
-                                @forelse ($employees as $employee)
-                                    @php
-                                        $logStatus = $todayLogs[$employee->id_employee] ?? null;
-                                        $isDisabled = $logStatus !== null; 
-                                    @endphp
-                                    <option value="{{ $employee->id_employee }}" {{ $isDisabled ? 'disabled' : '' }}>
-                                        {{ $employee->employee_name }}
-                                        @if ($isDisabled)
-                                            (Sudah Absen: {{ $logStatus }})
-                                        @endif
-                                    </option>
-                                @empty
-                                    <option value="" disabled>Tidak ada karyawan aktif di toko ini</option>
-                                @endforelse
-                            </select>
+                            <label for="id_employee" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Karyawan</label>
+                            <div class="relative">
+                                <select id="id_employee" name="id_employee" class="block w-full pl-4 pr-10 py-3.5 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 rounded-xl shadow-sm bg-gray-50 hover:bg-white transition-colors cursor-pointer" required>
+                                    <option value="">-- Pilih Nama Anda --</option>
+                                    @forelse ($employees as $employee)
+                                        @php
+                                            $logStatus = $todayLogs[$employee->id_employee] ?? null;
+                                            $isDisabled = $logStatus !== null; 
+                                        @endphp
+                                        <option value="{{ $employee->id_employee }}" {{ $isDisabled ? 'disabled' : '' }}>
+                                            {{ $employee->employee_name }} 
+                                            @if ($isDisabled) (✅ Sudah) @endif
+                                        </option>
+                                    @empty
+                                        <option value="" disabled>Tidak ada data</option>
+                                    @endforelse
+                                </select>
+                            </div>
                         </div>
 
-                        {{-- Tombol Submit --}}
-                        <div class="mt-6">
-                            <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-3 bg-indigo-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-50 transition ease-in-out duration-150 shadow-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                Submit Presensi (Check-in)
-                            </button>
-                        </div>
+                        <button type="submit" class="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-base font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all transform hover:-translate-y-0.5 active:translate-y-0">
+                            Submit Kehadiran
+                        </button>
                     </form>
 
-                     {{-- Tombol Kembali ke Dashboard --}}
-                     <div class="mt-4 text-center">
-                        <a href="{{ route('dashboard') }}" class="w-full inline-flex justify-center items-center px-4 py-3 bg-white border border-gray-300 rounded-md font-semibold text-sm text-gray-700 uppercase tracking-widest hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition ease-in-out duration-150">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-2">
-                               <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
-                            </svg>
+                    <div class="mt-auto pt-8 text-center">
+                         <a href="{{ route('dashboard') }}" class="inline-flex items-center text-sm font-medium text-gray-400 hover:text-indigo-600 transition-colors">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                             Kembali ke Dashboard
                         </a>
+                        <p class="text-xs text-gray-300 mt-4">© {{ date('Y') }} {{ config('app.name') }}</p>
                     </div>
-                    
-                    <p class="text-center text-xs text-gray-400 mt-8">
-                        © {{ date('Y') }} {{ config('app.name', 'Tangwin Cut Studio') }}.
-                    </p>
+
                 </div>
+
             </div>
         </div>
     </div>
 
-    {{-- 
-      PENTING: Definisikan fungsi Alpine.js 'presenceClock()' di sini.
-      <x-app-layout> sudah memuat library Alpine.js (via app.js), 
-      kita hanya perlu menyediakan fungsinya agar 'x-data' bisa menemukannya.
-    --}}
     <script>
         function presenceClock() {
             return {
-                currentTime: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':'),
-                currentDate: new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+                currentTime: '',
+                currentDate: '',
                 startClock() {
-                    setInterval(() => {
-                        this.currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':');
-                        this.currentDate = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-                    }, 1000);
+                    this.updateTime();
+                    setInterval(() => { this.updateTime(); }, 1000);
+                },
+                updateTime() {
+                    this.currentTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/\./g, ':');
+                    this.currentDate = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
                 }
             }
         }
     </script>
+
+    {{-- CSS tambahan untuk scrollbar halus jika konten overflow di layar kecil --}}
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #e5e7eb; border-radius: 20px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background-color: #d1d5db; }
+    </style>
 </x-app-layout>

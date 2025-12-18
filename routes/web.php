@@ -24,8 +24,9 @@ use App\Http\Controllers\Admin\PresenceRecapController;
 use App\Http\Controllers\ReservationSlotController;
 use App\Http\Controllers\ReservationController;
 
+// Mengalihkan halaman awal ('/') langsung ke route login
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 /*
