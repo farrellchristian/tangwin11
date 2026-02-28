@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DashboardRedirectController; 
-use App\Http\Controllers\Admin\DashboardController as AdminDashboard; 
+use App\Http\Controllers\DashboardRedirectController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Kasir\DashboardController as KasirDashboard;
 use App\Http\Controllers\Admin\InformationController;
 use App\Http\Controllers\Admin\ServiceController;
@@ -53,22 +53,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rute untuk menampilkan halaman transaksi utama
     Route::get('/pos/transaction/{store}/{employee}', [PosController::class, 'showTransactionPage'])
-         ->name('pos.transaction'); // <-- TAMBAHKAN INI
+        ->name('pos.transaction'); // <-- TAMBAHKAN INI
 
     // (Nanti rute simpan transaksi)
     Route::post('/pos/store-transaction', [PosController::class, 'storeTransaction'])
-         ->name('pos.store-transaction');
+        ->name('pos.store-transaction');
 
     // Rute baru untuk menangani pembuatan pembayaran QRIS
     Route::post('/pos/payment/qris', [PosController::class, 'createQrisPayment'])
-         ->name('pos.payment.qris');
+        ->name('pos.payment.qris');
 
     // Rute baru untuk mengecek status pembayaran
     Route::get('/pos/payment/status/{order_id}', [PosController::class, 'getPaymentStatus'])
         ->name('pos.payment.status');
 
     // Route Cetak Struk
-        Route::get('/pos/struk/{id}', [PosController::class, 'printStruk'])
+    Route::get('/pos/struk/{id}', [PosController::class, 'printStruk'])
         ->name('pos.print-struk');
 
     // Rute untuk melihat riwayat transaksi
@@ -113,23 +113,25 @@ Route::middleware(['auth', 'verified'])->prefix('presence')->name('presence.')->
 | dan hanya bisa diakses oleh user yang terotentikasi.
 */
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    
+
     // Rute: /admin/dashboard
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
     Route::get('/informasi', InformationController::class)->name('informasi.index');
-    
+
     // Rute CRUD Services
     Route::resource('services', ServiceController::class);
     // Rute CRUD Products
     Route::resource('products', ProductController::class);
     // Rute CRUD Foods
     Route::resource('foods', FoodController::class);
+    // Rute untuk menyimpan update limit karyawan massal (via AJAX/Fetch nanti)
+    Route::put('/employees/update-limit-bulk', [AdminExpenseController::class, 'updateLimitBulk'])->name('employees.update-limit-bulk');
     // Rute CRUD Employees
     Route::resource('employees', EmployeeController::class);
     // Rute untuk Riwayat Pengeluaran & Setting Limit
     Route::get('/expenses', [AdminExpenseController::class, 'index'])->name('expenses.index');
-    // Rute untuk menyimpan update limit karyawan (via AJAX/Fetch nanti)
-    Route::put('/employees/{employee}/update-limit', [AdminExpenseController::class, 'updateLimit']) ->name('employees.update-limit');
+    // Rute untuk menyimpan update limit karyawan satuan (via AJAX/Fetch nanti)
+    Route::put('/employees/{employee}/update-limit', [AdminExpenseController::class, 'updateLimit'])->name('employees.update-limit');
     // Rute CRUD standar untuk mengelola data expense (KECUALI index)
     Route::resource('expenses', AdminExpenseController::class)->except(['index']);
     // Rute CRUD Payment Methods
@@ -143,10 +145,10 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     // Rute untuk CRUD Jadwal Presensi (Setting Presensi)
     Route::resource('presence-schedules', PresenceScheduleController::class);
     // Rute untuk Halaman Rekap Presensi
-    Route::get('presence-recap', [PresenceRecapController::class, 'index']) ->name('presence-recap.index');
+    Route::get('presence-recap', [PresenceRecapController::class, 'index'])->name('presence-recap.index');
     // Rute API untuk mengambil karyawan berdasarkan toko
     Route::get('employees/by-store/{store}', [EmployeeController::class, 'getEmployeesByStore'])
-         ->name('employees.by-store');
+        ->name('employees.by-store');
 
     // --- RUTE API UNTUK FILTER DINAMIS ---
     Route::prefix('expenses/filters')->name('expenses.filters.')->group(function () {
@@ -169,7 +171,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::get('/expenditure', [ReportController::class, 'getExpenditureDetails'])->name('expenditure');
         Route::get('/profit-loss', [ReportController::class, 'getProfitLossDetails'])->name('profit-loss');
         Route::get('/transaction/{transaction}', [ReportController::class, 'getTransactionDetails'])->name('transaction');
-        Route::get('/expense/{expense}', [AdminExpenseController::class, 'show']) ->name('expense');
+        Route::get('/expense/{expense}', [AdminExpenseController::class, 'show'])->name('expense');
     });
 
     // === MANAJEMEN JADWAL (SLOT) ===
@@ -177,20 +179,20 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::prefix('reservation')->name('reservation.')->group(function () {
         // Halaman Kelola Jadwal
         Route::get('/slots', [ReservationSlotController::class, 'index'])->name('slots.index');
-        
+
         // Simpan Jadwal Baru (Generate)
         Route::post('/slots', [ReservationSlotController::class, 'store'])->name('slots.store');
 
         // --- TAMBAHKAN INI UNTUK UPDATE ---
         Route::put('/slots/{id}', [ReservationSlotController::class, 'update'])->name('slots.update');
-        
+
         // Hapus Semua Jadwal (Reset)
         Route::delete('/slots/reset', [ReservationSlotController::class, 'destroyAll'])->name('slots.destroyAll');
-        
+
         // Hapus Satu Slot
         Route::delete('/slots/{id}', [ReservationSlotController::class, 'destroy'])->name('slots.destroy');
     });
-    
+
     // Group Admin Reservation
     Route::prefix('reservation')->name('reservation.')->group(function () {
 
@@ -214,7 +216,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 | dan hanya bisa diakses oleh user yang terotentikasi.
 */
 Route::middleware(['auth', 'verified'])->prefix('kasir')->name('kasir.')->group(function () {
-    
+
     // Rute: /kasir/dashboard
     Route::get('/dashboard', KasirDashboard::class)->name('dashboard'); // <-- 6. BUAT INI
 
@@ -232,4 +234,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

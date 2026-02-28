@@ -181,14 +181,14 @@
 
         <aside class="sidebar-section">
             <div class="sidebar-accent-strip"></div>
-            <img src="{{ asset('images/logo_login.png') }}" alt="Tangwin Logo" class="w-80 h-auto mb-6 drop-shadow-2xl hover:scale-105 transition-transform duration-300">
+            <img src="{{ asset('images/logo_tangwin_white.png') }}" alt="Tangwin Logo" class="w-80 h-auto mb-6 drop-shadow-2xl hover:scale-105 transition-transform duration-300">
         </aside>
 
         <div class="main-content">
             
             <header class="mobile-header">
                 <div class="mobile-accent-strip"></div>
-                <img src="{{ asset('images/logo_login.png') }}" alt="Tangwin Logo" class="w-52 h-auto mb-3 drop-shadow-lg">
+                <img src="{{ asset('images/logo_tangwin_white.png') }}" alt="Tangwin Logo" class="w-52 h-auto mb-3 drop-shadow-lg">
             </header>
 
             <div class="form-container">

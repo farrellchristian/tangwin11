@@ -8,7 +8,7 @@
             <!-- Tombol Kembali -->
             <a href="{{ route('admin.presence-schedules.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 mt-2 sm:mt-0">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 mr-1.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
                 </svg>
                 Kembali
             </a>
@@ -19,7 +19,7 @@
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
-                    
+
                     <!-- Form -->
                     <form method="POST" action="{{ route('admin.presence-schedules.store') }}">
                         @csrf
@@ -30,13 +30,13 @@
                             <select id="id_store" name="id_store" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 <option value="">Pilih Toko</option>
                                 @foreach ($stores as $store)
-                                    <option value="{{ $store->id_store }}" {{ old('id_store') == $store->id_store ? 'selected' : '' }}>
-                                        {{ $store->store_name }}
-                                    </option>
+                                <option value="{{ $store->id_store }}" {{ old('id_store') == $store->id_store ? 'selected' : '' }}>
+                                    {{ $store->store_name }}
+                                </option>
                                 @endforeach
                             </select>
                             @error('id_store')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -46,13 +46,13 @@
                             <select id="day_of_week" name="day_of_week" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 <option value="">Pilih Hari</option>
                                 @foreach ($daysOfWeek as $dayValue => $dayName)
-                                    <option value="{{ $dayValue }}" {{ old('day_of_week') == $dayValue ? 'selected' : '' }}>
-                                        {{ $dayName }}
-                                    </option>
+                                <option value="{{ $dayValue }}" {{ old('day_of_week') == $dayValue ? 'selected' : '' }}>
+                                    {{ $dayName }}
+                                </option>
                                 @endforeach
                             </select>
                             @error('day_of_week')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -61,16 +61,26 @@
                             <label for="jam_check_in" class="block text-sm font-medium text-gray-700">Jam Masuk (Check-in)</label>
                             <input type="time" name="jam_check_in" id="jam_check_in" value="{{ old('jam_check_in') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                             @error('jam_check_in')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        
+
                         <!-- Jam Check-Out -->
                         <div class="mt-4">
                             <label for="jam_check_out" class="block text-sm font-medium text-gray-700">Jam Pulang (Check-out)</label>
                             <input type="time" name="jam_check_out" id="jam_check_out" value="{{ old('jam_check_out') }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                             @error('jam_check_out')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Batas Keterlambatan -->
+                        <div class="mt-4">
+                            <label for="late_threshold" class="block text-sm font-medium text-gray-700">Batas Keterlambatan (Menit)</label>
+                            <input type="number" name="late_threshold" id="late_threshold" value="{{ old('late_threshold', 0) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                            <p class="text-xs text-gray-500 mt-1">Isi 0 jika tidak ada toleransi.</p>
+                            @error('late_threshold')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -82,7 +92,7 @@
                                 <option value="0" {{ old('is_active') == '0' ? 'selected' : '' }}>Non-Aktif</option>
                             </select>
                             @error('is_active')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
@@ -96,7 +106,7 @@
                             </button>
                         </div>
                     </form>
-                    
+
                 </div>
             </div>
         </div>

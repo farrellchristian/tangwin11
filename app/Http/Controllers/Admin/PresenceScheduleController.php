@@ -23,34 +23,34 @@ class PresenceScheduleController extends Controller
     {
         // Ambil toko aktif (bukan Office) untuk filter
         $stores = Store::where('is_active', true)->where('store_name', '!=', 'Office')->get();
-        
+
         // Tentukan toko yang dipilih. Default ke toko pertama jika ada.
-        $selectedStoreId = $request->input('store_id', $stores->first()->id_store ?? null); 
+        $selectedStoreId = $request->input('store_id', $stores->first()->id_store ?? null);
 
         // Ambil jadwal berdasarkan filter toko
         $schedulesQuery = PresenceSchedule::with('store')
-                            ->orderBy('day_of_week') // Urutkan berdasarkan hari
-                            ->orderBy('jam_check_in');
-        
+            ->orderBy('day_of_week') // Urutkan berdasarkan hari
+            ->orderBy('jam_check_in');
+
         if ($selectedStoreId) {
-             $schedulesQuery->where('id_store', $selectedStoreId);
+            $schedulesQuery->where('id_store', $selectedStoreId);
         }
 
         $schedules = $schedulesQuery->paginate(15)->withQueryString();
 
         // Hitung "Jadwal Presensi Aktif" (sesuai image_aa62c6.png)
         $todayDayOfWeek = Carbon::now()->dayOfWeek; // 0=Minggu, 1=Senin, ..., 6=Sabtu
-        
+
         $activeTodayCountQuery = PresenceSchedule::where('day_of_week', $todayDayOfWeek)
-                                        ->where('is_active', true);
-        
+            ->where('is_active', true);
+
         if ($selectedStoreId) {
             $activeTodayCount = (clone $activeTodayCountQuery)->where('id_store', $selectedStoreId)->count();
         } else {
             // Jika filter "Semua Toko" (selectedStoreId = null)
             $activeTodayCount = $activeTodayCountQuery->count();
         }
-        
+
         return view('admin.presence-schedules.index', [
             'schedules' => $schedules,
             'stores' => $stores,
@@ -66,10 +66,15 @@ class PresenceScheduleController extends Controller
     {
         $stores = Store::where('is_active', true)->where('store_name', '!=', 'Office')->get();
         $daysOfWeek = [
-            '1' => 'Senin', '2' => 'Selasa', '3' => 'Rabu', 
-            '4' => 'Kamis', '5' => 'Jumat', '6' => 'Sabtu', '0' => 'Minggu'
+            '1' => 'Senin',
+            '2' => 'Selasa',
+            '3' => 'Rabu',
+            '4' => 'Kamis',
+            '5' => 'Jumat',
+            '6' => 'Sabtu',
+            '0' => 'Minggu'
         ];
-        
+
         // INI AKAN MEMANGGIL VIEW ANDA YANG SUDAH BENAR
         return view('admin.presence-schedules.create', compact('stores', 'daysOfWeek'));
     }
@@ -98,9 +103,9 @@ class PresenceScheduleController extends Controller
                         ->where('day_of_week', $request->input('day_of_week'))
                         ->where(function ($query) use ($newStartTime, $newEndTime) {
                             $query->where('jam_check_in', '<', $newEndTime) // old_start < new_end
-                                  ->where('jam_check_out', '>', $newStartTime); // old_end > new_start
+                                ->where('jam_check_out', '>', $newStartTime); // old_end > new_start
                         })
-                        ->exists(); 
+                        ->exists();
 
                     if ($existingOverlap) {
                         $fail('Jam jadwal tumpang tindih dengan jadwal lain yang sudah ada di hari ini.');
@@ -109,14 +114,16 @@ class PresenceScheduleController extends Controller
             ],
             'jam_check_out' => 'required|date_format:H:i|after:jam_check_in',
             'is_active' => 'required|boolean',
+            'late_threshold' => 'required|integer|min:0',
         ], [
             'jam_check_out.after' => 'Jam pulang harus setelah jam masuk.',
+            'late_threshold.min' => 'Batas keterlambatan tidak boleh negatif.',
         ]);
 
         PresenceSchedule::create($validated);
 
         return redirect()->route('admin.presence-schedules.index')
-                         ->with('success', 'Jadwal presensi baru berhasil ditambahkan.');
+            ->with('success', 'Jadwal presensi baru berhasil ditambahkan.');
     }
 
     /**
@@ -134,8 +141,13 @@ class PresenceScheduleController extends Controller
     {
         $stores = Store::where('is_active', true)->where('store_name', '!=', 'Office')->get();
         $daysOfWeek = [
-            '1' => 'Senin', '2' => 'Selasa', '3' => 'Rabu', 
-            '4' => 'Kamis', '5' => 'Jumat', '6' => 'Sabtu', '0' => 'Minggu'
+            '1' => 'Senin',
+            '2' => 'Selasa',
+            '3' => 'Rabu',
+            '4' => 'Kamis',
+            '5' => 'Jumat',
+            '6' => 'Sabtu',
+            '0' => 'Minggu'
         ];
 
         return view('admin.presence-schedules.edit', [
@@ -163,14 +175,14 @@ class PresenceScheduleController extends Controller
                 function ($attribute, $value, $fail) use ($request, $presenceSchedule) {
                     $newStartTime = $value;
                     $newEndTime = $request->input('jam_check_out');
-                    $currentScheduleId = $presenceSchedule->id_presence_schedule; 
+                    $currentScheduleId = $presenceSchedule->id_presence_schedule;
 
                     $existingOverlap = PresenceSchedule::where('id_store', $request->input('id_store'))
                         ->where('day_of_week', $request->input('day_of_week'))
                         ->where('id_presence_schedule', '!=', $currentScheduleId) // Abaikan diri sendiri
                         ->where(function ($query) use ($newStartTime, $newEndTime) {
-                            $query->where('jam_check_in', '<', $newEndTime) 
-                                  ->where('jam_check_out', '>', $newStartTime);
+                            $query->where('jam_check_in', '<', $newEndTime)
+                                ->where('jam_check_out', '>', $newStartTime);
                         })
                         ->exists();
 
@@ -181,14 +193,16 @@ class PresenceScheduleController extends Controller
             ],
             'jam_check_out' => 'required|date_format:H:i|after:jam_check_in',
             'is_active' => 'required|boolean',
+            'late_threshold' => 'required|integer|min:0',
         ], [
-            'jam_check_out.after' => 'Jam pulang harus setelah jam masuk.'
+            'jam_check_out.after' => 'Jam pulang harus setelah jam masuk.',
+            'late_threshold.min' => 'Batas keterlambatan tidak boleh negatif.',
         ]);
 
         $presenceSchedule->update($validated);
 
         return redirect()->route('admin.presence-schedules.index')
-                         ->with('success', 'Jadwal presensi berhasil diperbarui.');
+            ->with('success', 'Jadwal presensi berhasil diperbarui.');
     }
 
     /**
@@ -199,11 +213,11 @@ class PresenceScheduleController extends Controller
         try {
             $presenceSchedule->delete();
             return redirect()->route('admin.presence-schedules.index')
-                         ->with('success', 'Jadwal presensi berhasil dihapus.');
+                ->with('success', 'Jadwal presensi berhasil dihapus.');
         } catch (\Exception $e) {
             // Jika jadwal terhubung ke log, mungkin gagal
             return redirect()->route('admin.presence-schedules.index')
-                         ->with('error', 'Gagal menghapus jadwal. Pastikan tidak ada data log yang terhubung.');
+                ->with('error', 'Gagal menghapus jadwal. Pastikan tidak ada data log yang terhubung.');
         }
     }
 }

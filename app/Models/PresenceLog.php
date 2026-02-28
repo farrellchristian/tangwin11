@@ -26,6 +26,7 @@ class PresenceLog extends Model
         'status',
         'notes',
         'ip_address',
+        'late_minutes',
     ];
 
     /**
@@ -33,7 +34,7 @@ class PresenceLog extends Model
      */
     protected $casts = [
         'check_in_time' => 'datetime',
-        'check_out_time' => 'datetime', 
+        'check_out_time' => 'datetime',
     ];
 
     /**
@@ -57,6 +58,6 @@ class PresenceLog extends Model
      */
     public function schedule()
     {
-        return $this->belongsTo(PresenceSchedule::class, 'id_presence_schedule', 'id_presence_schedule');
+        return $this->belongsTo(PresenceSchedule::class, 'id_presence_schedule', 'id_presence_schedule')->withTrashed();
     }
 }

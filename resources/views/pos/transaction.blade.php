@@ -35,18 +35,20 @@
                                         <select x-model="serviceItem.employeeId" class="mt-1 text-xs border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                                             <option :value="primaryEmployeeId" x-text="'Capster: {{ $primaryEmployee->employee_name }}'"></option>
                                             @foreach ($availableEmployees as $emp)
-                                                <option value="{{ $emp->id_employee }}">Capster: {{ $emp->employee_name }}</option>
+                                            <option value="{{ $emp->id_employee }}">Capster: {{ $emp->employee_name }}</option>
                                             @endforeach
                                         </select>
                                     </div>
                                     <button @click="removeItem(cart.findIndex(item => item.uniqueId === serviceItem.uniqueId))" class="ml-4 text-red-500 hover:text-red-700 p-1 border border-red-300 rounded">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                        </svg>
                                     </button>
                                 </div>
                             </template>
                             <button @click="openItemModal('service')" class="w-full px-4 py-3 text-center text-white bg-blue-600 hover:bg-blue-700 rounded-md shadow-md flex items-center justify-center space-x-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                 </svg>
                                 <span>Tambah Layanan</span>
                             </button>
@@ -68,14 +70,20 @@
                                     </div>
                                     <div class="flex items-center space-x-2 ml-4">
                                         <button @click="decreaseQuantity(cart.findIndex(item => item.uniqueId === productItem.uniqueId))" class="text-gray-500 hover:text-gray-700 p-1 border rounded">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
+                                            </svg>
                                         </button>
                                         <span x-text="productItem.quantity" class="text-sm"></span>
                                         <button @click="increaseQuantity(cart.findIndex(item => item.uniqueId === productItem.uniqueId))" class="text-gray-500 hover:text-gray-700 p-1 border rounded">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                            </svg>
                                         </button>
                                         <button @click="removeItem(cart.findIndex(item => item.uniqueId === productItem.uniqueId))" class="text-red-500 hover:text-red-700 p-1 border border-red-300 rounded">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
@@ -90,31 +98,42 @@
                                     </div>
                                     <div class="flex items-center space-x-2 ml-4">
                                         <button @click="decreaseQuantity(cart.findIndex(item => item.uniqueId === foodItem.uniqueId))" class="text-gray-500 hover:text-gray-700 p-1 border rounded">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" />
+                                            </svg>
                                         </button>
                                         <span x-text="foodItem.quantity" class="text-sm"></span>
                                         <button @click="increaseQuantity(cart.findIndex(item => item.uniqueId === foodItem.uniqueId))" class="text-gray-500 hover:text-gray-700 p-1 border rounded">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                            </svg>
                                         </button>
                                         <button @click="removeItem(cart.findIndex(item => item.uniqueId === foodItem.uniqueId))" class="text-red-500 hover:text-red-700 p-1 border border-red-300 rounded">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
                             </template>
                         </div>
-                        
+
                         {{-- TOMBOL PILIH PRODUK & MINUMAN (dengan ikon dan warna) --}}
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <button @click="openItemModal('product')" class="w-full px-4 py-3 text-center text-white bg-green-600 hover:bg-green-700 rounded-md shadow-md flex items-center justify-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a4.5 4.5 0 01-4.474 4.368h-11.35c-2.11 0-3.992-1.75-4.474-4.368L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 lucide-archive">
+                                    <rect width="20" height="5" x="2" y="3" rx="1"></rect>
+                                    <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path>
+                                    <path d="M10 12h4"></path>
                                 </svg>
                                 <span>Pilih Produk</span>
                             </button>
                             <button @click="openItemModal('food')" class="w-full px-4 py-3 text-center text-white bg-yellow-600 hover:bg-yellow-700 rounded-md shadow-md flex items-center justify-center space-x-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.5 1.5H9.75M12 21.75v-1.5m-4.125-6.75h6.25m-6.25 0a2.25 2.25 0 01-2.25-2.25V10.375c0-1.01.926-1.83 2.071-1.83h1.088c1.144 0 2.071.82 2.071 1.83v2.625c0 1.01-.926 1.83-2.071 1.83H7.875A2.25 2.25 0 015.625 15V6.75m-3 9V12a2.25 2.25 0 012.25-2.25h1.383c.427 0 .79.227.994.584l3.125 5.5c.18.317.657.317.837 0l3.125-5.5c.204-.357.567-.584.994-.584H18.75a2.25 2.25 0 012.25 2.25v1.5m-15 0H21" />
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5 lucide-cup-soda">
+                                    <path d="m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8"></path>
+                                    <path d="M5 8h14"></path>
+                                    <path d="M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0"></path>
+                                    <path d="m12 8 1-6h2"></path>
                                 </svg>
                                 <span>Pilih Minuman</span>
                             </button>
@@ -131,7 +150,7 @@
 
                         {{-- Total Harga --}}
                         <div class="border-t pt-4 space-y-2">
-                             <div class="flex justify-between font-semibold">
+                            <div class="flex justify-between font-semibold">
                                 <span>Subtotal</span>
                                 <span x-text="'Rp ' + formatCurrency(calculateSubtotal())"></span>
                             </div>
@@ -154,7 +173,7 @@
                             <select id="payment_method" name="payment_method" x-model="paymentMethodId" @change="calculateChange()" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                                 <option value="">-- Pilih Metode --</option>
                                 @foreach ($paymentMethods as $method)
-                                    <option value="{{ $method->id_payment_method }}">{{ $method->method_name }}</option>
+                                <option value="{{ $method->id_payment_method }}">{{ $method->method_name }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -183,8 +202,8 @@
                         {{-- Tombol Proses Pembayaran --}}
                         <div class="mt-6 border-t pt-4">
                             <button @click="submitTransaction"
-                                    :disabled="!canSubmit()"
-                                    class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-50 transition ease-in-out duration-150">
+                                :disabled="!canSubmit()"
+                                class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-50 transition ease-in-out duration-150">
                                 Proses Pembayaran
                             </button>
                         </div>
@@ -195,49 +214,51 @@
 
             {{-- MODAL PEMILIHAN ITEM --}}
             <div x-show="showItemModal"
-                 x-transition:enter="ease-out duration-300"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="ease-in duration-200"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 z-50 overflow-y-auto"
-                 aria-labelledby="modal-title"
-                 role="dialog"
-                 aria-modal="true"
-                 style="display: none;">
+                x-transition:enter="ease-out duration-300"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in duration-200"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="fixed inset-0 z-50 overflow-y-auto"
+                aria-labelledby="modal-title"
+                role="dialog"
+                aria-modal="true"
+                style="display: none;">
                 <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                     <div x-show="showItemModal"
-                         x-transition:enter="ease-out duration-300"
-                         x-transition:enter-start="opacity-0"
-                         x-transition:enter-end="opacity-100"
-                         x-transition:leave="ease-in duration-200"
-                         x-transition:leave-start="opacity-100"
-                         x-transition:leave-end="opacity-0"
-                         class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-                         aria-hidden="true"></div>
+                        x-transition:enter="ease-out duration-300"
+                        x-transition:enter-start="opacity-0"
+                        x-transition:enter-end="opacity-100"
+                        x-transition:leave="ease-in duration-200"
+                        x-transition:leave-start="opacity-100"
+                        x-transition:leave-end="opacity-0"
+                        class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
+                        aria-hidden="true"></div>
 
                     <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                     <div x-show="showItemModal"
-                         x-transition:enter="ease-out duration-300"
-                         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                         x-transition:leave="ease-in duration-200"
-                         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                         class="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
+                        x-transition:enter="ease-out duration-300"
+                        x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                        x-transition:leave="ease-in duration-200"
+                        x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                        x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                        class="inline-block w-full max-w-lg p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
 
                         <div class="flex justify-between items-center pb-3 border-b">
                             <h3 class="text-lg font-medium leading-6 text-gray-900" x-text="modalTitle"></h3>
                             <button @click="closeItemModal()" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
                             </button>
                         </div>
 
                         <div class="mt-4 max-h-96 overflow-y-auto space-y-2">
                             <template x-for="item in filteredItems" :key="item.id_item">
                                 <div class="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 cursor-pointer"
-                                     @click="addItem(currentItemType, item.id_item, item.name, item.price); closeItemModal()"> {{-- Tutup modal setelah item dipilih --}}
+                                    @click="addItem(currentItemType, item.id_item, item.name, item.price); closeItemModal()"> {{-- Tutup modal setelah item dipilih --}}
                                     <div>
                                         <p class="font-medium" x-text="item.name"></p>
                                         <p class="text-sm text-gray-600">Rp <span x-text="formatCurrency(item.price)"></span></p>
@@ -246,12 +267,14 @@
                                     </div>
                                     <div>
                                         <button class="text-green-600 hover:text-green-800 focus:outline-none">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                            </svg>
                                         </button>
                                     </div>
                                 </div>
                             </template>
-                             <template x-if="filteredItems.length === 0">
+                            <template x-if="filteredItems.length === 0">
                                 <p class="text-center text-gray-500 py-4">Tidak ada item tersedia.</p>
                             </template>
                         </div>
@@ -300,7 +323,9 @@
                         <div class="flex justify-between items-center pb-3 border-b">
                             <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title">Pembayaran QRIS</h3>
                             <button @click="closePaymentModal()" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
-                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
                             </button>
                         </div>
 
@@ -308,94 +333,120 @@
 
                             {{-- CSS UNTUK ANIMASI --}}
                             {{-- CSS UNTUK ANIMASI (Checkmark DAN Barber Pole) --}}
-                        <style>
-                            /* CSS Animasi Checkmark (SUKSES) - Ini kode lama */
-                            .checkmark__circle {
-                                stroke-dasharray: 166;
-                                stroke-dashoffset: 166;
-                                stroke-width: 2;
-                                stroke-miterlimit: 10;
-                                stroke: #7ac142;
-                                fill: none;
-                                animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards
-                            }
-                            .checkmark {
-                                width: 100px;
-                                height: 100px;
-                                border-radius: 50%;
-                                display: block;
-                                stroke-width: 2;
-                                stroke: #fff;
-                                stroke-miterlimit: 10;
-                                margin: 0 auto;
-                                box-shadow: inset 0px 0px 0px #7ac142;
-                                animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both
-                            }
-                            .checkmark__check {
-                                transform-origin: 50% 50%;
-                                stroke-dasharray: 48;
-                                stroke-dashoffset: 48;
-                                animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards
-                            }
-                            @keyframes stroke {
-                                100% { stroke-dashoffset: 0 }
-                            }
-                            @keyframes scale {
-                                0%, 100% { transform: none }
-                                50% { transform: scale3d(1.1, 1.1, 1) }
-                            }
-                            @keyframes fill {
-                                100% { box-shadow: inset 0px 0px 0px 60px #7ac142 }
-                            }
+                            <style>
+                                /* CSS Animasi Checkmark (SUKSES) - Ini kode lama */
+                                .checkmark__circle {
+                                    stroke-dasharray: 166;
+                                    stroke-dashoffset: 166;
+                                    stroke-width: 2;
+                                    stroke-miterlimit: 10;
+                                    stroke: #7ac142;
+                                    fill: none;
+                                    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards
+                                }
 
-                            /* * ======================================
+                                .checkmark {
+                                    width: 100px;
+                                    height: 100px;
+                                    border-radius: 50%;
+                                    display: block;
+                                    stroke-width: 2;
+                                    stroke: #fff;
+                                    stroke-miterlimit: 10;
+                                    margin: 0 auto;
+                                    box-shadow: inset 0px 0px 0px #7ac142;
+                                    animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both
+                                }
+
+                                .checkmark__check {
+                                    transform-origin: 50% 50%;
+                                    stroke-dasharray: 48;
+                                    stroke-dashoffset: 48;
+                                    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards
+                                }
+
+                                @keyframes stroke {
+                                    100% {
+                                        stroke-dashoffset: 0
+                                    }
+                                }
+
+                                @keyframes scale {
+
+                                    0%,
+                                    100% {
+                                        transform: none
+                                    }
+
+                                    50% {
+                                        transform: scale3d(1.1, 1.1, 1)
+                                    }
+                                }
+
+                                @keyframes fill {
+                                    100% {
+                                        box-shadow: inset 0px 0px 0px 60px #7ac142
+                                    }
+                                }
+
+                                /* * ======================================
                             * KODE BARU: CSS Animasi Barber Pole (PENDING)
                             * ======================================
                             */
-                            .barber-pole-spinner {
-                                width: 36px;  /* Sedikit lebih besar */
-                                height: 36px;
-                                border-radius: 50%;
-                                border: 3px solid #E5E7EB; /* Border abu-abu */
-                                background-color: #fff;
-                                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                                overflow: hidden; /* Sembunyikan garis yang keluar */
-                                position: relative;
-                            }
+                                .barber-pole-spinner {
+                                    width: 36px;
+                                    /* Sedikit lebih besar */
+                                    height: 36px;
+                                    border-radius: 50%;
+                                    border: 3px solid #E5E7EB;
+                                    /* Border abu-abu */
+                                    background-color: #fff;
+                                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                                    overflow: hidden;
+                                    /* Sembunyikan garis yang keluar */
+                                    position: relative;
+                                }
 
-                            .barber-pole-spinner::before {
-                                content: '';
-                                position: absolute;
-                                top: -50%; /* Mulai dari atas */
-                                left: 50%;
-                                width: 200%; /* Lebar besar agar bisa diagonal */
-                                height: 200%;
+                                .barber-pole-spinner::before {
+                                    content: '';
+                                    position: absolute;
+                                    top: -50%;
+                                    /* Mulai dari atas */
+                                    left: 50%;
+                                    width: 200%;
+                                    /* Lebar besar agar bisa diagonal */
+                                    height: 200%;
 
-                                /* Garis-garis ikonik barbershop! */
-                                background-image: repeating-linear-gradient(
-                                    -45deg,
-                                    #D00000, /* Barbershop Red */
-                                    #D00000 8px,
-                                    #ffffff 8px,
-                                    #ffffff 16px,
-                                    #0055A4 16px, /* Barbershop Blue */
-                                    #0055A4 24px,
-                                    #ffffff 24px,
-                                    #ffffff 32px
-                                );
+                                    /* Garis-garis ikonik barbershop! */
+                                    background-image: repeating-linear-gradient(-45deg,
+                                            #D00000,
+                                            /* Barbershop Red */
+                                            #D00000 8px,
+                                            #ffffff 8px,
+                                            #ffffff 16px,
+                                            #0055A4 16px,
+                                            /* Barbershop Blue */
+                                            #0055A4 24px,
+                                            #ffffff 24px,
+                                            #ffffff 32px);
 
-                                /* Animasi berputar */
-                                animation: spin-pole 2s linear infinite;
-                            }
+                                    /* Animasi berputar */
+                                    animation: spin-pole 2s linear infinite;
+                                }
 
-                            @keyframes spin-pole {
-                                from { transform: translateX(-25%) rotate(0deg); }
-                                to { transform: translateX(-25%) rotate(360deg); }
-                            }
-                        </style>
+                                @keyframes spin-pole {
+                                    from {
+                                        transform: translateX(-25%) rotate(0deg);
+                                    }
+
+                                    to {
+                                        transform: translateX(-25%) rotate(360deg);
+                                    }
+                                }
+                            </style>
 
                             {{-- 1. TAMPILAN SAAT MENUNGGU (PENDING) --}}
-                            <div x-show="paymentStatus === 'pending'" 
+                            <div x-show="paymentStatus === 'pending'"
                                 x-transition:enter="ease-out duration-300"
                                 x-transition:leave="ease-in duration-200"
                                 class="w-full">
@@ -408,7 +459,7 @@
 
                                 {{-- QR Code (dengan animasi denyut) --}}
                                 <div class="flex justify-center my-4">
-                                    <img :src="qrisImageUrl" alt="QR Code Pembayaran" 
+                                    <img :src="qrisImageUrl" alt="QR Code Pembayaran"
                                         class="w-64 h-64 mx-auto border-4 border-gray-100 p-2 bg-white rounded-lg shadow-lg pulse-qr">
                                 </div>
 
@@ -424,15 +475,15 @@
                             </div>
 
                             {{-- 2. TAMPILAN SAAT SUKSES (SUCCESS) --}}
-                            <div x-show="paymentStatus === 'success'" 
+                            <div x-show="paymentStatus === 'success'"
                                 x-transition:enter="ease-out duration-300"
                                 x-transition:leave="ease-in duration-200"
                                 class="w-full py-8" style="display: none;">
 
                                 {{-- Animasi SVG Centang --}}
                                 <svg class="checkmark" xmlns="http://www.w.3.org/2000/svg" viewBox="0 0 52 52">
-                                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none" />
+                                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
                                 </svg>
 
                                 <p class="font-bold text-2xl text-gray-800 mt-4">
@@ -477,9 +528,27 @@
                 showItemModal: false,
                 currentItemType: '',
                 modalTitle: '',
-                allServices: initialServices.map(s => ({ id_item: s.id_service, name: s.service_name, price: parseFloat(s.price), duration: s.duration, type: 'service' })),
-                allProducts: initialProducts.map(p => ({ id_item: p.id_product, name: p.product_name, price: parseFloat(p.price), stock_available: p.stock_available, type: 'product' })),
-                allFoods: initialFoods.map(f => ({ id_item: f.id_food, name: f.food_name, price: parseFloat(f.price), stock_available: f.stock_available, type: 'food' })),
+                allServices: initialServices.map(s => ({
+                    id_item: s.id_service,
+                    name: s.service_name,
+                    price: parseFloat(s.price),
+                    duration: s.duration,
+                    type: 'service'
+                })),
+                allProducts: initialProducts.map(p => ({
+                    id_item: p.id_product,
+                    name: p.product_name,
+                    price: parseFloat(p.price),
+                    stock_available: p.stock_available,
+                    type: 'product'
+                })),
+                allFoods: initialFoods.map(f => ({
+                    id_item: f.id_food,
+                    name: f.food_name,
+                    price: parseFloat(f.price),
+                    stock_available: f.stock_available,
+                    type: 'food'
+                })),
 
                 get filteredItems() {
                     if (this.currentItemType === 'service') return this.allServices;
@@ -595,14 +664,14 @@
                 calculateChange() {
                     const cashMethodId = {{ $paymentMethods->firstWhere('method_name', 'Cash')?->id_payment_method ?? 'null' }};
                     if (this.paymentMethodId && this.paymentMethodId == cashMethodId) {
-                         this.changeAmount = Math.max(0, parseFloat(this.amountPaid || 0) - this.totalAmount);
+                        this.changeAmount = Math.max(0, parseFloat(this.amountPaid || 0) - this.totalAmount);
                     } else {
                         this.changeAmount = 0;
                     }
                     return this.changeAmount;
                 },
 
-                setAmountPaid(amount){
+                setAmountPaid(amount) {
                     this.amountPaid = amount;
                     this.calculateChange();
                 },
@@ -667,7 +736,7 @@
                     // **LOGIKA PERCABANGAN BARU**
                     if (this.paymentMethodId == cashMethodId) {
                         // --- 1. LOGIKA UNTUK CASH ---
-                        transactionData.status = 'paid'; 
+                        transactionData.status = 'paid';
                         transactionData.order_id = null;
                         this.executeSaveTransaction(transactionData);
 
@@ -691,87 +760,91 @@
                     // Sekarang kita tambahkan 'status' dan 'order_id'
                     const dataToSave = {
                         ...transactionData,
-                        status: transactionData.status || 'paid', 
+                        status: transactionData.status || 'paid',
                         order_id: transactionData.order_id || null
                     };
 
-                    fetch("{{ route('pos.store-transaction') }}", { 
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify(dataToSave) 
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => { throw err; });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            // 'alert' SUDAH DIHAPUS DARI SINI
-                            // Langsung redirect setelah animasi
-                            window.location.href = "{{ route('pos.index') }}";
-                        } else {
-                            alert('Error: ' + (data.message || 'Gagal menyimpan transaksi.'));
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error executeSaveTransaction:', error);
-                        let errorMsg = 'Terjadi kesalahan saat menyimpan data.';
-                        if (error && error.errors) {
-                            errorMsg = "Error Validasi:\n";
-                            for (const field in error.errors) {
-                                errorMsg += `- ${error.errors[field].join(', ')}\n`;
+                    fetch("{{ route('pos.store-transaction') }}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify(dataToSave)
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => {
+                                    throw err;
+                                });
                             }
-                        } else if (error && error.message) {
-                            errorMsg = `Error: ${error.message}`;
-                        }
-                        alert(errorMsg);
-                    })
-                    .finally(() => {
-                        this.isProcessing = false; 
-                    });
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                // 'alert' SUDAH DIHAPUS DARI SINI
+                                // Langsung redirect setelah animasi
+                                window.location.href = "{{ route('pos.index') }}";
+                            } else {
+                                alert('Error: ' + (data.message || 'Gagal menyimpan transaksi.'));
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error executeSaveTransaction:', error);
+                            let errorMsg = 'Terjadi kesalahan saat menyimpan data.';
+                            if (error && error.errors) {
+                                errorMsg = "Error Validasi:\n";
+                                for (const field in error.errors) {
+                                    errorMsg += `- ${error.errors[field].join(', ')}\n`;
+                                }
+                            } else if (error && error.message) {
+                                errorMsg = `Error: ${error.message}`;
+                            }
+                            alert(errorMsg);
+                        })
+                        .finally(() => {
+                            this.isProcessing = false;
+                        });
                 },
 
                 // Fungsi BARU untuk memanggil rute QRIS
                 createQrisPayment(transactionData) {
                     fetch("{{ route('pos.payment.qris') }}", { // Panggil rute BARU
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify(transactionData) // Kirim data (tanpa status)
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(err => { throw err; });
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        if (data.success) {
-                            // BERHASIL! Kita dapat QR Code.
-                            this.openPaymentModal(data.qr_code_url, data.order_id);
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify(transactionData) // Kirim data (tanpa status)
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => {
+                                    throw err;
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                // BERHASIL! Kita dapat QR Code.
+                                this.openPaymentModal(data.qr_code_url, data.order_id);
 
-                            // (Langkah 4 Nanti): Simpan transaksi ke DB dengan status 'pending'
-                            // this.savePendingTransaction(transactionData, data.order_id);
+                                // (Langkah 4 Nanti): Simpan transaksi ke DB dengan status 'pending'
+                                // this.savePendingTransaction(transactionData, data.order_id);
 
-                        } else {
-                            alert('Error: ' + (data.message || 'Gagal membuat QRIS.'));
+                            } else {
+                                alert('Error: ' + (data.message || 'Gagal membuat QRIS.'));
+                                this.isProcessing = false; // Selesai proses (gagal)
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error createQrisPayment:', error);
+                            alert('Terjadi kesalahan saat membuat QRIS: ' + (error.message || 'Error tidak diketahui'));
                             this.isProcessing = false; // Selesai proses (gagal)
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error createQrisPayment:', error);
-                        alert('Terjadi kesalahan saat membuat QRIS: ' + (error.message || 'Error tidak diketahui'));
-                        this.isProcessing = false; // Selesai proses (gagal)
-                    });
+                        });
                 },
 
                 // Fungsi BARU untuk membuka & menutup modal QRIS
@@ -780,7 +853,7 @@
                     this.qrisOrderId = orderId;
                     this.paymentStatus = 'pending'; // RESET status ke pending
                     this.showQrisModal = true;
-                    this.isProcessing = false; 
+                    this.isProcessing = false;
 
                     // MULAI TIMER POLLING
                     this.startPollingStatus(orderId);
@@ -810,15 +883,15 @@
                             .then(data => {
                                 if (data.status === 'settlement') {
                                     clearInterval(this.pollingTimer);
-                                    this.isProcessing = true; 
-                                    this.paymentStatus = 'success'; 
+                                    this.isProcessing = true;
+                                    this.paymentStatus = 'success';
 
                                     setTimeout(() => {
-                                        this.savePaidTransaction(orderId); 
+                                        this.savePaidTransaction(orderId);
                                     }, 2000);
 
                                 } else if (data.status === 'expire' || data.status === 'cancel' || data.status === 'deny') {
-                                    clearInterval(this.pollingTimer); 
+                                    clearInterval(this.pollingTimer);
                                     alert('Pembayaran Gagal atau Dibatalkan.');
                                     this.isProcessing = false;
                                     this.closePaymentModal();
@@ -829,10 +902,10 @@
                             })
                             .catch(error => {
                                 console.error('Error polling:', error);
-                                clearInterval(this.pollingTimer); 
+                                clearInterval(this.pollingTimer);
                             });
 
-                    }, 3000); 
+                    }, 3000);
                 },
 
                 /**

@@ -13,7 +13,7 @@
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 border-b border-gray-200"
-                     x-data="{
+                    x-data="{
                          filterType: '{{ old('filter_type', $filterType) }}',
                          selectedYear: '{{ old('year', $selectedYear) }}', // Ambil dari controller
                          selectedMonth: '{{ old('month', $selectedMonth) }}',
@@ -97,7 +97,7 @@
                               return false;
                          }
                      }"
-                     x-init="
+                    x-init="
                          fetchMonths(); // Ambil bulan saat halaman load
 
                          $watch('selectedYear', value => {
@@ -135,9 +135,9 @@
                             <label for="year" class="block text-sm font-medium text-gray-700">Tahun</label>
                             <select name="year" id="year" x-model="selectedYear" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 @forelse ($availableYears as $year)
-                                    <option value="{{ $year }}">{{ $year }}</option>
+                                <option value="{{ $year }}">{{ $year }}</option>
                                 @empty
-                                     <option value="{{ date('Y') }}">{{ date('Y') }}</option>
+                                <option value="{{ date('Y') }}">{{ date('Y') }}</option>
                                 @endforelse
                             </select>
                         </div>
@@ -146,8 +146,12 @@
                         <div x-show="filterType === 'harian' || filterType === 'mingguan' || filterType === 'bulanan'">
                             <label for="month" class="block text-sm font-medium text-gray-700">Bulan</label>
                             <select name="month" id="month" x-model="selectedMonth" :disabled="loadingMonths" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100">
-                                <template x-if="loadingMonths"><option value="">Loading...</option></template>
-                                <template x-if="!loadingMonths && availableMonths.length === 0"><option value="">Tidak ada data</option></template>
+                                <template x-if="loadingMonths">
+                                    <option value="">Loading...</option>
+                                </template>
+                                <template x-if="!loadingMonths && availableMonths.length === 0">
+                                    <option value="">Tidak ada data</option>
+                                </template>
                                 <template x-if="!loadingMonths" x-for="month in availableMonths" :key="month.value">
                                     <option :value="month.value" x-text="month.name"></option>
                                 </template>
@@ -158,21 +162,29 @@
                         <div x-show="filterType === 'harian'">
                             <label for="day" class="block text-sm font-medium text-gray-700">Tanggal</label>
                             <select name="day" id="day" x-model="selectedDay" :disabled="loadingDays || availableDays.length === 0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100">
-                                 <template x-if="loadingDays"><option value="">Loading...</option></template>
-                                 <template x-if="!loadingDays && availableDays.length === 0"><option value="">Tidak ada data</option></template>
-                                 <template x-if="!loadingDays" x-for="day in availableDays" :key="day">
+                                <template x-if="loadingDays">
+                                    <option value="">Loading...</option>
+                                </template>
+                                <template x-if="!loadingDays && availableDays.length === 0">
+                                    <option value="">Tidak ada data</option>
+                                </template>
+                                <template x-if="!loadingDays" x-for="day in availableDays" :key="day">
                                     <option :value="day" x-text="parseInt(day)"></option>
                                 </template>
                             </select>
                         </div>
 
-                         {{-- Filter Minggu (Dinamis dari API) --}}
+                        {{-- Filter Minggu (Dinamis dari API) --}}
                         <div x-show="filterType === 'mingguan'">
                             <label for="week" class="block text-sm font-medium text-gray-700">Minggu Ke</label>
                             <select name="week" id="week" x-model="selectedWeek" :disabled="loadingWeeks || availableWeeks.length === 0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm disabled:bg-gray-100">
-                                 <template x-if="loadingWeeks"><option value="">Loading...</option></template>
-                                 <template x-if="!loadingWeeks && availableWeeks.length === 0"><option value="">Tidak ada data</option></template>
-                                 <template x-if="!loadingWeeks" x-for="week in availableWeeks" :key="week.value">
+                                <template x-if="loadingWeeks">
+                                    <option value="">Loading...</option>
+                                </template>
+                                <template x-if="!loadingWeeks && availableWeeks.length === 0">
+                                    <option value="">Tidak ada data</option>
+                                </template>
+                                <template x-if="!loadingWeeks" x-for="week in availableWeeks" :key="week.value">
                                     <option :value="week.value" x-text="week.name"></option>
                                 </template>
                             </select>
@@ -184,18 +196,18 @@
                             <select name="store_id" id="store_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                                 <option value="">Semua Toko</option>
                                 @foreach ($stores as $store)
-                                    <option value="{{ $store->id_store }}" {{ request('store_id') == $store->id_store ? 'selected' : '' }}>
-                                        {{ $store->store_name }}
-                                    </option>
+                                <option value="{{ $store->id_store }}" {{ request('store_id') == $store->id_store ? 'selected' : '' }}>
+                                    {{ $store->store_name }}
+                                </option>
                                 @endforeach
                             </select>
                         </div>
 
                         {{-- Tombol Terapkan Filter --}}
                         <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 flex-shrink-0 justify-center">
-                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1 inline-block">
-                               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                             </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1 inline-block">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                            </svg>
                             Terapkan Filter
                         </button>
                     </form>
@@ -203,14 +215,14 @@
             </div>
 
             @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ session('success') }}</span>
-                </div>
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('success') }}</span>
+            </div>
             @endif
-             @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                    <span class="block sm:inline">{{ session('error') }}</span>
-                </div>
+            @if (session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ session('error') }}</span>
+            </div>
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
@@ -231,27 +243,31 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($expenses as $expense)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $expense->expense_date->format('d M Y H:i') }}</td>
-                                        <td class="px-6 py-4"><div class="text-sm text-gray-900">{{ $expense->description }}</div></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">- Rp {{ number_format($expense->amount, 0, ',', '.') }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $expense->employee->employee_name ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{ $expense->store->store_name ?? 'N/A' }}</span></td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $expense->user->name ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            {{-- Link Edit (Menggunakan Primary Key Baru) --}}
-                                            <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $expense->expense_date->format('d M Y H:i') }}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900">{{ $expense->description }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-red-600 font-medium">- Rp {{ number_format($expense->amount, 0, ',', '.') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $expense->employee->employee_name ?? 'N/A' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">{{ $expense->store->store_name ?? 'N/A' }}</span></td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $expense->user->name ?? 'N/A' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        {{-- Link Edit (Menggunakan Primary Key Baru) --}}
+                                        <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
 
-                                            {{-- Form Delete (Soft Delete) --}}
-                                            <form action="{{ route('admin.expenses.destroy', $expense->id_expense) }}" method="POST" class="inline-block" onsubmit="return confirm('Anda yakin ingin menghapus data pengeluaran ini?');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Hapus</button> {{-- Ganti teks jadi Hapus (Soft Delete) --}}
-                                            </form>
-                                        </td>
-                                    </tr>
+                                        {{-- Form Delete (Soft Delete) --}}
+                                        <form action="{{ route('admin.expenses.destroy', $expense->id_expense) }}" method="POST" class="inline-block" onsubmit="return confirm('Anda yakin ingin menghapus data pengeluaran ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Hapus</button> {{-- Ganti teks jadi Hapus (Soft Delete) --}}
+                                        </form>
+                                    </td>
+                                </tr>
                                 @empty
-                                    <tr><td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data pengeluaran untuk periode ini.</td></tr>
+                                <tr>
+                                    <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data pengeluaran untuk periode ini.</td>
+                                </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -260,12 +276,35 @@
                 </div>
             </div>
 
-             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
                     <h3 class="text-lg font-semibold mb-4">Pengaturan Limit Pengeluaran Harian Karyawan</h3>
-                     <div class="overflow-x-auto">
+
+                    {{-- Form Set Semua Limit (Bulk Update) --}}
+                    <div class="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-md" x-data="bulkLimitSettingData()">
+                        <form @submit.prevent="updateAllLimits()">
+                            <p class="text-sm text-gray-700 mb-2 font-medium">Set Semua Limit (Sama Rata ke Seluruh Karyawan)</p>
+                            <div class="flex items-center space-x-3">
+                                <input type="number"
+                                    x-model="globalLimit"
+                                    placeholder="Nominal limit (Rp)"
+                                    min="0" step="1000"
+                                    class="block w-64 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    required>
+                                <button type="submit"
+                                    class="px-4 py-2 bg-green-600 text-white rounded-md text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                                    :disabled="loading">
+                                    <span x-show="!loading">Terapkan ke Semua</span>
+                                    <span x-show="loading">Menyimpan...</span>
+                                </button>
+                            </div>
+                            <p x-show="error" x-text="error" class="text-xs text-red-600 mt-2"></p>
+                        </form>
+                    </div>
+
+                    <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                             <thead class="bg-gray-50">
+                            <thead class="bg-gray-50">
                                 <tr>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Karyawan</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Toko</th>
@@ -273,33 +312,35 @@
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Set Limit Baru (Rp)</th>
                                 </tr>
                             </thead>
-                             <tbody class="bg-white divide-y divide-gray-200" x-data="limitSettingData()">
+                            <tbody class="bg-white divide-y divide-gray-200" x-data="limitSettingData()">
                                 @forelse ($employees as $employee)
-                                    <tr>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $employee->employee_name }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $employee->store->store_name ?? 'N/A' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $employee->daily_expense_limit !== null ? 'Rp ' . number_format($employee->daily_expense_limit, 0, ',', '.') : 'Tidak ada limit' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <form @submit.prevent="updateLimit({{ $employee->id_employee }})">
-                                                <div class="flex items-center space-x-2">
-                                                    <input type="number"
-                                                           x-model="limits[{{ $employee->id_employee }}]"
-                                                           placeholder="{{ $employee->daily_expense_limit ?? 'Kosongkan jika tanpa limit' }}"
-                                                           min="0" step="1000"
-                                                           class="block w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                                    <button type="submit"
-                                                            class="px-3 py-1 bg-indigo-600 text-white rounded-md text-xs font-medium hover:bg-indigo-700 disabled:opacity-50"
-                                                            :disabled="loading">
-                                                        <span x-show="!loading">Simpan</span>
-                                                        <span x-show="loading">Menyimpan...</span>
-                                                    </button>
-                                                </div>
-                                                <p x-show="errors[{{ $employee->id_employee }}]" x-text="errors[{{ $employee->id_employee }}]" class="text-xs text-red-600 mt-1"></p>
-                                            </form>
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $employee->employee_name }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $employee->store->store_name ?? 'N/A' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $employee->daily_expense_limit !== null ? 'Rp ' . number_format($employee->daily_expense_limit, 0, ',', '.') : 'Tidak ada limit' }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <form @submit.prevent="updateLimit({{ $employee->id_employee }})">
+                                            <div class="flex items-center space-x-2">
+                                                <input type="number"
+                                                    x-model="limits[{{ $employee->id_employee }}]"
+                                                    placeholder="{{ $employee->daily_expense_limit ?? 'Kosongkan jika tanpa limit' }}"
+                                                    min="0" step="1000"
+                                                    class="block w-40 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                                <button type="submit"
+                                                    class="px-3 py-1 bg-indigo-600 text-white rounded-md text-xs font-medium hover:bg-indigo-700 disabled:opacity-50"
+                                                    :disabled="loading">
+                                                    <span x-show="!loading">Simpan</span>
+                                                    <span x-show="loading">Menyimpan...</span>
+                                                </button>
+                                            </div>
+                                            <p x-show="errors[{{ $employee->id_employee }}]" x-text="errors[{{ $employee->id_employee }}]" class="text-xs text-red-600 mt-1"></p>
+                                        </form>
+                                    </td>
+                                </tr>
                                 @empty
-                                    <tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data karyawan aktif.</td></tr>
+                                <tr>
+                                    <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data karyawan aktif.</td>
+                                </tr>
                                 @endforelse
                             </tbody>
                         </table>
@@ -312,21 +353,113 @@
 
     {{-- Script Alpine.js untuk Update Limit --}}
     <script>
-        function limitSettingData() { /* ... kode update limit ... */
-             return {
-                limits: {}, errors: {}, loading: false,
+        function limitSettingData() {
+            /* ... kode update limit ... */
+            return {
+                limits: {},
+                errors: {},
+                loading: false,
                 updateLimit(employeeId) {
-                    this.loading = true; this.errors[employeeId] = '';
+                    this.loading = true;
+                    this.errors[employeeId] = '';
                     const newLimit = this.limits[employeeId];
                     fetch(`/admin/employees/${employeeId}/update-limit`, {
-                        method: 'PUT',
-                        headers: {'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
-                        body: JSON.stringify({ daily_expense_limit: newLimit === '' || newLimit === undefined || newLimit === null ? null : newLimit }) // Kirim null jika kosong/undefined
-                    })
-                    .then(response => { if (!response.ok) { return response.json().then(err => { throw err; }); } return response.json(); })
-                    .then(data => { if (data.success) { alert('Limit berhasil diperbarui!'); window.location.reload(); } else { this.errors[employeeId] = data.message || 'Gagal.'; }})
-                    .catch(error => { console.error('Error:', error); let errorMsg = 'Error.'; if (error?.errors?.daily_expense_limit) { errorMsg = error.errors.daily_expense_limit.join(', '); } else if (error?.message) { errorMsg = error.message; } this.errors[employeeId] = errorMsg; })
-                    .finally(() => { this.loading = false; });
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                daily_expense_limit: newLimit === '' || newLimit === undefined || newLimit === null ? null : newLimit
+                            }) // Kirim null jika kosong/undefined
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => {
+                                    throw err;
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                alert('Limit berhasil diperbarui!');
+                                window.location.reload();
+                            } else {
+                                this.errors[employeeId] = data.message || 'Gagal.';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            let errorMsg = 'Error.';
+                            if (error?.errors?.daily_expense_limit) {
+                                errorMsg = error.errors.daily_expense_limit.join(', ');
+                            } else if (error?.message) {
+                                errorMsg = error.message;
+                            }
+                            this.errors[employeeId] = errorMsg;
+                        })
+                        .finally(() => {
+                            this.loading = false;
+                        });
+                }
+            }
+        }
+
+        function bulkLimitSettingData() {
+            return {
+                globalLimit: '',
+                error: '',
+                loading: false,
+                updateAllLimits() {
+                    this.loading = true;
+                    this.error = '';
+
+                    if (!this.globalLimit && this.globalLimit !== '0') {
+                        this.error = 'Masukkan nominal limit.';
+                        this.loading = false;
+                        return;
+                    }
+
+                    fetch(`/admin/employees/update-limit-bulk`, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                daily_expense_limit: this.globalLimit
+                            })
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.json().then(err => {
+                                    throw err;
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.success) {
+                                alert('Limit semua karyawan berhasil diperbarui!');
+                                window.location.reload();
+                            } else {
+                                this.error = data.message || 'Gagal menyimpan perubahan.';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            let errorMsg = 'Terjadi kesalahan saat menyimpan data.';
+                            if (error?.message) {
+                                errorMsg = error.message;
+                            }
+                            this.error = errorMsg;
+                        })
+                        .finally(() => {
+                            this.loading = false;
+                        });
                 }
             }
         }

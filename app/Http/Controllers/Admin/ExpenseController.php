@@ -23,10 +23,10 @@ class ExpenseController extends Controller
     {
         // === Ambil Tahun Unik yang Punya Data Expense ===
         $availableYears = Expense::selectRaw('YEAR(expense_date) as year')
-                                ->distinct()
-                                ->orderBy('year', 'desc')
-                                ->pluck('year')
-                                ->toArray();
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->toArray();
 
         // Jika tidak ada data sama sekali, gunakan tahun ini sebagai default
         if (empty($availableYears)) {
@@ -39,10 +39,10 @@ class ExpenseController extends Controller
 
         // === Ambil Data Karyawan untuk Setting Limit ===
         $employees = Employee::with('store')
-                             ->where('is_active', true)
-                             ->orderBy('id_store')
-                             ->orderBy('employee_name')
-                             ->get();
+            ->where('is_active', true)
+            ->orderBy('id_store')
+            ->orderBy('employee_name')
+            ->get();
 
         // === Ambil Parameter Filter dari Request (dengan default yang lebih baik) ===
         $filterType = $request->input('filter_type', 'harian');
@@ -52,17 +52,16 @@ class ExpenseController extends Controller
         $selectedDay = $request->input('day', date('d'));
         $selectedWeek = $request->input('week', 1); // Perlu logika lebih baik nanti
         $selectedStoreId = $request->input('store_id');
-        
+
         $selectedWeekValue = $request->input('week', 1);
         $weeksForDropdown = $this->getWeeksOfMonth($selectedYear, $selectedMonth);
-        if ($selectedWeekValue > count($weeksForDropdown)) 
-            {
-                $selectedWeekValue = 1;
-            }
+        if ($selectedWeekValue > count($weeksForDropdown)) {
+            $selectedWeekValue = 1;
+        }
 
         // === Bangun Query Riwayat Pengeluaran ===
         $expensesQuery = Expense::with(['employee', 'store', 'user'])
-                                ->latest('expense_date');
+            ->latest('expense_date');
 
         // Filter Toko
         if ($selectedStoreId) {
@@ -99,7 +98,7 @@ class ExpenseController extends Controller
                     // ... (Logika bulanan tidak berubah) ...
                     $dateForQuery = Carbon::createFromDate($selectedYear, $selectedMonth, 1);
                     $expensesQuery->whereYear('expense_date', $selectedYear)
-                                ->whereMonth('expense_date', $selectedMonth);
+                        ->whereMonth('expense_date', $selectedMonth);
                     $validSelectedDateString = $dateForQuery->toDateString();
                     break;
                 case 'tahunan':
@@ -111,15 +110,14 @@ class ExpenseController extends Controller
             }
             // Simpan tanggal valid untuk dikirim ke view
             $validSelectedDateString = $dateForQuery->toDateString();
-
         } catch (\Exception $e) {
-             \Log::error('Expense filter date error: '.$e->getMessage());
-             $filterType = 'harian';
-             $selectedYear = date('Y');
-             $selectedMonth = date('m');
-             $selectedDay = date('d');
-             $expensesQuery->whereDate('expense_date', Carbon::today());
-             $validSelectedDateString = Carbon::today()->toDateString(); // Fallback date string
+            \Log::error('Expense filter date error: ' . $e->getMessage());
+            $filterType = 'harian';
+            $selectedYear = date('Y');
+            $selectedMonth = date('m');
+            $selectedDay = date('d');
+            $expensesQuery->whereDate('expense_date', Carbon::today());
+            $validSelectedDateString = Carbon::today()->toDateString(); // Fallback date string
         }
 
 
@@ -131,17 +129,17 @@ class ExpenseController extends Controller
 
         // === Kirim Semua Data ke View ===
         return view('admin.expenses.index', [
-        'stores' => $stores,
-        'employees' => $employees,
-        'expenses' => $expenses,
-        'filterType' => $filterType,
-        'selectedYear' => $selectedYear,
-        'selectedMonth' => $selectedMonth,
-        'selectedDay' => $selectedDay,
-        'selectedWeek' => $selectedWeekValue,
-        'selectedDate' => $validSelectedDateString,
-        'availableYears' => $availableYears,
-        'weeksForDropdown' => $weeksForDropdown,
+            'stores' => $stores,
+            'employees' => $employees,
+            'expenses' => $expenses,
+            'filterType' => $filterType,
+            'selectedYear' => $selectedYear,
+            'selectedMonth' => $selectedMonth,
+            'selectedDay' => $selectedDay,
+            'selectedWeek' => $selectedWeekValue,
+            'selectedDate' => $validSelectedDateString,
+            'availableYears' => $availableYears,
+            'weeksForDropdown' => $weeksForDropdown,
         ]);
     }
 
@@ -156,7 +154,7 @@ class ExpenseController extends Controller
 
     /**
      * Store a newly created resource in storage.
-      * (Mungkin tidak dipakai Admin)
+     * (Mungkin tidak dipakai Admin)
      */
     public function store(Request $request)
     {
@@ -164,8 +162,8 @@ class ExpenseController extends Controller
     }
 
     /**
-    * Display the specified resource (di-override untuk JSON response modal).
-    */
+     * Display the specified resource (di-override untuk JSON response modal).
+     */
     public function show(Expense $expense): JsonResponse // Ubah return type ke JsonResponse
     {
         // Pastikan hanya admin yg bisa akses
@@ -192,7 +190,6 @@ class ExpenseController extends Controller
                 'success' => true,
                 'expense' => $formattedExpense,
             ]);
-
         } catch (\Exception $e) {
             \Log::error("Report API error getting expense details: " . $e->getMessage());
             return response()->json(['success' => false, 'message' => 'Gagal mengambil data pengeluaran.'], 500);
@@ -210,14 +207,14 @@ class ExpenseController extends Controller
 
         $stores = Store::all();
         $employees = Employee::where('id_store', $expense->id_store) // Karyawan dari toko expense saja
-                             ->where('is_active', true)
-                             ->orderBy('employee_name')
-                             ->get();
+            ->where('is_active', true)
+            ->orderBy('employee_name')
+            ->get();
         $users = User::where('role', 'kasir') // User kasir yg relevan
-                     ->where('id_store', $expense->id_store)
-                     ->orWhere('role','admin') // Atau admin
-                     ->orderBy('name')
-                     ->get();
+            ->where('id_store', $expense->id_store)
+            ->orWhere('role', 'admin') // Atau admin
+            ->orderBy('name')
+            ->get();
 
         return view('admin.expenses.edit', compact('expense', 'stores', 'employees', 'users'));
     }
@@ -228,7 +225,7 @@ class ExpenseController extends Controller
      */
     public function update(Request $request, Expense $expense)
     {
-         // Pastikan hanya admin yg bisa update
+        // Pastikan hanya admin yg bisa update
         if (Auth::user()->role !== 'admin') abort(403);
 
         $validatedData = $request->validate([
@@ -250,7 +247,7 @@ class ExpenseController extends Controller
         $expense->update($validatedData);
 
         return redirect()->route('admin.expenses.index')
-                         ->with('success', 'Data pengeluaran berhasil diperbarui.');
+            ->with('success', 'Data pengeluaran berhasil diperbarui.');
     }
 
     /**
@@ -259,23 +256,23 @@ class ExpenseController extends Controller
      */
     public function destroy(Expense $expense)
     {
-         // Pastikan hanya admin yg bisa delete
+        // Pastikan hanya admin yg bisa delete
         if (Auth::user()->role !== 'admin') abort(403);
 
         $expense->delete(); // Soft delete
 
         return redirect()->route('admin.expenses.index')
-                         ->with('success', 'Data pengeluaran berhasil dihapus (soft delete).');
+            ->with('success', 'Data pengeluaran berhasil dihapus (soft delete).');
     }
 
-     /**
+    /**
      * Method baru untuk update limit karyawan via AJAX/Fetch.
      */
     public function updateLimit(Request $request, Employee $employee): JsonResponse
     {
-         // Pastikan hanya admin yg bisa update limit
+        // Pastikan hanya admin yg bisa update limit
         if (Auth::user()->role !== 'admin') {
-             return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
         }
 
         $validated = $request->validate([
@@ -289,32 +286,55 @@ class ExpenseController extends Controller
             ]);
             return response()->json(['success' => true, 'message' => 'Limit berhasil diperbarui.']);
         } catch (\Exception $e) {
-            \Log::error('Error updating limit for employee '.$employee->id_employee.': '.$e->getMessage());
-             return response()->json(['success' => false, 'message' => 'Gagal memperbarui limit.'], 500);
+            \Log::error('Error updating limit for employee ' . $employee->id_employee . ': ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal memperbarui limit.'], 500);
         }
     }
 
     /**
-    * API: Get available months based on year with expense data.
-    */
+     * Memperbarui limit harian untuk SEMUA karyawan secara massal (sama rata).
+     */
+    public function updateLimitBulk(Request $request): JsonResponse
+    {
+        // Pastikan hanya admin yg bisa update limit
+        if (Auth::user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'Akses ditolak.'], 403);
+        }
+
+        $validated = $request->validate([
+            'daily_expense_limit' => 'nullable|numeric|min:0',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            Employee::where('is_active', true)->update([
+                'daily_expense_limit' => $validated['daily_expense_limit']
+            ]);
+
+            DB::commit();
+
+            return response()->json(['success' => true, 'message' => 'Limit semua karyawan berhasil diperbarui.']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating bulk limits: ' . $e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal memperbarui limit masal.'], 500);
+        }
+    }
+
     public function getAvailableMonths(Request $request, $year): JsonResponse
     {
         try {
-            $monthsData = Expense::selectRaw('DISTINCT MONTH(expense_date) as month')
-                ->whereYear('expense_date', $year)
-                ->orderBy('month')
-                ->pluck('month')
-                ->map(function ($monthNum) {
-                    // Ubah nomor bulan (1-12) menjadi format '01'-'12' dan nama bulan
-                    $monthNumPadded = str_pad($monthNum, 2, '0', STR_PAD_LEFT);
-                    return [
-                        'value' => $monthNumPadded,
-                        'name' => Carbon::create()->month($monthNum)->isoFormat('MMMM') // Nama bulan (Januari, etc.)
-                    ];
-                });
+            // Tampilkan SEMUA 12 bulan, bukan hanya yang ada pengeluarannya.
+            $monthsData = collect(range(1, 12))->map(function ($monthNum) {
+                $monthNumPadded = str_pad($monthNum, 2, '0', STR_PAD_LEFT);
+                return [
+                    'value' => $monthNumPadded,
+                    'name' => Carbon::create()->month($monthNum)->isoFormat('MMMM')
+                ];
+            })->values();
 
             return response()->json($monthsData);
-
         } catch (\Exception $e) {
             \Log::error("Error getting available months for year {$year}: " . $e->getMessage());
             return response()->json(['error' => 'Gagal mengambil data bulan.'], 500);
@@ -327,18 +347,14 @@ class ExpenseController extends Controller
     public function getAvailableDays(Request $request, $year, $month): JsonResponse
     {
         try {
-            $daysData = Expense::selectRaw('DISTINCT DAY(expense_date) as day')
-                ->whereYear('expense_date', $year)
-                ->whereMonth('expense_date', $month)
-                ->orderBy('day')
-                ->pluck('day')
-                ->map(function ($dayNum) {
-                    // Ubah nomor hari menjadi format '01'-'31'
-                    return str_pad($dayNum, 2, '0', STR_PAD_LEFT);
-                });
+            // Tampilkan SEMUA hari dalam bulan tersebut
+            $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
+
+            $daysData = collect(range(1, $daysInMonth))->map(function ($dayNum) {
+                return str_pad($dayNum, 2, '0', STR_PAD_LEFT);
+            })->values();
 
             return response()->json($daysData);
-
         } catch (\Exception $e) {
             \Log::error("Error getting available days for {$year}-{$month}: " . $e->getMessage());
             return response()->json(['error' => 'Gagal mengambil data tanggal.'], 500);
@@ -361,7 +377,6 @@ class ExpenseController extends Controller
             })->values(); // values() untuk reset keys array
 
             return response()->json($weeksForDropdown);
-
         } catch (\Exception $e) {
             \Log::error("Error getting available weeks for {$year}-{$month}: " . $e->getMessage());
             return response()->json(['error' => 'Gagal mengambil data minggu.'], 500);

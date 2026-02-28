@@ -63,7 +63,9 @@ class ReportController extends Controller
                         $endDate = $selectedWeekData['end']->endOfDay();
                         $reportTitleDate = $selectedWeekData['name'];
                     } else {
-                         $startDate = Carbon::today()->startOfWeek(Carbon::MONDAY); $endDate = Carbon::today()->endOfWeek(Carbon::SUNDAY); $reportTitleDate = 'Minggu Ini';
+                        $startDate = Carbon::today()->startOfWeek(Carbon::MONDAY);
+                        $endDate = Carbon::today()->endOfWeek(Carbon::SUNDAY);
+                        $reportTitleDate = 'Minggu Ini';
                     }
                     break;
                 case 'bulanan':
@@ -74,12 +76,15 @@ class ReportController extends Controller
                 case 'tahunan':
                     $startDate = Carbon::createFromDate($selectedYear, 1, 1)->startOfYear();
                     $endDate = $startDate->copy()->endOfYear();
-                     $reportTitleDate = $startDate->isoFormat('YYYY');
+                    $reportTitleDate = $startDate->isoFormat('YYYY');
                     break;
             }
         } catch (\Exception $e) {
-             \Log::error('Report filter date error: '.$e->getMessage());
-             $filterType = 'harian'; $startDate = Carbon::today()->startOfDay(); $endDate = Carbon::today()->endOfDay(); $reportTitleDate = $startDate->isoFormat('D MMMM YYYY');
+            \Log::error('Report filter date error: ' . $e->getMessage());
+            $filterType = 'harian';
+            $startDate = Carbon::today()->startOfDay();
+            $endDate = Carbon::today()->endOfDay();
+            $reportTitleDate = $startDate->isoFormat('D MMMM YYYY');
         }
 
         // === Hitung Ringkasan Keuangan ===
@@ -99,30 +104,30 @@ class ReportController extends Controller
 
         // === Ambil Detail Transaksi & Pengeluaran per Karyawan ===
         $involvedEmployeeIds = Transaction::whereBetween('transaction_date', [$startDate, $endDate])
-                            ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
-                            ->pluck('id_employee_primary')
-                            ->merge( Expense::whereBetween('expense_date', [$startDate, $endDate]) ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId)) ->pluck('id_employee') )
-                            ->unique()->filter()->sort()->values();
+            ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
+            ->pluck('id_employee_primary')
+            ->merge(Expense::whereBetween('expense_date', [$startDate, $endDate])->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))->pluck('id_employee'))
+            ->unique()->filter()->sort()->values();
 
         $employeesDetails = Employee::whereIn('id_employee', $involvedEmployeeIds)
-                                   ->orderBy('employee_name')
-                                   ->get()
-                                   ->mapWithKeys(function ($employee) use ($startDate, $endDate, $selectedStoreId, $selectedPaymentMethodId) {
-                                        $transactions = Transaction::with('paymentMethod', 'store')
-                                            ->where('id_employee_primary', $employee->id_employee)
-                                            ->whereBetween('transaction_date', [$startDate, $endDate])
-                                            ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
-                                            ->when($selectedPaymentMethodId, fn($q) => $q->where('id_payment_method', $selectedPaymentMethodId))
-                                            ->latest('transaction_date')
-                                            ->get();
-                                        $expenses = Expense::with('store')
-                                            ->where('id_employee', $employee->id_employee)
-                                            ->whereBetween('expense_date', [$startDate, $endDate])
-                                            ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
-                                            ->latest('expense_date')
-                                            ->get();
-                                        return [$employee->id_employee => ['employee' => $employee, 'transactions' => $transactions, 'expenses' => $expenses]];
-                                   });
+            ->orderBy('employee_name')
+            ->get()
+            ->mapWithKeys(function ($employee) use ($startDate, $endDate, $selectedStoreId, $selectedPaymentMethodId) {
+                $transactions = Transaction::with('paymentMethod', 'store')
+                    ->where('id_employee_primary', $employee->id_employee)
+                    ->whereBetween('transaction_date', [$startDate, $endDate])
+                    ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
+                    ->when($selectedPaymentMethodId, fn($q) => $q->where('id_payment_method', $selectedPaymentMethodId))
+                    ->latest('transaction_date')
+                    ->get();
+                $expenses = Expense::with('store')
+                    ->where('id_employee', $employee->id_employee)
+                    ->whereBetween('expense_date', [$startDate, $endDate])
+                    ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
+                    ->latest('expense_date')
+                    ->get();
+                return [$employee->id_employee => ['employee' => $employee, 'transactions' => $transactions, 'expenses' => $expenses]];
+            });
 
         // === Kirim Data ke View ===
         return view('admin.reports.index', [
@@ -149,24 +154,18 @@ class ReportController extends Controller
     // METHOD API UNTUK FILTER DINAMIS (COPY DARI EXPENSECONTROLLER)
     // ==========================================================
 
-    /**
-     * API: Get available months based on year with transaction data.
-     */
     public function getAvailableMonths(Request $request, $year): JsonResponse
     {
         try {
-            if (!ctype_digit($year) || $year < 1900 || $year > date('Y') + 5) { return response()->json(['error' => 'Tahun tidak valid.'], 400); }
+            if (!ctype_digit($year) || $year < 1900 || $year > date('Y') + 5) {
+                return response()->json(['error' => 'Tahun tidak valid.'], 400);
+            }
 
-            // GANTI KE TRANSACTION
-            $monthsData = Transaction::selectRaw('DISTINCT MONTH(transaction_date) as month')
-                ->whereYear('transaction_date', $year) // GANTI KE transaction_date
-                // ->when($request->query('store_id'), fn($q, $storeId)=>$q->where('id_store', $storeId)) // Opsional filter toko
-                ->orderBy('month')
-                ->pluck('month')
-                ->map(function ($monthNum) {
-                    $monthNumPadded = str_pad($monthNum, 2, '0', STR_PAD_LEFT);
-                    return ['value' => $monthNumPadded, 'name' => Carbon::create()->month($monthNum)->isoFormat('MMMM')];
-                });
+            $monthsData = collect(range(1, 12))->map(function ($monthNum) {
+                $monthNumPadded = str_pad($monthNum, 2, '0', STR_PAD_LEFT);
+                return ['value' => $monthNumPadded, 'name' => Carbon::create()->month($monthNum)->isoFormat('MMMM')];
+            })->values();
+
             return response()->json($monthsData);
         } catch (\Exception $e) {
             \Log::error("Report API error getting months for year {$year}: " . $e->getMessage());
@@ -179,17 +178,17 @@ class ReportController extends Controller
      */
     public function getAvailableDays(Request $request, $year, $month): JsonResponse
     {
-         try {
-            if (!ctype_digit($year) || $year < 1900 || $year > date('Y') + 5 || !ctype_digit($month) || $month < 1 || $month > 12) { return response()->json(['error' => 'Tahun atau Bulan tidak valid.'], 400); }
+        try {
+            if (!ctype_digit($year) || $year < 1900 || $year > date('Y') + 5 || !ctype_digit($month) || $month < 1 || $month > 12) {
+                return response()->json(['error' => 'Tahun atau Bulan tidak valid.'], 400);
+            }
 
-            // GANTI KE TRANSACTION
-            $daysData = Transaction::selectRaw('DISTINCT DAY(transaction_date) as day')
-                ->whereYear('transaction_date', $year) // GANTI KE transaction_date
-                ->whereMonth('transaction_date', $month) // GANTI KE transaction_date
-                // ->when($request->query('store_id'), fn($q, $storeId)=>$q->where('id_store', $storeId)) // Opsional filter toko
-                ->orderBy('day')
-                ->pluck('day')
-                ->map(fn($dayNum) => str_pad($dayNum, 2, '0', STR_PAD_LEFT));
+            $daysInMonth = Carbon::createFromDate($year, $month, 1)->daysInMonth;
+
+            $daysData = collect(range(1, $daysInMonth))->map(function ($dayNum) {
+                return str_pad($dayNum, 2, '0', STR_PAD_LEFT);
+            })->values();
+
             return response()->json($daysData);
         } catch (\Exception $e) {
             \Log::error("Report API error getting days for {$year}-{$month}: " . $e->getMessage());
@@ -202,26 +201,17 @@ class ReportController extends Controller
      */
     public function getAvailableWeeks(Request $request, $year, $month): JsonResponse
     {
-         try {
-             if (!ctype_digit($year) || $year < 1900 || $year > date('Y') + 5 || !ctype_digit($month) || $month < 1 || $month > 12) { return response()->json(['error' => 'Tahun atau Bulan tidak valid.'], 400); }
+        try {
+            if (!ctype_digit($year) || $year < 1900 || $year > date('Y') + 5 || !ctype_digit($month) || $month < 1 || $month > 12) {
+                return response()->json(['error' => 'Tahun atau Bulan tidak valid.'], 400);
+            }
 
             $allWeeksData = $this->getWeeksOfMonth($year, $month); // Panggil helper
-            $availableWeeks = [];
 
-            foreach ($allWeeksData as $week) {
-                // GANTI KE TRANSACTION
-                $hasData = Transaction::whereBetween('transaction_date', [ // GANTI KE transaction_date
-                                        $week['start']->copy()->startOfDay(),
-                                        $week['end']->copy()->endOfDay()
-                                     ])
-                                     ->whereYear('transaction_date', $year) // GANTI KE transaction_date
-                                     ->whereMonth('transaction_date', $month) // GANTI KE transaction_date
-                                     // ->when($request->query('store_id'), fn($q, $storeId)=>$q->where('id_store', $storeId)) // Opsional filter toko
-                                     ->exists();
-                if ($hasData) {
-                    $availableWeeks[] = ['value' => $week['value'], 'name' => $week['name']];
-                }
-            }
+            $availableWeeks = collect($allWeeksData)->map(function ($week) {
+                return ['value' => $week['value'], 'name' => $week['name']];
+            })->values();
+
             return response()->json($availableWeeks);
         } catch (\Exception $e) {
             \Log::error("Report API error getting weeks for {$year}-{$month}: " . $e->getMessage());
@@ -232,7 +222,7 @@ class ReportController extends Controller
     // Helper function to get weeks (copy dari ExpenseController jika belum ada)
     private function getWeeksOfMonth($year, $month): array
     {
-       // ... (kode helper getWeeksOfMonth SAMA SEPERTI DI EXPENSE CONTROLLER) ...
+        // ... (kode helper getWeeksOfMonth SAMA SEPERTI DI EXPENSE CONTROLLER) ...
         $weeks = [];
         $date = Carbon::createFromDate($year, $month, 1)->startOfWeek(Carbon::MONDAY);
         $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
@@ -286,7 +276,9 @@ class ReportController extends Controller
                         $endDate = $selectedWeekData['end']->endOfDay();
                         $reportTitleDate = $selectedWeekData['name'];
                     } else {
-                         $startDate = Carbon::today()->startOfWeek(Carbon::MONDAY); $endDate = Carbon::today()->endOfWeek(Carbon::SUNDAY); $reportTitleDate = 'Minggu Ini';
+                        $startDate = Carbon::today()->startOfWeek(Carbon::MONDAY);
+                        $endDate = Carbon::today()->endOfWeek(Carbon::SUNDAY);
+                        $reportTitleDate = 'Minggu Ini';
                     }
                     break;
                 case 'bulanan':
@@ -297,22 +289,24 @@ class ReportController extends Controller
                 case 'tahunan':
                     $startDate = Carbon::createFromDate($selectedYear, 1, 1)->startOfYear();
                     $endDate = $startDate->copy()->endOfYear();
-                     $reportTitleDate = $startDate->isoFormat('YYYY');
+                    $reportTitleDate = $startDate->isoFormat('YYYY');
                     break;
             }
         } catch (\Exception $e) {
-             \Log::error('Report API filter date error: '.$e->getMessage());
-             $startDate = Carbon::today()->startOfDay(); $endDate = Carbon::today()->endOfDay(); $reportTitleDate = $startDate->isoFormat('D MMMM YYYY');
+            \Log::error('Report API filter date error: ' . $e->getMessage());
+            $startDate = Carbon::today()->startOfDay();
+            $endDate = Carbon::today()->endOfDay();
+            $reportTitleDate = $startDate->isoFormat('D MMMM YYYY');
         }
 
         // === Query Rincian Pemasukan (INTI LOGIKA BARU) ===
-        
+
         // Buat query dasar untuk transaction_details dalam rentang waktu
         $detailsQuery = TransactionDetail::with('transaction')
             ->whereHas('transaction', function ($query) use ($startDate, $endDate, $selectedStoreId, $selectedPaymentMethodId) {
                 $query->whereBetween('transaction_date', [$startDate, $endDate])
-                      ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
-                      ->when($selectedPaymentMethodId, fn($q) => $q->where('id_payment_method', $selectedPaymentMethodId));
+                    ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
+                    ->when($selectedPaymentMethodId, fn($q) => $q->where('id_payment_method', $selectedPaymentMethodId));
             });
 
         // 1. Ambil Rincian Layanan
@@ -356,7 +350,7 @@ class ReportController extends Controller
                 'quantity' => $item->total_quantity,
                 'total' => (float) $item->total_amount,
             ]);
-        
+
         // 4. Hitung Total (untuk verifikasi)
         $totalIncome = $servicesDetails->sum('total') + $productsDetails->sum('total') + $foodsDetails->sum('total');
 
@@ -372,8 +366,8 @@ class ReportController extends Controller
     }
 
     /**
-    * API: Mengambil rincian detail pengeluaran untuk modal.
-    */
+     * API: Mengambil rincian detail pengeluaran untuk modal.
+     */
     public function getExpenditureDetails(Request $request): JsonResponse
     {
         // === Ambil Parameter Filter (logika SAMA PERSIS dengan method index) ===
@@ -405,7 +399,9 @@ class ReportController extends Controller
                         $endDate = $selectedWeekData['end']->endOfDay();
                         $reportTitleDate = $selectedWeekData['name'];
                     } else {
-                        $startDate = Carbon::today()->startOfWeek(Carbon::MONDAY); $endDate = Carbon::today()->endOfWeek(Carbon::SUNDAY); $reportTitleDate = 'Minggu Ini';
+                        $startDate = Carbon::today()->startOfWeek(Carbon::MONDAY);
+                        $endDate = Carbon::today()->endOfWeek(Carbon::SUNDAY);
+                        $reportTitleDate = 'Minggu Ini';
                     }
                     break;
                 case 'bulanan':
@@ -420,8 +416,10 @@ class ReportController extends Controller
                     break;
             }
         } catch (\Exception $e) {
-            \Log::error('Report API filter date error: '.$e->getMessage());
-            $startDate = Carbon::today()->startOfDay(); $endDate = Carbon::today()->endOfDay(); $reportTitleDate = $startDate->isoFormat('D MMMM YYYY');
+            \Log::error('Report API filter date error: ' . $e->getMessage());
+            $startDate = Carbon::today()->startOfDay();
+            $endDate = Carbon::today()->endOfDay();
+            $reportTitleDate = $startDate->isoFormat('D MMMM YYYY');
         }
 
         // === Query Rincian Pengeluaran (INTI LOGIKA BARU) ===
@@ -471,8 +469,8 @@ class ReportController extends Controller
     }
 
     /**
-    * API: Mengambil rincian detail Laba/Rugi untuk modal.
-    */
+     * API: Mengambil rincian detail Laba/Rugi untuk modal.
+     */
     public function getProfitLossDetails(Request $request): JsonResponse
     {
         // === Ambil Parameter Filter (logika SAMA PERSIS dengan method index) ===
@@ -504,7 +502,9 @@ class ReportController extends Controller
                         $endDate = $selectedWeekData['end']->endOfDay();
                         $reportTitleDate = $selectedWeekData['name'];
                     } else {
-                        $startDate = Carbon::today()->startOfWeek(Carbon::MONDAY); $endDate = Carbon::today()->endOfWeek(Carbon::SUNDAY); $reportTitleDate = 'Minggu Ini';
+                        $startDate = Carbon::today()->startOfWeek(Carbon::MONDAY);
+                        $endDate = Carbon::today()->endOfWeek(Carbon::SUNDAY);
+                        $reportTitleDate = 'Minggu Ini';
                     }
                     break;
                 case 'bulanan':
@@ -519,8 +519,10 @@ class ReportController extends Controller
                     break;
             }
         } catch (\Exception $e) {
-            \Log::error('Report API filter date error: '.$e->getMessage());
-            $startDate = Carbon::today()->startOfDay(); $endDate = Carbon::today()->endOfDay(); $reportTitleDate = $startDate->isoFormat('D MMMM YYYY');
+            \Log::error('Report API filter date error: ' . $e->getMessage());
+            $startDate = Carbon::today()->startOfDay();
+            $endDate = Carbon::today()->endOfDay();
+            $reportTitleDate = $startDate->isoFormat('D MMMM YYYY');
         }
 
         // === Query Ringkasan Laba/Rugi (INTI LOGIKA BARU) ===
@@ -573,8 +575,8 @@ class ReportController extends Controller
 
             // Format data detail item
             $formattedDetails = $transaction->details->map(function ($detail) {
-                $itemName = 'Item Terhapus'; 
-                
+                $itemName = 'Item Terhapus';
+
                 // Cek null safe untuk relasi item
                 if ($detail->item_type === 'service' && $detail->service) {
                     $itemName = $detail->service->service_name;
@@ -591,29 +593,29 @@ class ReportController extends Controller
                     'price_at_sale' => (float) $detail->price_at_sale,
                     'subtotal' => (float) $detail->subtotal,
                     // PENGAMAN 1: Null safe untuk detail karyawan
-                    'employee_name' => $detail->employee?->employee_name ?? '-', 
+                    'employee_name' => $detail->employee?->employee_name ?? '-',
                 ];
             });
 
             // Parsing tanggal
-            $transactionDate = $transaction->transaction_date instanceof \Carbon\Carbon 
-                ? $transaction->transaction_date 
+            $transactionDate = $transaction->transaction_date instanceof \Carbon\Carbon
+                ? $transaction->transaction_date
                 : \Carbon\Carbon::parse($transaction->transaction_date);
 
             // Format data transaksi utama
             $formattedTransaction = [
                 'id' => $transaction->id_transaction,
                 'date' => $transactionDate->isoFormat('DD MMMM YYYY, HH:mm'),
-                
+
                 // PENGAMAN 2: Tambahkan tanda tanya (?->) pada store
                 'store_name' => $transaction->store?->store_name ?? 'Toko Tidak Ditemukan',
-                
+
                 // PENGAMAN 3: Tambahkan tanda tanya (?->) pada primaryEmployee
                 'employee_name' => $transaction->primaryEmployee?->employee_name ?? 'Karyawan Tidak Ditemukan',
-                
+
                 // PENGAMAN 4: Tambahkan tanda tanya (?->) pada paymentMethod
                 'payment_method' => $transaction->paymentMethod?->method_name ?? 'Metode Hapus',
-                
+
                 'status' => ucfirst($transaction->status ?? 'paid'),
                 'total_amount' => (float) $transaction->total_amount,
                 'tips' => (float) $transaction->tips,
@@ -628,14 +630,13 @@ class ReportController extends Controller
                 'success' => true,
                 'transaction' => $formattedTransaction,
             ]);
-
         } catch (\Exception $e) {
             // Log error lengkap agar bisa dicek di storage/logs/laravel.log
             \Log::error("Report API Error (ID: {$transaction->id_transaction}): " . $e->getMessage());
             \Log::error($e->getTraceAsString());
 
             return response()->json([
-                'success' => false, 
+                'success' => false,
                 'message' => 'Gagal mengambil data: ' . $e->getMessage()
             ], 500);
         }

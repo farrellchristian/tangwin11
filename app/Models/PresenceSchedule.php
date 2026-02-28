@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PresenceSchedule extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * Nama primary key tabel ini.
@@ -23,6 +24,7 @@ class PresenceSchedule extends Model
         'jam_check_in',
         'jam_check_out',
         'is_active',
+        'late_threshold',
     ];
 
     /**
