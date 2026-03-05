@@ -8,7 +8,7 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                
+
                 {{-- Kartu 1: Total Log Presensi --}}
                 <div class="bg-white p-6 shadow sm:rounded-lg">
                     <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Log Presensi</h4>
@@ -78,20 +78,20 @@
                     }
                 }">
                 <form method="GET" action="{{ route('admin.presence-recap.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    
+
                     {{-- Filter Toko --}}
                     <div>
                         <label for="store_id" class="block text-sm font-medium text-gray-700">Toko</label>
-                        <select id="store_id" name="store_id" 
-                                x-model="selectedStore" {{-- Ikat nilainya ke selectedStore --}}
-                                @change="fetchEmployees()" {{-- Panggil fungsi saat berubah --}}
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            
-                            <option value="">Semua Toko</opt    ion>
-                            @foreach ($stores as $store)
-                                <option value="{{ $store->id_store }}"> {{-- 'selected' dikontrol Alpine --}}
-                                    {{ $store->store_name }}
-                                </option>
+                        <select id="store_id" name="store_id"
+                            x-model="selectedStore" {{-- Ikat nilainya ke selectedStore --}}
+                            @change="fetchEmployees()" {{-- Panggil fungsi saat berubah --}}
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+
+                            <option value="">Semua Toko</opt ion>
+                                @foreach ($stores as $store)
+                            <option value="{{ $store->id_store }}"> {{-- 'selected' dikontrol Alpine --}}
+                                {{ $store->store_name }}
+                            </option>
                             @endforeach
                         </select>
                     </div>
@@ -99,10 +99,10 @@
                     {{-- Filter Karyawan --}}
                     <div>
                         <label for="employee_id" class="block text-sm font-medium text-gray-700">Karyawan</label>
-                        <select id="employee_id" name="employee_id" 
-                                x-model="selectedEmployee" {{-- Ikat nilainya ke selectedEmployee --}}
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            
+                        <select id="employee_id" name="employee_id"
+                            x-model="selectedEmployee" {{-- Ikat nilainya ke selectedEmployee --}}
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+
                             <option value="">Semua Karyawan</option>
                             {{-- Loop dinamis menggunakan data dari Alpine.js --}}
                             <template x-for="employee in employees" :key="employee.id_employee">
@@ -144,7 +144,6 @@
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Toko</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-in</th>
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-out</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jadwal Masuk</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
@@ -152,48 +151,45 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse ($logs as $log)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            {{ $log->employee->employee_name ?? 'N/A' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $log->store->store_name ?? 'N/A' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{-- Format tanggal 'gacor' --}}
-                                            {{ $log->check_in_time->isoFormat('DD MMM YYYY, HH:mm') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $log->check_out_time ? $log->check_out_time->isoFormat('HH:mm') : '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $log->schedule ? \Carbon\Carbon::parse($log->schedule->jam_check_in)->format('H:i') : '-' }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            @if ($log->status == 'Tepat Waktu')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                    {{ $log->status }}
-                                                </span>
-                                            @elseif ($log->status == 'Terlambat')
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
-                                                    {{ $log->status }}
-                                                </span>
-                                            @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                    {{ $log->status }}
-                                                </span>
-                                            @endif
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            {{ $log->notes }}
-                                        </td>
-                                    </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ $log->employee->employee_name ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $log->store->store_name ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {{-- Format tanggal 'gacor' --}}
+                                        {{ $log->check_in_time->isoFormat('DD MMM YYYY, HH:mm') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $log->schedule ? \Carbon\Carbon::parse($log->schedule->jam_check_in)->format('H:i') : '-' }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        @if ($log->status == 'Tepat Waktu')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                            {{ $log->status }}
+                                        </span>
+                                        @elseif ($log->status == 'Terlambat')
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-orange-100 text-orange-800">
+                                            {{ $log->status }}
+                                        </span>
+                                        @else
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            {{ $log->status }}
+                                        </span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $log->notes }}
+                                    </td>
+                                </tr>
                                 @empty
-                                    <tr>
-                                        <td colspan="7" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                            Tidak ada data rekap untuk filter ini.
-                                        </td>
-                                    </tr>
+                                <tr>
+                                    <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
+                                        Tidak ada data rekap untuk filter ini.
+                                    </td>
+                                </tr>
                                 @endforelse
                             </tbody>
                         </table>
