@@ -153,7 +153,7 @@
 
         {{-- AWAL BLOK RESERVASI --}}
         @php
-        $isReservationActive = request()->routeIs('admin.reservation.*');
+        $isReservationActive = request()->routeIs('admin.reservation.*') || request()->routeIs('admin.refunds.*');
         @endphp
 
         <div x-data="{ open: {{ $isReservationActive ? 'true' : 'false' }} }">
@@ -181,6 +181,9 @@
                 </a>
                 <a href="{{ route('admin.reservation.index') }}" class="{{ $subLinkClasses }} {{ request()->routeIs('admin.reservation.index') ? $subActiveClasses : '' }} pl-[52px] pr-6">
                     <span>Lihat Reservasi</span>
+                </a>
+                <a href="{{ route('admin.refunds.index') }}" class="{{ $subLinkClasses }} {{ request()->routeIs('admin.refunds.*') ? $subActiveClasses : '' }} pl-[52px] pr-6">
+                    <span>Permintaan Refund</span>
                 </a>
             </div>
         </div>

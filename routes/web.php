@@ -23,6 +23,7 @@ use App\Http\Controllers\PresenceController;
 use App\Http\Controllers\Admin\PresenceRecapController;
 use App\Http\Controllers\ReservationSlotController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\Admin\RefundController;
 
 // Mengalihkan halaman awal ('/') langsung ke route login
 Route::get('/', function () {
@@ -164,6 +165,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::get('/days/{year}/{month}', [ReportController::class, 'getAvailableDays'])->name('days');
         Route::get('/weeks/{year}/{month}', [ReportController::class, 'getAvailableWeeks'])->name('weeks');
     });
+
+    // --- RUTE REFUNDS ---
+    Route::get('/refunds', [RefundController::class, 'index'])->name('refunds.index');
+    Route::post('/refunds/{refund}/process', [RefundController::class, 'process'])->name('refunds.process');
+    Route::post('/refunds/{refund}/reject', [RefundController::class, 'reject'])->name('refunds.reject');
 
     // --- RUTE API BARU UNTUK MODAL LAPORAN ---
     Route::prefix('reports/details')->name('reports.details.')->group(function () {

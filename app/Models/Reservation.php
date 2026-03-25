@@ -29,4 +29,10 @@ class Reservation extends Model
     {
         return $this->belongsTo(Employee::class, 'id_employee');
     }
+
+    // Relasi ke Refund
+    public function refund()
+    {
+        return $this->hasOne(Refund::class, 'id_reservation', 'id_reservation');
+    }
 }
