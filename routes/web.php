@@ -60,13 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/pos/store-transaction', [PosController::class, 'storeTransaction'])
         ->name('pos.store-transaction');
 
-    // Rute baru untuk menangani pembuatan pembayaran QRIS
-    Route::post('/pos/payment/qris', [PosController::class, 'createQrisPayment'])
-        ->name('pos.payment.qris');
 
-    // Rute baru untuk mengecek status pembayaran
-    Route::get('/pos/payment/status/{order_id}', [PosController::class, 'getPaymentStatus'])
-        ->name('pos.payment.status');
 
     // Route Cetak Struk
     Route::get('/pos/struk/{id}', [PosController::class, 'printStruk'])
