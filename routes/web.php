@@ -5,7 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Kasir\DashboardController as KasirDashboard;
-use App\Http\Controllers\Admin\InformationController;
+
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\FoodController;
@@ -111,7 +111,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 
     // Rute: /admin/dashboard
     Route::get('/dashboard', AdminDashboard::class)->name('dashboard');
-    Route::get('/informasi', InformationController::class)->name('informasi.index');
+
 
     // Rute CRUD Services
     Route::resource('services', ServiceController::class);

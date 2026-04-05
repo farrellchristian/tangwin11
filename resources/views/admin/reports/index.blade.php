@@ -423,12 +423,7 @@
                             <h3 class="text-xl font-semibold text-gray-800">Ringkasan Keuangan {{ ucfirst($filterType) }}</h3>
                             <p class="text-sm text-gray-600">{{ $reportTitleDate }}</p>
                         </div>
-                        <button onclick="alert('Fitur Export belum dibuat')" class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white border border-transparent rounded-md font-semibold text-xs uppercase tracking-widest hover:bg-green-700 transition">
-                             <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15m0-3l-3-3m0 0l-3 3m3-3v11.25" />
-                             </svg>
-                            Export
-                         </button>
+
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
                         <!-- Total Pemasukan -->
@@ -977,15 +972,7 @@
                                  </div>
                              </div>
 
-                             <!-- Tombol Export -->
-                             <div class="text-center pt-4">
-                                 <button onclick="alert('Fitur Export belum dibuat')" class="inline-flex items-center px-4 py-2 bg-green-600 text-white border border-transparent rounded-md font-semibold text-xs uppercase tracking-widest hover:bg-green-700 transition">
-                                     <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 8.25H7.5a2.25 2.25 0 00-2.25 2.25v9a2.25 2.25 0 002.25 2.25h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25H15m0-3l-3-3m0 0l-3 3m3-3v11.25" />
-                                     </svg>
-                                    Export ke Excel
-                                 </button>
-                             </div>
+
 
                         </div>
                     </div>

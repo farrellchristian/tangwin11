@@ -67,6 +67,12 @@ class RefundController extends Controller
             'status' => 'rejected'
         ]);
 
-        return redirect()->route('admin.refunds.index')->with('success', 'Refund berhasil ditolak.');
+        // Kembalikan status reservasi ke approved karena refund ditolak
+        $refund->reservation()->update([
+            'status' => 'approved'
+        ]);
+
+        return redirect()->route('admin.refunds.index')->with('success', 'Refund berhasil ditolak. Status reservasi dikembalikan ke approved.');
     }
+
 }

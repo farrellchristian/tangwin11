@@ -312,12 +312,12 @@ class ReportController extends Controller
         // 1. Ambil Rincian Layanan
         $servicesDetails = (clone $detailsQuery) // Clone query agar filter dasar tetap ada
             ->where('item_type', 'service')
-            ->with('service') // Eager load relasi service
+            ->with(['service' => fn($q) => $q->withTrashed()]) // Eager load relasi service
             ->select('id_service', DB::raw('COUNT(id_transaction) as transaction_count'), DB::raw('SUM(quantity) as total_quantity'), DB::raw('SUM(subtotal) as total_amount'))
             ->groupBy('id_service')
             ->get()
             ->map(fn($item) => [
-                'name' => $item->service->service_name ?? 'Layanan Dihapus',
+                'name' => $item->service?->service_name ?? 'Layanan Dihapus',
                 'transactions' => $item->transaction_count,
                 'quantity' => $item->total_quantity,
                 'total' => (float) $item->total_amount,
@@ -326,12 +326,12 @@ class ReportController extends Controller
         // 2. Ambil Rincian Produk
         $productsDetails = (clone $detailsQuery)
             ->where('item_type', 'product')
-            ->with('product') // Eager load relasi product
+            ->with(['product' => fn($q) => $q->withTrashed()]) // Eager load relasi product
             ->select('id_product', DB::raw('COUNT(id_transaction) as transaction_count'), DB::raw('SUM(quantity) as total_quantity'), DB::raw('SUM(subtotal) as total_amount'))
             ->groupBy('id_product')
             ->get()
             ->map(fn($item) => [
-                'name' => $item->product->product_name ?? 'Produk Dihapus',
+                'name' => $item->product?->product_name ?? 'Produk Dihapus',
                 'transactions' => $item->transaction_count,
                 'quantity' => $item->total_quantity,
                 'total' => (float) $item->total_amount,
@@ -340,12 +340,12 @@ class ReportController extends Controller
         // 3. Ambil Rincian Makanan
         $foodsDetails = (clone $detailsQuery)
             ->where('item_type', 'food')
-            ->with('food') // Eager load relasi food
+            ->with(['food' => fn($q) => $q->withTrashed()]) // Eager load relasi food
             ->select('id_food', DB::raw('COUNT(id_transaction) as transaction_count'), DB::raw('SUM(quantity) as total_quantity'), DB::raw('SUM(subtotal) as total_amount'))
             ->groupBy('id_food')
             ->get()
             ->map(fn($item) => [
-                'name' => $item->food->food_name ?? 'Makanan Dihapus',
+                'name' => $item->food?->food_name ?? 'Makanan Dihapus',
                 'transactions' => $item->transaction_count,
                 'quantity' => $item->total_quantity,
                 'total' => (float) $item->total_amount,
@@ -440,7 +440,7 @@ class ReportController extends Controller
             ]);
 
         // 2. Ambil Rincian Tips (dari tabel transactions)
-        $tipDetails = Transaction::with(['primaryEmployee', 'store', 'user'])
+        $tipDetails = Transaction::with(['employee', 'store', 'user'])
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->where('tips', '>', 0) // Hanya ambil transaksi yang ada tips
             ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
@@ -448,10 +448,10 @@ class ReportController extends Controller
             ->get()
             ->map(fn($item) => [
                 'date' => $item->transaction_date->isoFormat('DD MMM YYYY, HH:mm'),
-                'description' => 'Tips untuk Capster: ' . ($item->primaryEmployee->employee_name ?? 'N/A'),
+                'description' => 'Tips untuk Capster: ' . ($item->employee->employee_name ?? 'N/A'),
                 'amount' => (float) $item->tips,
                 'store_name' => $item->store->store_name ?? 'N/A',
-                'employee_name' => $item->primaryEmployee->employee_name ?? 'N/A', // Karyawan yg dapat tips
+                'employee_name' => $item->employee->employee_name ?? 'N/A', // Karyawan yg dapat tips
                 'recorded_by' => $item->cashierUser->name ?? 'N/A', // Pencatat
             ]);
 
@@ -565,11 +565,11 @@ class ReportController extends Controller
             // Eager load semua relasi
             $transaction->load([
                 'store',
-                'primaryEmployee',
+                'employee',
                 'paymentMethod',
-                'details.service',
-                'details.product',
-                'details.food',
+                'details.service' => fn($q) => $q->withTrashed(),
+                'details.product' => fn($q) => $q->withTrashed(),
+                'details.food' => fn($q) => $q->withTrashed(),
                 'details.employee'
             ]);
 
@@ -610,8 +610,8 @@ class ReportController extends Controller
                 // PENGAMAN 2: Tambahkan tanda tanya (?->) pada store
                 'store_name' => $transaction->store?->store_name ?? 'Toko Tidak Ditemukan',
 
-                // PENGAMAN 3: Tambahkan tanda tanya (?->) pada primaryEmployee
-                'employee_name' => $transaction->primaryEmployee?->employee_name ?? 'Karyawan Tidak Ditemukan',
+                // PENGAMAN 3: Tambahkan tanda tanya (?->) pada employee
+                'employee_name' => $transaction->employee?->employee_name ?? 'Karyawan Tidak Ditemukan',
 
                 // PENGAMAN 4: Tambahkan tanda tanya (?->) pada paymentMethod
                 'payment_method' => $transaction->paymentMethod?->method_name ?? 'Metode Hapus',

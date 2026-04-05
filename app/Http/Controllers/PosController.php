@@ -318,9 +318,23 @@ class PosController extends Controller
             });
         }
 
-        // 3. Ambil Data Tabel (Paginate biar rapi)
-        $transactions = $query->orderBy('transaction_date', 'desc')->paginate(10);
+        // 3. Ambil semua transaksi lalu group per capster
+        $allTransactions = $query->orderBy('transaction_date', 'desc')->get();
 
-        return view('pos.history', compact('transactions', 'summary', 'date'));
+        // Group transaksi berdasarkan employee (capster)
+        $groupedByCapster = $allTransactions->groupBy('id_employee_primary')->map(function ($transactions, $employeeId) {
+            $employee = $transactions->first()->employee;
+            return [
+                'employee' => $employee,
+                'transactions' => $transactions,
+                'total_trx' => $transactions->count(),
+                'total_amount' => $transactions->sum('total_amount'),
+                'total_tips' => $transactions->sum('tips'),
+                'total_cash' => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
+                'total_digital' => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name !== 'Cash')->sum('total_amount'),
+            ];
+        })->sortByDesc('total_trx');
+
+        return view('pos.history', compact('groupedByCapster', 'summary', 'date'));
     }
 }

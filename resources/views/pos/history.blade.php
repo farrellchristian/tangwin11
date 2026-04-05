@@ -64,9 +64,8 @@
                 </div>
             </div>
 
-            {{-- 2. TABEL DATA --}}
+            {{-- 2. PENCARIAN --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                {{-- Toolbar Pencarian --}}
                 <div class="p-4 border-b border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-gray-50/50">
                     <div class="relative w-full sm:w-96">
                         <form method="GET" action="{{ route('pos.history') }}">
@@ -76,7 +75,7 @@
                             </div>
                             <input type="text" name="search" value="{{ request('search') }}" 
                                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
-                                placeholder="Cari ID Transaksi atau Nama Capster...">
+                                placeholder="Cari Nama Capster...">
                         </form>
                     </div>
                     
@@ -88,104 +87,134 @@
                         </a>
                     @endif
                 </div>
-
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Waktu</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID & Capster</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($transactions as $t)
-                                <tr class="hover:bg-gray-50 transition duration-150">
-                                    {{-- Waktu --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="text-sm font-bold text-gray-800">
-                                            {{ \Carbon\Carbon::parse($t->transaction_date)->format('H:i') }}
-                                        </span>
-                                        <span class="text-xs text-gray-500 block">WIB</span>
-                                    </td>
-
-                                    {{-- ID & Capster --}}
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs mr-3">
-                                                {{ substr($t->employee->employee_name ?? '?', 0, 1) }}
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium text-gray-900">
-                                                    {{ $t->employee->employee_name ?? 'Unknown' }}
-                                                </div>
-                                                <div class="text-xs text-gray-500 font-mono">
-                                                    #{{ $t->id_transaction }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </td>
-
-                                    {{-- Total --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-bold text-gray-900">
-                                            Rp {{ number_format($t->total_amount, 0, ',', '.') }}
-                                        </div>
-                                        @if($t->tips > 0)
-                                            <div class="text-[10px] text-green-600 italic">
-                                                + Tips {{ number_format($t->tips, 0, ',', '.') }}
-                                            </div>
-                                        @endif
-                                    </td>
-
-                                    {{-- Metode --}}
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($t->paymentMethod && $t->paymentMethod->method_name == 'Cash')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                                💵 Cash
-                                            </span>
-                                        @elseif($t->paymentMethod && $t->paymentMethod->method_name == 'Qris')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
-                                                📱 QRIS
-                                            </span>
-                                        @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                                {{ $t->paymentMethod->method_name ?? '-' }}
-                                            </span>
-                                        @endif
-                                    </td>
-
-                                    {{-- Aksi (Cetak) --}}
-                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        <button onclick="window.open('{{ route('pos.print-struk', $t->id_transaction) }}', '_blank', 'width=400,height=600')" 
-                                            class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md transition-colors flex items-center justify-end gap-1 ml-auto">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                                            Cetak
-                                        </button>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
-                                        <div class="flex flex-col items-center">
-                                            <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                            <p class="text-base font-medium">Belum ada transaksi hari ini.</p>
-                                            <p class="text-sm mt-1">Semangat jualan! Transaksi akan muncul di sini.</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-
-                {{-- Pagination --}}
-                <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                    {{ $transactions->appends(request()->input())->links() }}
-                </div>
             </div>
+
+            {{-- 3. RINCIAN PER CAPSTER --}}
+            @forelse($groupedByCapster as $capsterData)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    {{-- Header Capster --}}
+                    <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-indigo-50/80 to-white">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-lg ring-2 ring-indigo-200">
+                                    {{ substr($capsterData['employee']->employee_name ?? '?', 0, 1) }}
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-800">{{ $capsterData['employee']->employee_name ?? 'Unknown' }}</h3>
+                                    <p class="text-xs text-gray-500">Capster</p>
+                                </div>
+                            </div>
+
+                            {{-- Mini Summary --}}
+                            <div class="flex flex-wrap gap-3 sm:gap-4">
+                                <div class="bg-white rounded-lg px-4 py-2 border border-gray-200 shadow-sm text-center min-w-[90px]">
+                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Potong</p>
+                                    <p class="text-xl font-extrabold text-indigo-600">{{ $capsterData['total_trx'] }}</p>
+                                </div>
+                                <div class="bg-white rounded-lg px-4 py-2 border border-gray-200 shadow-sm text-center min-w-[110px]">
+                                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Pendapatan</p>
+                                    <p class="text-lg font-bold text-gray-800">Rp {{ number_format($capsterData['total_amount'], 0, ',', '.') }}</p>
+                                </div>
+                                @if($capsterData['total_tips'] > 0)
+                                <div class="bg-white rounded-lg px-4 py-2 border border-green-200 shadow-sm text-center min-w-[90px]">
+                                    <p class="text-[10px] font-semibold text-green-500 uppercase tracking-wider">Tips</p>
+                                    <p class="text-lg font-bold text-green-600">Rp {{ number_format($capsterData['total_tips'], 0, ',', '.') }}</p>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Tabel Transaksi Capster --}}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">No</th>
+                                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Waktu</th>
+                                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Transaksi</th>
+                                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Metode</th>
+                                    <th class="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                @foreach($capsterData['transactions'] as $index => $t)
+                                    <tr class="hover:bg-indigo-50/50 transition duration-150">
+                                        {{-- No --}}
+                                        <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-500">
+                                            {{ $index + 1 }}
+                                        </td>
+
+                                        {{-- Waktu --}}
+                                        <td class="px-5 py-3 whitespace-nowrap">
+                                            <span class="text-sm font-bold text-gray-800">
+                                                {{ \Carbon\Carbon::parse($t->transaction_date)->format('H:i') }}
+                                            </span>
+                                            <span class="text-xs text-gray-500 block">WIB</span>
+                                        </td>
+
+                                        {{-- ID Transaksi --}}
+                                        <td class="px-5 py-3 whitespace-nowrap">
+                                            <span class="text-xs text-gray-500 font-mono bg-gray-100 px-2 py-1 rounded">
+                                                #{{ $t->id_transaction }}
+                                            </span>
+                                        </td>
+
+                                        {{-- Total --}}
+                                        <td class="px-5 py-3 whitespace-nowrap">
+                                            <div class="text-sm font-bold text-gray-900">
+                                                Rp {{ number_format($t->total_amount, 0, ',', '.') }}
+                                            </div>
+                                            @if($t->tips > 0)
+                                                <div class="text-[10px] text-green-600 italic">
+                                                    + Tips {{ number_format($t->tips, 0, ',', '.') }}
+                                                </div>
+                                            @endif
+                                        </td>
+
+                                        {{-- Metode --}}
+                                        <td class="px-5 py-3 whitespace-nowrap">
+                                            @if($t->paymentMethod && $t->paymentMethod->method_name == 'Cash')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
+                                                    💵 Cash
+                                                </span>
+                                            @elseif($t->paymentMethod && $t->paymentMethod->method_name == 'Qris')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 border border-purple-200">
+                                                    📱 QRIS
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    {{ $t->paymentMethod->method_name ?? '-' }}
+                                                </span>
+                                            @endif
+                                        </td>
+
+                                        {{-- Aksi (Cetak) --}}
+                                        <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-medium">
+                                            <button onclick="window.open('{{ route('pos.print-struk', $t->id_transaction) }}', '_blank', 'width=400,height=600')" 
+                                                class="text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-md transition-colors flex items-center justify-end gap-1 ml-auto">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                                Cetak
+                                            </button>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @empty
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="px-6 py-12 text-center text-gray-500">
+                        <div class="flex flex-col items-center">
+                            <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <p class="text-base font-medium">Belum ada transaksi hari ini.</p>
+                            <p class="text-sm mt-1">Semangat jualan! Transaksi akan muncul di sini.</p>
+                        </div>
+                    </div>
+                </div>
+            @endforelse
         </div>
     </div>
 </x-app-layout>
