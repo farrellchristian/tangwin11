@@ -251,9 +251,7 @@
                 <a href="{{ route('admin.expenses.index') }}" class="{{ $subLinkClasses }} {{ request()->routeIs('admin.expenses.index') ? $subActiveClasses : '' }} pl-[52px] pr-6">
                     <span>Setting Pengeluaran</span>
                 </a>
-                <a href="#" class="{{ $subLinkClasses }} pl-[52px] pr-6">
-                    <span>Setting Reservasi</span>
-                </a>
+
             </div>
         </div>
         {{-- AKHIR BLOK PENGATURAN --}}
