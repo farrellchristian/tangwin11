@@ -91,6 +91,9 @@
 
 <body class="antialiased">
     {{ $slot }}
+    
+    {{-- Global Toast Notification --}}
+    <x-toast-notification />
 </body>
 
 </html>

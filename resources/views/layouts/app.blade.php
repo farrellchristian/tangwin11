@@ -89,6 +89,9 @@
             </main>
         </div>
     </div>
+    
+    {{-- Global Toast Notification --}}
+    <x-toast-notification />
 </body>
 
 </html>

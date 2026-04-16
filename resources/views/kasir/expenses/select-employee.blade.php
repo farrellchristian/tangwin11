@@ -11,11 +11,7 @@
                 <div class="p-6 text-gray-900">
 
                     {{-- Tampilkan Pesan Sukses Jika Ada --}}
-                    @if (session('success'))
-                        <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-                            <span class="block sm:inline">{{ session('success') }}</span>
-                        </div>
-                    @endif
+                    
 
                     <h3 class="text-lg font-medium text-center mb-4">Pilih Karyawan yang Melakukan Pengeluaran:</h3>
 

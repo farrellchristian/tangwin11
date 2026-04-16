@@ -49,12 +49,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
             {{-- Flash messages --}}
-            @if(session('success'))
-            <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-md text-sm flex justify-between items-center" x-data="{ show: true }" x-show="show">
-                <span>{{ session('success') }}</span>
-                <button @click="show = false" class="text-green-600 hover:text-green-800 ml-2">&times;</button>
-            </div>
-            @endif
+            
             @if($errors->any())
             <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
                 <ul class="list-disc pl-4">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul>

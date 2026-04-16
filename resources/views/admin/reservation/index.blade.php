@@ -20,17 +20,7 @@
                 </button>
             </div>
 
-            @if(session('success'))
-                <div x-data="{ show: true }" x-show="show" x-transition.opacity
-                    class="flex items-center gap-3 p-4 text-sm text-green-800 border border-green-200 rounded-xl bg-green-50 shadow-sm">
-                    <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" />
-                    </svg>
-                    <span><strong>Berhasil!</strong> {{ session('success') }}</span>
-                    <button @click="show = false" class="ml-auto text-green-500 hover:text-green-700">✕</button>
-                </div>
-            @endif
+            
 
             {{-- STATISTIK — 2x2 Grid di Mobile, 4 kolom di Desktop --}}
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
