@@ -489,7 +489,7 @@
                             <!-- Tabel Riwayat Transaksi -->
                             @if ($empData['transactions']->isNotEmpty())
                                 <h4 class="text-md font-medium mb-2 text-gray-700">Riwayat Transaksi</h4>
-                                <div class="overflow-x-auto mb-6 rounded-md border">
+                                <div class="hidden md:block overflow-x-auto mb-6 rounded-md border">
                                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                                         <thead class="bg-gray-50">
                                             <tr>
@@ -525,6 +525,38 @@
                                         </tbody>
                                     </table>
                                 </div>
+                                <!-- Mobile View: Cards -->
+                                <div class="block md:hidden space-y-3 mb-6">
+                                    @foreach ($empData['transactions'] as $index => $transaction)
+                                    <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex flex-col gap-3">
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                                    {{ $transaction->transaction_date->format('d M Y H:i') }}
+                                                </div>
+                                                <div class="text-sm font-bold text-gray-800">
+                                                    Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
+                                                </div>
+                                                <div class="text-xs text-gray-500 mt-0.5">
+                                                    Method: {{ $transaction->paymentMethod->method_name ?? 'N/A' }}
+                                                </div>
+                                            </div>
+                                            @if($transaction->tips > 0)
+                                            <div class="bg-green-50 text-green-600 px-2.5 py-1 rounded-md text-[10px] font-bold">
+                                                +Tip: Rp {{ number_format($transaction->tips, 0, ',', '.') }}
+                                            </div>
+                                            @endif
+                                        </div>
+                                        <div class="flex gap-2 justify-end pt-2 border-t border-gray-50">
+                                            <button @click.prevent="openTransactionModal({{ $transaction->id_transaction }})" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-semibold hover:bg-indigo-100 transition">Detail</button>
+                                            <form action="{{ route('admin.transactions.destroy', $transaction->id_transaction) }}" method="POST" onsubmit="return confirm('Hapus transaksi ini?');">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-md text-xs font-semibold hover:bg-red-100 transition">Hapus</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
                             @else
                                 <p class="text-sm text-gray-500 mb-6 italic">Tidak ada transaksi untuk karyawan ini pada periode terpilih.</p>
                             @endif
@@ -532,7 +564,7 @@
                              <!-- Tabel Riwayat Pengeluaran -->
                             @if ($empData['expenses']->isNotEmpty())
                                 <h4 class="text-md font-medium mb-2 text-gray-700">Riwayat Pengeluaran</h4>
-                                <div class="overflow-x-auto rounded-md border">
+                                <div class="hidden md:block overflow-x-auto rounded-md border">
                                     <table class="min-w-full divide-y divide-gray-200 text-sm">
                                         <thead class="bg-gray-50">
                                             <tr>
@@ -570,6 +602,34 @@
                                             @endforeach
                                         </tbody>
                                     </table>
+                                </div>
+                                <!-- Mobile View: Cards -->
+                                <div class="block md:hidden space-y-3">
+                                    @foreach ($empData['expenses'] as $index => $expense)
+                                    <div class="bg-white border border-gray-100 shadow-sm rounded-xl p-4 flex flex-col gap-3">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1 mr-2">
+                                                <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                                    {{ $expense->expense_date->format('d M Y H:i') }}
+                                                </div>
+                                                <div class="text-sm font-bold text-gray-800 line-clamp-2">
+                                                    {{ $expense->description }}
+                                                </div>
+                                            </div>
+                                            <div class="bg-red-50 text-red-600 px-2.5 py-1 rounded-md text-[11px] font-bold whitespace-nowrap">
+                                                -Rp {{ number_format($expense->amount, 0, ',', '.') }}
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2 justify-end pt-2 border-t border-gray-50">
+                                            <button @click.prevent="openExpenseModal({{ $expense->id_expense }})" class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-md text-xs font-semibold hover:bg-indigo-100 transition">Detail</button>
+                                            <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}" class="px-3 py-1.5 bg-yellow-50 text-yellow-600 rounded-md text-xs font-semibold hover:bg-yellow-100 transition">Edit</a>
+                                            <form action="{{ route('admin.expenses.destroy', $expense->id_expense) }}" method="POST" onsubmit="return confirm('Hapus data ini?');">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-md text-xs font-semibold hover:bg-red-100 transition">Hapus</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    @endforeach
                                 </div>
                             @else
                                <p class="text-sm text-gray-500 italic">Tidak ada pengeluaran untuk karyawan ini pada periode terpilih.</p>
