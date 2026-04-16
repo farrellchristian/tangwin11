@@ -16,24 +16,62 @@ class ReservationSlotController extends Controller
     {
         // Ambil semua data Toko untuk filter dropdown
         $stores = \App\Models\Store::where('is_active', 1)->get();
-        // Set toko aktif (Prioritas: request -> 'all')
-        $selectedStoreId = $request->input('store_id', 'all');
 
-        // 1. Ambil data Slot, order by jam lalu group berdasar Hari
-        $slotsQuery = ReservationSlot::with(['employees', 'store'])
-            ->orderBy('slot_time');
-
-        // Terapkan filter toko
-        if ($selectedStoreId && $selectedStoreId !== 'all') {
-            $slotsQuery->where('id_store', $selectedStoreId);
+        // Default ke toko pertama (bukan 'all') untuk performa
+        $selectedStoreId = $request->input('store_id');
+        if (!$selectedStoreId || $selectedStoreId === 'all') {
+            $selectedStoreId = $stores->first()?->id_store;
         }
 
-        $slots = $slotsQuery->get()->groupBy('day_of_week');
+        // Hanya ambil RINGKASAN per hari (count + waktu min/max), bukan semua slot
+        $daySummaries = ReservationSlot::where('id_store', $selectedStoreId)
+            ->selectRaw("day_of_week, COUNT(*) as slot_count, MIN(slot_time) as first_time, MAX(slot_time) as last_time")
+            ->groupBy('day_of_week')
+            ->get()
+            ->keyBy('day_of_week');
 
-        // 2. Ambil data Karyawan (Semua)
+        // Total slot count for display
+        $totalSlotCount = $daySummaries->sum('slot_count');
+
+        // Ambil data Karyawan (Semua aktif)
         $employees = \App\Models\Employee::where('is_active', 1)->get();
 
-        return view('admin.reservation.slots.index', compact('slots', 'employees', 'stores', 'selectedStoreId'));
+        return view('admin.reservation.slots.index', compact('daySummaries', 'employees', 'stores', 'selectedStoreId', 'totalSlotCount'));
+    }
+
+    /**
+     * AJAX: Ambil slot per hari + toko (lazy-load untuk accordion)
+     */
+    public function daySlots(Request $request)
+    {
+        $day = $request->input('day');
+        $storeId = $request->input('store_id');
+
+        if (!$day || !$storeId) {
+            return response()->json([], 400);
+        }
+
+        $slots = ReservationSlot::with(['employees:id_employee,employee_name', 'store:id_store,store_name'])
+            ->where('id_store', $storeId)
+            ->where('day_of_week', $day)
+            ->orderBy('slot_time')
+            ->get()
+            ->map(function ($slot) {
+                return [
+                    'id' => $slot->id_slot,
+                    'time' => Carbon::parse($slot->slot_time)->format('H:i'),
+                    'store_name' => $slot->store->store_name ?? 'N/A',
+                    'store_id' => $slot->id_store,
+                    'quota' => $slot->quota,
+                    'day' => $slot->day_of_week,
+                    'employees' => $slot->employees->map(fn($e) => [
+                        'id' => $e->id_employee,
+                        'name' => $e->employee_name,
+                    ]),
+                ];
+            });
+
+        return response()->json($slots);
     }
 
     /**

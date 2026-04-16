@@ -40,9 +40,10 @@ class DashboardController extends Controller
         
         $hasClockedIn = $presence && $presence->check_in_time;
 
-        // 4. Ambil 5 Transaksi Terakhir
+        // 4. Ambil 5 Transaksi Terakhir Hari Ini
         $recentTransactions = Transaction::with('store')
             ->where('id_user', $user->id)
+            ->whereDate('transaction_date', $today)
             ->orderBy('transaction_date', 'desc')
             ->limit(5)
             ->get();

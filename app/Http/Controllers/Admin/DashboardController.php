@@ -64,8 +64,9 @@ class DashboardController extends Controller
             $composition->get('food') ?? 0
         ];
 
-        // 4. TRANSAKSI TERBARU (Live Feed)
+        // 4. TRANSAKSI TERBARU HARI INI (Live Feed)
         $recentTransactions = Transaction::with(['store', 'employee'])
+            ->whereDate('transaction_date', $today)
             ->latest('transaction_date')
             ->limit(5)
             ->get();

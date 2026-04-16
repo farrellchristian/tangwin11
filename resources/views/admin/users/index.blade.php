@@ -1,33 +1,33 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight mr-4">
-                {{ __('Manajemen Akun Kasir (Login)') }}
-            </h2>
-
-
-        </div>
+        <h2 class="font-bold text-xl text-gray-800 leading-tight truncate">
+            {{ __('Manajemen Akun Kasir') }}
+        </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 sm:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
             {{-- === BLOK TAB NAVIGASI === --}}
-        <div class="mb-6">
+            <div class="mb-4">
                 <div class="border-b border-gray-200">
                     <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                         <a href="{{ route('admin.users.index') }}" 
                            class="border-indigo-500 text-indigo-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" 
                            aria-current="page">
-                            Manajemen Akun Kasir
+                            Akun Login Kasir
                         </a>
 
                         <a href="{{ route('admin.stores.index') }}" 
                            class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
-                            Manajemen Toko
+                            Profil Toko
                         </a>
                     </nav>
                 </div>
+            </div>
+            
+            <div class="mb-6">
+                <p class="text-sm text-gray-500">Kelola email dan password akses untuk setiap kasir di toko Anda.</p>
             </div>
             {{-- === AKHIR BLOK TAB BARU === --}}
 
@@ -64,8 +64,10 @@
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <div class="overflow-x-auto">
+                <div class="p-4 sm:p-6 text-gray-900">
+                    
+                    {{-- Tampilan Desktop (Tabel) --}}
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -114,7 +116,6 @@
                                                     <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Nonaktifkan</button>
                                                 </form>
                                             @else
-                                                {{-- (Opsional) Tombol Aktifkan kembali, bisa dibuat nanti --}}
                                                 <span class="text-gray-400 ml-4">Dinonaktifkan</span>
                                             @endif
                                         </td>
@@ -130,12 +131,62 @@
                         </table>
                     </div>
 
+                    {{-- Tampilan Mobile (Card) --}}
+                    <div class="block md:hidden space-y-4">
+                        @forelse ($users as $user)
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <div class="pr-2">
+                                        <h3 class="text-base font-semibold text-gray-900 truncate">{{ $user->name }}</h3>
+                                        <p class="text-sm text-gray-500 break-all">{{ $user->email }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        @if ($user->is_active)
+                                            <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">
+                                              Aktif
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800">
+                                              Non-Aktif
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center text-gray-600 text-sm">
+                                    <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                    <span class="truncate">{{ $user->store->store_name ?? 'N/A' }}</span>
+                                </div>
+
+                                <div class="pt-3 border-t border-gray-100 flex justify-end space-x-2">
+                                    <a href="{{ route('admin.users.edit', $user->id) }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-md hover:bg-indigo-100 transition-colors">
+                                        Edit
+                                    </a>
+                                    @if ($user->is_active)
+                                        <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan akun kasir ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 text-sm font-medium rounded-md hover:bg-red-100 transition-colors">
+                                                Nonaktifkan
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-6 text-gray-500 text-sm border border-gray-200 rounded-lg bg-gray-50">
+                                Data akun kasir belum tersedia.
+                            </div>
+                        @endforelse
+                    </div>
+
                     <div class="mt-6">
                         {{ $users->links() }}
                     </div>
 
                 </div>
             </div>
+
         </div>
     </div>
 </x-app-layout>

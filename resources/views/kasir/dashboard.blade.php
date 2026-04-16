@@ -2,7 +2,7 @@
     {{-- Header Gradient --}}
     <div class="bg-gradient-to-r from-indigo-600 to-blue-500 pb-32 pt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center ml-14 lg:ml-0">
                 <div class="text-white">
                     <h1 class="text-3xl font-bold">Halo, {{ Auth::user()->name }}! 👋</h1>
                     <p class="mt-2 text-indigo-100 text-sm opacity-90">Selamat bertugas di <span class="font-bold bg-white/20 px-2 py-1 rounded">{{ Auth::user()->store->store_name ?? 'Pusat' }}</span>. Semangat untuk hari ini!</p>
@@ -103,12 +103,40 @@
         </div>
 
         {{-- 3. TABEL AKTIVITAS TERAKHIR --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-800">Aktivitas Terakhir Anda</h3>
-                <a href="{{ route('pos.history') }}" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">Lihat Semua &rarr;</a>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8 md:mb-0">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-gray-800 whitespace-nowrap">Aktivitas Terakhir</h3>
+                <a href="{{ route('pos.history') }}" class="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap ml-2">Lihat Semua &rarr;</a>
             </div>
-            <div class="overflow-x-auto">
+
+            {{-- === MOBILE VIEW: CARD LIST === --}}
+            <div class="block md:hidden divide-y divide-gray-100">
+                @forelse($recentTransactions as $t)
+                    <div class="px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex flex-col items-center justify-center flex-shrink-0">
+                                <span class="text-[11px] font-bold text-indigo-700 leading-none">{{ $t->transaction_date->format('H:i') }}</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-gray-800">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
+                                <span class="text-[10px] text-gray-400 font-mono">#{{ $t->id_transaction }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-green-100 text-green-700 border border-green-200">
+                                Berhasil
+                            </span>
+                        </div>
+                    </div>
+                @empty
+                    <div class="px-4 py-6 text-center text-gray-500 italic text-sm border-t border-gray-50">
+                        Belum ada transaksi hari ini.
+                    </div>
+                @endforelse
+            </div>
+
+            {{-- === DESKTOP VIEW: TABLE === --}}
+            <div class="hidden md:block overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -120,18 +148,18 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($recentTransactions as $t)
-                            <tr>
+                            <tr class="hover:bg-slate-50 transition">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                     {{ $t->transaction_date->format('H:i') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    #{{ $t->id_transaction }}
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-transparent">
+                                    <span class="font-mono text-xs text-gray-500">#{{ $t->id_transaction }}</span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">
                                     Rp {{ number_format($t->total_amount, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                    <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
                                         Berhasil
                                     </span>
                                 </td>

@@ -1,21 +1,21 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-baseline">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight mr-4">
-                {{ __('Manajemen Produk (Barang)') }}
-            </h2>
-
-
-        </div>
+        <h2 class="font-bold text-xl text-gray-800 leading-tight truncate">
+            {{ __('Manajemen Produk (Barang)') }}
+        </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 sm:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-            <div class="flex justify-between items-center mb-4">
+            <div class="mb-4 text-sm text-gray-500">
+                Kelola daftar produk, stok, dan harga per toko.
+            </div>
 
-                <form method="GET" action="{{ route('admin.products.index') }}" class="flex items-center">
-                    <select name="store_id" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0 mb-4">
+
+                <form method="GET" action="{{ route('admin.products.index') }}" class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                    <select name="store_id" class="block w-full sm:w-auto rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                         <option value="">Semua Toko</option>
                         @foreach ($stores as $store)
                         <option value="{{ $store->id_store }}" {{ request('store_id') == $store->id_store ? 'selected' : '' }}>
@@ -23,12 +23,12 @@
                         </option>
                         @endforeach
                     </select>
-                    <button type="submit" class="ml-2 px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700">
+                    <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 flex-shrink-0">
                         Filter
                     </button>
                 </form>
 
-                <a href="{{ route('admin.products.create') }}" class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
+                <a href="{{ route('admin.products.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150 sm:ml-3 w-full sm:w-auto">
                     {{ __('+ Tambah Produk') }}
                 </a>
             </div>
@@ -40,9 +40,10 @@
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+                <div class="p-4 sm:p-6 text-gray-900">
 
-                    <div class="overflow-x-auto">
+                    {{-- Tampilan Desktop (Tabel) --}}
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -97,6 +98,58 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Tampilan Mobile (Card) --}}
+                    <div class="block md:hidden space-y-4">
+                        @forelse ($products as $product)
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <div class="pr-2">
+                                        <h3 class="text-base font-semibold text-gray-900 leading-tight">{{ $product->product_name }}</h3>
+                                        <p class="text-sm text-gray-500 mt-1 line-clamp-2">{{ $product->description }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            {{ $product->store->store_name }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex flex-col space-y-1">
+                                    <div class="text-indigo-600 font-medium">
+                                        Rp {{ number_format($product->price, 0, ',', '.') }}
+                                    </div>
+                                    <div>
+                                        @if($product->stock_available <= 10)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                            Sisa stok: {{ $product->stock_available }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">Stok: {{ $product->stock_available }} pcs</span>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <div class="pt-3 border-t border-gray-100 flex justify-end space-x-2">
+                                    <a href="{{ route('admin.products.edit', $product->id_product) }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-md hover:bg-indigo-100 transition-colors">
+                                        Edit
+                                    </a>
+                                    
+                                    <form action="{{ route('admin.products.destroy', $product->id_product) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 text-sm font-medium rounded-md hover:bg-red-100 transition-colors">
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-6 text-gray-500 text-sm border border-gray-200 rounded-lg bg-gray-50">
+                                Data produk belum tersedia.
+                            </div>
+                        @endforelse
                     </div>
 
                     <div class="mt-6">

@@ -92,9 +92,6 @@ class PresenceController extends Controller
             }
         }
 
-        // ==========================================================
-        // --- PERBAIKAN LOGIKA #1 MULAI DI SINI ---
-        // ==========================================================
 
         // 4. Validasi Jadwal (Logika Baru: Cari jadwal paling dekat)
         $now = Carbon::now();
@@ -137,11 +134,6 @@ class PresenceController extends Controller
             return redirect()->route('presence.index')
                 ->with('error', 'Gagal menentukan jadwal presensi yang sesuai.');
         }
-
-        // ==========================================================
-        // --- PERBAIKAN LOGIKA #1 SELESAI ---
-        // ==========================================================
-
 
         // 5. Cek apakah sudah Check-in hari ini
         // Kita cek berdasarkan ID Karyawan DAN ID Jadwal (agar bisa absen di 2 shift)

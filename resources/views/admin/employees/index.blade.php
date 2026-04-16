@@ -1,16 +1,16 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight mr-4">
-                {{ __('Manajemen Karyawan (Capster)') }}
-            </h2>
-
-
-        </div>
+        <h2 class="font-bold text-xl text-gray-800 leading-tight truncate">
+            {{ __('Manajemen Karyawan (Capster)') }}
+        </h2>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-6 sm:py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="mb-4 text-sm text-gray-500">
+                Kelola data karyawan, toko penempatan, dan status keaktifan.
+            </div>
 
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-2 sm:space-y-0 mb-4">
 
@@ -46,9 +46,10 @@
             @endif
 
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+                <div class="p-4 sm:p-6 text-gray-900">
 
-                    <div class="overflow-x-auto">
+                    {{-- Tampilan Desktop (Tabel) --}}
+                    <div class="hidden md:block overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
@@ -102,11 +103,6 @@
                                                 </form>
                                             @else
                                                 {{-- Nanti kita tambahkan tombol Restore di sini --}}
-                                                {{-- <form action="{{ route('admin.employees.restore', $employee->id_employee) }}" method="POST" class="inline-block">
-                                                    @csrf
-                                                    @method('PUT') 
-                                                    <button type="submit" class="text-green-600 hover:text-green-900 ml-4">Aktifkan</button>
-                                                </form> --}}
                                             @endif
                                         </td>
                                     </tr>
@@ -119,6 +115,64 @@
                                 @endforelse
                             </tbody>
                         </table>
+                    </div>
+
+                    {{-- Tampilan Mobile (Card) --}}
+                    <div class="block md:hidden space-y-4">
+                        @forelse ($employees as $employee)
+                            <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm flex flex-col space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <div class="pr-2">
+                                        <h3 class="text-base font-semibold text-gray-900 truncate">{{ $employee->employee_name }}</h3>
+                                        <p class="text-sm text-gray-500">{{ $employee->phone_number }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        @if ($employee->is_active)
+                                            <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">
+                                              Aktif
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800">
+                                              Non-Aktif
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                                
+                                <div class="flex flex-col space-y-1 text-sm text-gray-600">
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                        <span class="truncate font-medium">{{ $employee->store->store_name }}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                        <span class="truncate">{{ $employee->position }}</span>
+                                        <span class="mx-2 text-gray-300">|</span>
+                                        <span class="text-xs text-gray-500">{{ $employee->join_date->format('d M Y') }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="pt-3 border-t border-gray-100 flex justify-end space-x-2">
+                                    <a href="{{ route('admin.employees.edit', $employee->id_employee) }}" class="inline-flex items-center px-3 py-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium rounded-md hover:bg-indigo-100 transition-colors">
+                                        Edit
+                                    </a>
+                                    
+                                    @if ($employee->is_active)
+                                        <form action="{{ route('admin.employees.destroy', $employee->id_employee) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan karyawan ini?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 text-sm font-medium rounded-md hover:bg-red-100 transition-colors">
+                                                Nonaktifkan
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-6 text-gray-500 text-sm border border-gray-200 rounded-lg bg-gray-50">
+                                Data karyawan belum tersedia.
+                            </div>
+                        @endforelse
                     </div>
 
                     <div class="mt-6">

@@ -10,7 +10,7 @@
         </div>
 
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 ml-14 lg:ml-0">
                 <div>
                     <h2 class="text-indigo-400 font-semibold tracking-wide uppercase text-xs mb-1">Executive Overview</h2>
                     <h1 class="text-3xl md:text-4xl font-bold text-white">
@@ -136,11 +136,42 @@
 
             {{-- Transaksi Terbaru --}}
             <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                <div class="p-4 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                     <h3 class="text-lg font-bold text-slate-800">Aktivitas Terbaru</h3>
-                    <a href="{{ route('pos.history') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">Lihat Semua</a>
+                    <a href="{{ route('pos.history') }}" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 whitespace-nowrap ml-2">Lihat Semua</a>
                 </div>
-                <div class="overflow-x-auto">
+
+                {{-- === MOBILE VIEW: CARD LIST === --}}
+                <div class="block lg:hidden divide-y divide-slate-100">
+                    @forelse($recentTransactions as $trx)
+                        <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-50 border border-slate-100 flex flex-col items-center justify-center flex-shrink-0">
+                                    <span class="text-[11px] font-bold text-slate-700 leading-none">{{ \Carbon\Carbon::parse($trx->transaction_date)->format('H:i') }}</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-bold text-slate-800">Rp {{ number_format($trx->total_amount, 0, ',', '.') }}</span>
+                                        <span class="text-[10px] font-medium px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded">{{ $trx->store->store_name ?? '-' }}</span>
+                                    </div>
+                                    <span class="text-[11px] text-slate-500 mt-0.5">{{ $trx->employee->employee_name ?? 'Unknown' }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-green-100 text-green-700 border border-green-200">
+                                    Sukses
+                                </span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-4 py-8 text-center text-slate-400 italic text-sm">
+                            Belum ada transaksi hari ini.
+                        </div>
+                    @endforelse
+                </div>
+
+                {{-- === DESKTOP VIEW: TABLE === --}}
+                <div class="hidden lg:block overflow-x-auto">
                     <table class="w-full text-sm text-left">
                         <thead class="text-xs text-slate-500 uppercase bg-slate-50 border-b">
                             <tr>
@@ -168,7 +199,7 @@
                                 </td>
 
                                 {{-- Capster --}}
-                                <td class="px-6 py-4 text-slate-600 whitespace-nowrap">
+                                <td class="px-6 py-4 text-slate-600 whitespace-nowrap border-r border-transparent">
                                     {{ $trx->employee->employee_name ?? 'Unknown' }}
                                 </td>
 
@@ -179,7 +210,7 @@
 
                                 {{-- Status (Rata Tengah) --}}
                                 <td class="px-6 py-4 text-center whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-bold bg-green-100 text-green-800 border border-green-200">
                                         Sukses
                                     </span>
                                 </td>

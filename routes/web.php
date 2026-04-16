@@ -180,6 +180,9 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         // Halaman Kelola Jadwal
         Route::get('/slots', [ReservationSlotController::class, 'index'])->name('slots.index');
 
+        // AJAX: Ambil slot per hari (lazy-load)
+        Route::get('/slots/day-data', [ReservationSlotController::class, 'daySlots'])->name('slots.dayData');
+
         // Simpan Jadwal Baru (Generate)
         Route::post('/slots', [ReservationSlotController::class, 'store'])->name('slots.store');
 

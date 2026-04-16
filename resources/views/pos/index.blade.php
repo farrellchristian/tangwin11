@@ -58,12 +58,11 @@
                                     </button> --}}
                                 </div>
 
-                                <div class="mt-4 space-y-2">
+                                <div class="mt-4 space-y-3">
                                     @forelse ($stores as $store)
                                         {{-- Link ke langkah selanjutnya (Pilih Karyawan) --}}
-                                        {{-- Kita perlu definisikan route 'pos.select-employee' nanti --}}
                                         <a href="{{ route('pos.select-employee', ['store' => $store->id_store]) }}"
-                                           class="block w-full px-4 py-3 text-center text-white bg-indigo-600 rounded-md hover:bg-indigo-700">
+                                           class="block w-full px-4 py-3 text-center border border-gray-300 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-gray-800 transition-colors">
                                             {{ $store->store_name }}
                                         </a>
                                     @empty

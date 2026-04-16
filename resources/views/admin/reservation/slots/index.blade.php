@@ -5,7 +5,7 @@
 
     <div class="py-6" x-data="{
         activeDay: 'all',
-        activeStore: '{{ $selectedStoreId ?? 'all' }}',
+        selectedStoreId: '{{ $selectedStoreId }}',
         showCreateModal: false,
         showEditModal: false,
         editUrl: '',
@@ -16,6 +16,9 @@
         editSlotQuota: 1,
         modalDropdownOpen: false,
         inputMode: 'bulk',
+        csrfToken: '{{ csrf_token() }}',
+        dayDataUrl: '{{ route('admin.reservation.slots.dayData') }}',
+        slotBaseUrl: '{{ url('/admin/reservation/slots') }}',
         allEmployees: [
             @foreach($employees as $e)
                 { id: {{ $e->id_employee }}, name: '{{ addslashes($e->employee_name) }}', store_id: {{ $e->id_store }} },
@@ -43,7 +46,7 @@
                 : this.currentEmployees.push(id);
         }
     }">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
             {{-- Flash messages --}}
             @if(session('success'))
@@ -58,160 +61,193 @@
             </div>
             @endif
 
-            {{-- 1. TOP NAVBAR / FILTER HEADER (DESAIN MOCKUP) --}}
-            <div class="bg-white rounded-xl shadow-sm border border-slate-100 flex flex-col lg:flex-row lg:items-center justify-between px-6 py-4 mb-4">
+            {{-- 1. HEADER & CONTROL PANEL --}}
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden mb-4">
+                <div class="p-4 sm:p-5 lg:p-6">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                        {{-- Left Side: Identity & Controls --}}
+                        <div class="flex-1">
+                            <h1 class="text-lg font-bold text-slate-800 tracking-tight">Kelola Jadwal Operasional</h1>
+                            <p class="text-xs text-slate-500">Atur slot reservasi dan penugasan karyawan.</p>
 
-                {{-- Kiri: Filter Toko & Tabs Hari --}}
-                <div class="flex flex-col md:flex-row md:items-center gap-6">
-                    {{-- Filter Toko --}}
-                    <div class="flex items-center gap-2">
-                        <label class="text-sm font-medium text-slate-500">Toko:</label>
-                        <select x-model="activeStore" @change="window.location.search = '?store_id=' + $event.target.value" class="block w-48 pl-3 pr-8 py-2 text-sm font-medium border-slate-200 focus:outline-none focus:ring-slate-500 focus:border-slate-500 rounded-lg bg-white hover:bg-slate-50 transition cursor-pointer shadow-sm">
-                            <option value="all" {{ $selectedStoreId == null ? 'selected' : '' }}>Semua Toko</option>
-                            @foreach ($stores as $store)
-                            <option value="{{ $store->id_store }}" {{ $selectedStoreId == $store->id_store ? 'selected' : '' }}>
-                                {{ $store->store_name }}
-                            </option>
-                            @endforeach
-                        </select>
+                            <div class="flex flex-wrap items-center gap-3 mt-4">
+                                {{-- Store Selector --}}
+                                <div class="relative">
+                                    <select @change="window.location.search = '?store_id=' + $event.target.value"
+                                        class="bg-slate-50 border-none ring-1 ring-slate-200 text-slate-600 text-[11px] font-bold rounded-lg pl-3 pr-8 py-2 focus:ring-1 focus:ring-indigo-500 transition-all cursor-pointer">
+                                        @foreach ($stores as $store)
+                                        <option value="{{ $store->id_store }}" {{ $selectedStoreId == $store->id_store ? 'selected' : '' }}>
+                                            📍 {{ $store->store_name }}
+                                        </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- Day Navigation --}}
+                                <div class="flex flex-wrap gap-1 p-1 bg-slate-100 rounded-lg">
+                                    <button @click="activeDay = 'all'"
+                                        :class="activeDay === 'all' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                                        class="px-3 py-1.5 rounded-md text-[9px] font-bold uppercase transition-all">
+                                        ALL
+                                    </button>
+                                    @php
+                                    $shortDays = ['Senin' => 'SEN', 'Selasa' => 'SEL', 'Rabu' => 'RAB', 'Kamis' => 'KAM', 'Jumat' => 'JUM', 'Sabtu' => 'SAB', 'Minggu' => 'MIN'];
+                                    @endphp
+                                    @foreach(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $d)
+                                    <button @click="activeDay = '{{ $d }}'"
+                                        :class="activeDay === '{{ $d }}' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                                        class="px-3 py-1.5 rounded-md text-[9px] font-bold uppercase transition-all">
+                                        {{ $shortDays[$d] }}
+                                    </button>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Right Side: Metric & Actions --}}
+                        <div class="flex items-center justify-between lg:justify-end gap-6 lg:border-l border-slate-100 lg:pl-6">
+                            <div class="flex flex-col items-end">
+                                <span class="text-xl font-bold text-indigo-600 leading-none">{{ $totalSlotCount }}</span>
+                                <span class="text-[9px] font-bold text-slate-400 uppercase mt-1">Total Slots</span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <form action="{{ route('admin.reservation.slots.destroyAll') }}" method="POST" onsubmit="return confirm('Hapus semua slot jadwal?')" class="inline">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all" title="Reset Semua">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    </button>
+                                </form>
+                                <button @click="showCreateModal = true"
+                                    class="flex items-center gap-2 px-4 py-2.5 bg-slate-800 text-white text-[10px] font-bold rounded-lg hover:bg-slate-900 transition-all shadow-sm">
+                                    <svg class="w-3.5 h-3.5 italic" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                    TAMBAH JADWAL
+                                </button>
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="hidden md:block w-px h-6 bg-slate-200"></div>
-
-                    {{-- Tabs Hari --}}
-                    <div class="flex flex-wrap items-center gap-1 bg-white">
-                        <button @click="activeDay = 'all'" :class="activeDay === 'all' ? 'bg-[#1e293b] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
-                            Semua
-                        </button>
-                        @php
-                        $daysMap = ['Senin' => 'Sen', 'Selasa' => 'Sel', 'Rabu' => 'Rab', 'Kamis' => 'Kam', 'Jumat' => 'Jum', 'Sabtu' => 'Sab', 'Minggu' => 'Min'];
-                        @endphp
-                        @foreach(['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'] as $fullDay)
-                        <button @click="activeDay = '{{ $fullDay }}'" :class="activeDay === '{{ $fullDay }}' ? 'bg-[#1e293b] text-white shadow-sm' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700'" class="px-3 py-1.5 rounded-lg text-sm font-medium transition-colors">
-                            {{ $daysMap[$fullDay] }}
-                        </button>
-                        @endforeach
-                    </div>
-                </div>
-
-                {{-- Kanan: Info Slot & Actions --}}
-                <div class="flex items-center gap-6 mt-4 lg:mt-0 pt-4 lg:pt-0 border-t border-slate-100 lg:border-0 pl-0 lg:pl-6">
-                    <div class="flex items-center gap-3">
-                        <span class="text-xs font-semibold text-slate-400">
-                            {{ $slots->flatten()->count() }} slot
-                        </span>
-                        <form action="{{ route('admin.reservation.slots.destroyAll') }}" method="POST" onsubmit="return confirm('Hapus semua slot jadwal di toko Anda?')" class="inline">
-                            @csrf @method('DELETE')
-                            <button type="submit" class="text-xs font-semibold text-red-500 hover:text-red-700 transition">
-                                Reset semua
-                            </button>
-                        </form>
-                    </div>
-                    <button @click="showCreateModal = true" class="inline-flex items-center gap-2 px-4 py-2 bg-[#1e293b] text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition shadow-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                        </svg>
-                        Tambah Jadwal
-                    </button>
                 </div>
             </div>
 
-            {{-- 2. DAFTAR JADWAL (GROUP BY DAY) --}}
-            <div class="space-y-4">
+            {{-- 2. DAFTAR JADWAL (ACCORDION + AJAX LAZY-LOAD) --}}
+            <div class="space-y-3">
                 @php
                 $orderedDays = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+                $dayLabels = ['Senin' => 'Se', 'Selasa' => 'Sl', 'Rabu' => 'Ra', 'Kamis' => 'Ka', 'Jumat' => 'Ju', 'Sabtu' => 'Sa', 'Minggu' => 'Mi'];
                 @endphp
 
                 @foreach($orderedDays as $day)
-                @if(isset($slots[$day]) && $slots[$day]->count() > 0)
-                @php
-                $daySlots = $slots[$day];
-                @endphp
-                {{-- Blok Hari --}}
-                <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"
+                @if(isset($daySummaries[$day]))
+                @php $summary = $daySummaries[$day]; @endphp
+
+                {{-- Accordion Hari --}}
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200/60 overflow-hidden"
+                    x-data="{
+                        open: false,
+                        slots: [],
+                        loaded: false,
+                        loading: false,
+                        async loadSlots() {
+                            if (this.loaded) return;
+                            this.loading = true;
+                            try {
+                                const res = await fetch(`${dayDataUrl}?day={{ $day }}&store_id=${selectedStoreId}`);
+                                this.slots = await res.json();
+                                this.loaded = true;
+                            } catch(e) { console.error(e); }
+                            this.loading = false;
+                        },
+                        toggle() {
+                            this.open = !this.open;
+                            if (this.open) this.loadSlots();
+                        }
+                    }"
                     x-show="activeDay === 'all' || activeDay === '{{ $day }}'"
                     x-transition.opacity>
 
-                    {{-- Header Hari --}}
-                    <div class="px-8 py-5 border-b border-slate-50 flex items-center gap-3 bg-white">
-                        <h3 class="font-bold text-slate-800 text-base">{{ $day }}</h3>
-                        <div class="w-1 h-1 rounded-full bg-slate-300"></div>
-                        <span class="text-xs font-medium text-slate-400">{{ $daySlots->count() }} slot</span>
-                    </div>
-
-                    {{-- List Jam Grid Layout --}}
-                    <div class="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 bg-slate-50/50">
-                        @foreach($daySlots as $slot)
-                        <div class="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all flex flex-col gap-3 group relative"
-                            x-show="activeStore === 'all' || activeStore == '{{ $slot->id_store }}'">
-
-                            {{-- Top: Jam & Aksi --}}
-                            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                                <div class="flex items-center gap-2">
-                                    <div class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                    </div>
-                                    <span class="font-black text-slate-800 text-lg tracking-wide">
-                                        {{ \Carbon\Carbon::parse($slot->slot_time)->format('H:i') }}
-                                    </span>
-                                </div>
-
-                                <div class="flex items-center gap-1">
-                                    <button @click="openEdit(
-                                                    {{ $slot->id_slot }},
-                                                    '{{ $slot->day_of_week }}',
-                                                    '{{ \Carbon\Carbon::parse($slot->slot_time)->format('H:i') }}',
-                                                    [{{ $slot->employees->pluck('id_employee')->implode(',') }}],
-                                                    {{ $slot->id_store }},
-                                                    {{ $slot->quota }}
-                                                )" class="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition" title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
-                                        </svg>
-                                    </button>
-                                    <form action="{{ route('admin.reservation.slots.destroy', $slot->id_slot) }}" method="POST" class="inline" onsubmit="return confirm('Hapus slot jadwal ini?');">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition" title="Hapus">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                            </svg>
-                                        </button>
-                                    </form>
-                                </div>
+                    {{-- Accordion Header --}}
+                    <button @click="toggle()" class="w-full px-4 py-3.5 flex items-center justify-between hover:bg-slate-50 transition-colors cursor-pointer select-none">
+                        <div class="flex items-center gap-4">
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-xs"
+                                :class="open ? 'bg-indigo-600 text-white shadow-sm' : 'bg-slate-100 text-slate-500'">
+                                {{ substr($day, 0, 2) }}
                             </div>
-
-                            {{-- Middle: Toko & Kuota --}}
-                            <div class="flex items-center justify-between">
-                                <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2 flex py-1 rounded-md border border-slate-200/60 truncate max-w-[120px]">
-                                    {{ $slot->store->store_name ?? 'N/A' }}
-                                </span>
-                                <span class="text-[11px] text-slate-500 font-medium bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-sm">
-                                    Kuota <strong>{{ $slot->quota }}</strong>
-                                </span>
-                            </div>
-
-                            {{-- Bottom: Karyawan --}}
-                            <div class="flex flex-wrap items-center gap-1.5 pt-1">
-                                @forelse($slot->employees as $emp)
-                                <span class="inline-flex items-center px-1.5 py-1 rounded bg-indigo-50 border border-indigo-100 text-[10px] font-bold text-indigo-700 tracking-wide uppercase shadow-sm">
-                                    {{ $emp->employee_name }}
-                                </span>
-                                @empty
-                                <span class="inline-flex items-center px-2 py-1 rounded bg-slate-50 border border-slate-200 text-[10px] font-bold text-slate-400 italic">
-                                    Belum ada Staff
-                                </span>
-                                @endforelse
+                            <div class="text-left font-bold text-slate-700 text-sm">
+                                <span>{{ $day }}</span>
+                                <span class="mx-2 text-slate-300">·</span>
+                                <span class="text-[10px] text-slate-400 font-normal uppercase tracking-wider">{{ $summary->slot_count }} Slots</span>
                             </div>
                         </div>
-                        @endforeach
+                        <svg class="w-4 h-4 text-slate-300 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    {{-- Accordion Body --}}
+                    <div x-show="open" x-collapse x-cloak>
+                        <div x-show="loading" class="py-6 flex justify-center bg-slate-50/30">
+                            <div class="w-5 h-5 border-2 border-indigo-200 border-t-indigo-500 rounded-full animate-spin"></div>
+                        </div>
+
+                        {{-- Desktop Table --}}
+                        <div x-show="!loading && slots.length > 0" class="hidden md:block border-t border-slate-100">
+                            <table class="w-full text-xs">
+                                <thead class="bg-slate-50/50 text-[10px] text-slate-400 uppercase font-black tracking-wider">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left">Jam</th>
+                                        <th class="px-4 py-3 text-left">Staf</th>
+                                        <th class="px-4 py-3 text-center">Kuota</th>
+                                        <th class="px-6 py-3 text-right">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-50">
+                                    <template x-for="slot in slots" :key="slot.id">
+                                        <tr class="hover:bg-slate-50/50 transition-colors">
+                                            <td class="px-6 py-2.5 font-bold text-slate-700" x-text="slot.time"></td>
+                                            <td class="px-4 py-2.5">
+                                                <div class="flex flex-wrap gap-1">
+                                                    <template x-for="emp in slot.employees" :key="emp.id">
+                                                        <span class="px-1.5 py-0.5 rounded-md bg-white border border-slate-200 text-[9px] font-bold text-slate-500" x-text="emp.name"></span>
+                                                    </template>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-2.5 text-center font-bold text-slate-600" x-text="slot.quota"></td>
+                                            <td class="px-6 py-2.5 text-right">
+                                                <div class="flex items-center justify-end gap-1">
+                                                    <button @click="openEdit(slot.id, slot.day, slot.time, slot.employees.map(e => e.id), slot.store_id, slot.quota)" class="p-1.5 text-slate-300 hover:text-indigo-600 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                                                    <form :action="slotBaseUrl + '/' + slot.id" method="POST" class="inline">
+                                                        <input type="hidden" name="_token" :value="csrfToken">
+                                                        <input type="hidden" name="_method" value="DELETE">
+                                                        <button type="submit" class="p-1.5 text-slate-300 hover:text-red-500 rounded-lg"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {{-- Mobile List --}}
+                        <div x-show="!loading && slots.length > 0" class="block md:hidden border-t border-slate-100 divide-y divide-slate-50">
+                            <template x-for="slot in slots" :key="slot.id">
+                                <div class="px-4 py-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="px-2 py-1 bg-slate-50 rounded-md text-[11px] font-bold text-slate-600" x-text="slot.time"></div>
+                                        <div class="text-[10px] text-slate-400 font-bold" x-text="slot.quota + ' Qty'"></div>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <button @click="openEdit(slot.id, slot.day, slot.time, slot.employees.map(e => e.id), slot.store_id, slot.quota)" class="p-1.5 text-slate-300"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
                     </div>
                 </div>
                 @endif
                 @endforeach
 
-                @if ($slots->flatten()->count() === 0)
+                @if ($totalSlotCount === 0)
                 <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-12 flex flex-col items-center justify-center text-center">
                     <div class="bg-slate-50 p-4 rounded-full mb-4">
                         <svg class="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
