@@ -3,15 +3,82 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Transaction; // <-- Import Model Transaction
-use App\Models\Product; // <-- Import Model Product
-use App\Models\Food; // <-- Import Model Food
+use App\Models\Transaction;
+use App\Models\Product;
+use App\Models\Food;
+use App\Models\Store;
+use App\Models\Employee;
+use App\Models\PaymentMethod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(Transaction $transaction)
+    {
+        // Pastikan hanya Admin yang bisa
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $transaction->load(['employee', 'paymentMethod', 'store', 'details']);
+
+        $stores = Store::all();
+        $employees = Employee::where('id_store', $transaction->id_store)
+            ->where('is_active', true)
+            ->orderBy('employee_name')
+            ->get();
+        $paymentMethods = PaymentMethod::where('is_active', true)->get();
+
+        return view('admin.transactions.edit', compact('transaction', 'stores', 'employees', 'paymentMethods'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, Transaction $transaction)
+    {
+        // Pastikan hanya Admin yang bisa
+        if (Auth::user()->role !== 'admin') {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $validatedData = $request->validate([
+            'id_employee_primary' => 'required|exists:employees,id_employee',
+            'id_payment_method' => 'required|exists:payment_methods,id_payment_method',
+            'tips' => 'required|numeric|min:0',
+            'transaction_date' => 'required|date',
+            'notes' => 'nullable|string',
+            'status' => 'required|string|in:Paid,Unpaid,Pending,Cancelled',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Hitung ulang total_amount jika tips berubah
+            // Total transaksi biasanya = (Sum of details) + Tips
+            $detailsSubtotal = $transaction->details()->sum('subtotal');
+            $newTotalAmount = $detailsSubtotal + $validatedData['tips'];
+
+            $transaction->update(array_merge($validatedData, [
+                'total_amount' => $newTotalAmount,
+            ]));
+
+            DB::commit();
+
+            return redirect()->route('admin.reports.index')->with('success', 'Transaksi #' . $transaction->id_transaction . ' berhasil diperbarui.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error updating transaction: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal memperbarui transaksi. Error: ' . $e->getMessage())->withInput();
+        }
+    }
+
     /**
      * Remove the specified resource from storage (Soft Delete).
      */

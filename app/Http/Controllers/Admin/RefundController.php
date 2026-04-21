@@ -16,10 +16,26 @@ class RefundController extends Controller
      */
     public function index()
     {
-        // Get all refunds with related reservation
-        $refunds = Refund::with('reservation')->latest()->get();
+        // Get all refunds with related reservation (including soft-deleted ones)
+        $refunds = Refund::with(['reservation' => function($query) {
+            $query->withTrashed();
+        }])->latest()->paginate(10);
 
         return view('admin.refunds.index', compact('refunds'));
+    }
+
+    /**
+     * Remove the specified resource from storage (Soft Delete).
+     */
+    public function destroy(Refund $refund)
+    {
+        try {
+            $refund->delete(); // Soft delete the refund
+            return redirect()->back()->with('success', 'Data permintaan refund berhasil dihapus (soft delete).');
+        } catch (\Exception $e) {
+            \Log::error('Error soft deleting refund: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus data refund.');
+        }
     }
 
     /**

@@ -56,6 +56,12 @@ class ExpenseController extends Controller
             abort(403, 'Akses ditolak.');
         }
 
+        // --- VALIDASI PRESENSI ---
+        if (!$employee->hasCheckedInToday()) {
+            return redirect()->route('kasir.expenses.select-employee')
+                             ->with('error', 'Karyawan ' . $employee->employee_name . ' belum melakukan presensi hari ini!');
+        }
+
         // Hitung total pengeluaran karyawan HARI INI
         $todayExpenses = Expense::where('id_employee', $employee->id_employee)
                                 ->whereDate('expense_date', Carbon::today())
@@ -92,6 +98,12 @@ class ExpenseController extends Controller
         // Validasi tambahan: Karyawan harus dari toko kasir
         if (!$employee || $employee->id_store !== $user->id_store) {
              return back()->withErrors(['id_employee' => 'Karyawan tidak valid.'])->withInput();
+        }
+
+        // --- VALIDASI PRESENSI ---
+        if (!$employee->hasCheckedInToday()) {
+            return redirect()->route('kasir.expenses.select-employee')
+                             ->with('error', 'Karyawan ' . $employee->employee_name . ' belum melakukan presensi hari ini!');
         }
 
         // Cek Limit Pengeluaran Harian Karyawan

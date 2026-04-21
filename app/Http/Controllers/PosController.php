@@ -103,16 +103,29 @@ class PosController extends Controller
         if (Auth::user()->role === 'kasir' && Auth::user()->id_store !== $store->id_store) {
             abort(403, 'Anda tidak bisa mengakses toko ini.');
         }
+        
+        // --- VALIDASI PRESENSI ---
+        // Jika user bukan Admin, dia tidak bisa melakukan transaksi jika karyawan belum absen
+        if (Auth::user()->role !== 'admin' && !$employee->hasCheckedInToday()) {
+            return redirect()->route('pos.index')->with('error', 'Karyawan ini ' . $employee->employee_name . ' belum melakukan presensi masuk hari ini!');
+        }
 
         // Ambil data yang dibutuhkan untuk halaman transaksi dari toko yang dipilih
         $availableServices = Service::where('id_store', $store->id_store)->get();
         $availableProducts = Product::where('id_store', $store->id_store)->where('stock_available', '>', 0)->get(); // Hanya yg ada stok
         $availableFoods = Food::where('id_store', $store->id_store)->where('stock_available', '>', 0)->get(); // Hanya yg ada stok
-        $availableEmployees = Employee::where('id_store', $store->id_store)
+        $availableEmployeesQuery = Employee::where('id_store', $store->id_store)
                                     ->where('is_active', true)
-                                    ->where('id_employee', '!=', $employee->id_employee) // Kecuali capster utama
-                                    ->orderBy('employee_name')
-                                    ->get();
+                                    ->where('id_employee', '!=', $employee->id_employee);
+
+        // Filter: Hanya yang sudah absen hari ini (Kecuali Admin)
+        if (Auth::user()->role !== 'admin') {
+            $availableEmployeesQuery->whereHas('presenceLogs', function($q) {
+                $q->whereDate('check_in_time', \Carbon\Carbon::today());
+            });
+        }
+
+        $availableEmployees = $availableEmployeesQuery->orderBy('employee_name')->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
         // Tampilkan view halaman transaksi (akan kita buat)
@@ -152,6 +165,15 @@ class PosController extends Controller
             'status' => 'required|string|in:paid,pending,failed',
             'order_id' => 'nullable|string|max:255'
         ]);
+
+        // Tambahan Validasi Presensi (Server-side)
+        $employeePrimary = \App\Models\Employee::find($validatedData['id_employee_primary']);
+        if (Auth::user()->role !== 'admin' && (!$employeePrimary || !$employeePrimary->hasCheckedInToday())) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi ditolak. Capster utama (' . ($employeePrimary->employee_name ?? 'Unknown') . ') belum melakukan presensi hari ini.'
+            ], 403);
+        }
 
         // Gunakan Database Transaction untuk memastikan konsistensi data
         try {

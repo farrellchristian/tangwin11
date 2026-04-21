@@ -48,6 +48,24 @@ class Employee extends Model
     }
 
     /**
+     * Relasi: Satu karyawan memiliki banyak log presensi
+     */
+    public function presenceLogs()
+    {
+        return $this->hasMany(PresenceLog::class, 'id_employee', 'id_employee');
+    }
+
+    /**
+     * Mengecek apakah karyawan sudah melakukan check-in hari ini
+     */
+    public function hasCheckedInToday()
+    {
+        return $this->presenceLogs()
+                    ->whereDate('check_in_time', \Carbon\Carbon::today())
+                    ->exists();
+    }
+
+    /**
      * Relasi: Satu karyawan memiliki banyak transaksi (sebagai Capster Utama)
      */
     public function transactions()

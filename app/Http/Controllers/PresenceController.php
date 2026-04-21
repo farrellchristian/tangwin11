@@ -110,16 +110,43 @@ class PresenceController extends Controller
         }
 
         // Cari jadwal yang jam masuknya PALING DEKAT dengan jam sekarang
+        // DAN jam sekarang berada di antara jam masuk & jam keluar
         $bestSchedule = null;
-        $smallestDiff = PHP_INT_MAX; // Angka terbesar
+        $smallestDiff = PHP_INT_MAX; 
+        $hasEarlySchedule = false;
+        $nextStartTime = null;
 
         foreach ($schedules as $sch) {
             $jamMasuk = Carbon::parse($sch->jam_check_in);
+            $jamKeluar = Carbon::parse($sch->jam_check_out);
             $jamSekarang = Carbon::parse($currentTime);
 
-            // Hitung selisih absolut (jarak waktu)
-            $absDiff = $jamSekarang->diffInSeconds($jamMasuk, true); // true = selisih absolut
+            // 1. Cek apakah sudah berakhir (lewat jam_check_out)
+            $isOver = false;
+            if ($jamKeluar->gt($jamMasuk)) {
+                if ($jamSekarang->gt($jamKeluar)) $isOver = true;
+            } else {
+                if ($jamSekarang->gt($jamKeluar) && $jamSekarang->lt($jamMasuk)) $isOver = true;
+            }
+            if ($isOver) continue;
 
+            // 2. Cek apakah belum dimulai (sebelum jam_check_in)
+            $isNotStarted = false;
+            if ($jamKeluar->gt($jamMasuk)) {
+                if ($jamSekarang->lt($jamMasuk)) $isNotStarted = true;
+            } else {
+                // Shift malam 22:00 - 06:00. Belum mulai jika jam di antara 06:01 - 21:59
+                if ($jamSekarang->lt($jamMasuk) && $jamSekarang->gt($jamKeluar)) $isNotStarted = true;
+            }
+
+            if ($isNotStarted) {
+                $hasEarlySchedule = true;
+                $nextStartTime = $jamMasuk->format('H:i');
+                continue;
+            }
+
+            // 3. Jika lolos validasi waktu, cari yang paling dekat
+            $absDiff = $jamSekarang->diffInSeconds($jamMasuk, true);
             if ($absDiff < $smallestDiff) {
                 $smallestDiff = $absDiff;
                 $bestSchedule = $sch;
@@ -130,9 +157,17 @@ class PresenceController extends Controller
         $schedule = $bestSchedule;
 
         if (!$schedule) {
-            // Seharusnya tidak mungkin terjadi jika $schedules->isEmpty() lolos
+            if ($hasEarlySchedule) {
+                 return redirect()->route('presence.index')
+                    ->with('error', "Belum waktunya presensi. Jadwal terdekat Anda baru dimulai jam $nextStartTime.");
+            }
+
+            // Jika tidak ada yang awal, berarti sudah lewat semua
+            $lastSchedule = $schedules->sortByDesc('jam_check_out')->first();
+            $jamSelesai = Carbon::parse($lastSchedule->jam_check_out)->format('H:i');
+            
             return redirect()->route('presence.index')
-                ->with('error', 'Gagal menentukan jadwal presensi yang sesuai.');
+                ->with('error', "Batas waktu presensi hari ini sudah berakhir (maksimal jam $jamSelesai). Silakan hubungi Admin.");
         }
 
         // 5. Cek apakah sudah Check-in hari ini
@@ -161,14 +196,15 @@ class PresenceController extends Controller
 
         $redirectResponse = null;
 
-        if ($jamAbsen->gt($batasToleransi)) {
+        // JIKA threshold > 0, barulah hitung keterlambatan.
+        // JIKA threshold == 0, maka dianggap tidak ada aturan keterlambatan (bebas/selalu tepat waktu).
+        if ($thresholdMenit > 0 && $jamAbsen->gt($batasToleransi)) {
 
-            // Hitung selisih waktu aktual dengan jam masuk jadwal (bukan batas toleransi)
-            // Jadi kalau telat, dihitung dari jam masuk 08:00, bukan dari 08:15
-            $selisihDetik = $jamAbsen->diffInSeconds($jamMasukJadwal);
+            // Hitung selisih waktu: Jam Absen (22:44) dikurangi Jam Masuk Jadwal (09:00)
+            $selisihDetik = $jamMasukJadwal->diffInSeconds($jamAbsen);
 
             // Konversi ke menit (pembulatan ke atas)
-            $lateMinutes = (int) ceil($selisihDetik / 60);
+            $lateMinutes = (int) ceil(abs($selisihDetik) / 60);
 
             $status = 'Terlambat';
             $notes = "Terlambat $lateMinutes menit (Toleransi: $thresholdMenit menit).";

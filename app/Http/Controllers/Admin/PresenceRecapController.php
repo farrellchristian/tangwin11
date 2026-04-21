@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Employee;
 use App\Models\PresenceLog;
 use App\Models\Store;
+use App\Models\PresenceSchedule;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB; // <-- TAMBAHKAN INI
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 
 class PresenceRecapController extends Controller
 {
@@ -46,11 +48,10 @@ class PresenceRecapController extends Controller
         $uniqueEmployees = $statsQuery->distinct('id_employee')->count('id_employee');
         $totalLate = $statsQuery->where('status', 'Terlambat')->count();
         
-        // Untuk total menit terlambat, kita perlu mengekstrak angka dari 'notes'
-        // Ini sedikit 'tricky' tapi "gacor"
+        // Untuk total menit terlambat, gunakan kolom late_minutes
         $totalMinutesLate = (int) $statsQuery
             ->where('status', 'Terlambat')
-            ->sum(DB::raw("CAST(SUBSTRING_INDEX(SUBSTRING_INDEX(notes, ' ', 2), ' ', -1) AS UNSIGNED)"));
+            ->sum('late_minutes');
             
         // Kumpulkan statistik dalam satu array
         $summaryStats = [
@@ -88,5 +89,93 @@ class PresenceRecapController extends Controller
             ],
             'summaryStats' => $summaryStats,
         ]);
+    }
+
+    /**
+     * Menampilkan form edit presensi.
+     */
+    public function edit(string $id): View|RedirectResponse
+    {
+        $log = PresenceLog::with(['employee', 'store', 'schedule'])->findOrFail($id);
+
+        // Ambil data pendukung untuk dropdown
+        $employees = Employee::where('id_store', $log->id_store)->where('is_active', true)->get();
+        // Jadwal yang tersedia untuk toko ini pada hari tersebut
+        $dayOfWeek = Carbon::parse($log->check_in_time)->dayOfWeek;
+        $schedules = PresenceSchedule::where('id_store', $log->id_store)
+            ->where('day_of_week', $dayOfWeek)
+            ->where('is_active', true)
+            ->get();
+
+        return view('admin.presence-recap.edit', compact('log', 'employees', 'schedules'));
+    }
+
+    /**
+     * Memperbarui data presensi.
+     */
+    public function update(Request $request, string $id): RedirectResponse
+    {
+        $request->validate([
+            'id_employee' => 'required|exists:employees,id_employee',
+            'check_in_time' => 'required|date',
+            'id_presence_schedule' => 'nullable|exists:presence_schedules,id_presence_schedule',
+            'notes' => 'nullable|string',
+        ]);
+
+        $log = PresenceLog::findOrFail($id);
+        
+        $employeeId = $request->input('id_employee');
+        $checkInTimeInput = $request->input('check_in_time');
+        $scheduleId = $request->input('id_presence_schedule');
+        
+        $log->id_employee = $employeeId;
+        $log->check_in_time = $checkInTimeInput;
+        $log->id_presence_schedule = $scheduleId;
+        $log->notes = $request->input('notes');
+
+        // Kalkulasi ulang status dan menit terlambat jika ada jadwal
+        if ($scheduleId) {
+            $schedule = PresenceSchedule::find($scheduleId);
+            $jamAbsen = Carbon::parse($checkInTimeInput);
+            $jamMasukJadwal = Carbon::parse($schedule->jam_check_in);
+            
+            $thresholdMenit = (int) $schedule->late_threshold;
+            $batasToleransi = $jamMasukJadwal->copy()->addMinutes($thresholdMenit);
+
+            if ($thresholdMenit > 0 && $jamAbsen->gt($batasToleransi)) {
+                $selisihDetik = $jamMasukJadwal->diffInSeconds($jamAbsen);
+                $lateMinutes = (int) ceil(abs($selisihDetik) / 60);
+                $log->status = 'Terlambat';
+                $log->late_minutes = $lateMinutes;
+                // Update notes jika perlu, atau biarkan catatan admin
+                if (!$log->notes) {
+                    $log->notes = "Terlambat $lateMinutes menit (Toleransi: $thresholdMenit menit).";
+                }
+            } else {
+                $log->status = 'Tepat Waktu';
+                $log->late_minutes = 0;
+            }
+        } else {
+            // Jika tidak ada jadwal, default ke Tepat Waktu atau biarkan status sebelumnya
+            $log->status = 'Tepat Waktu';
+            $log->late_minutes = 0;
+        }
+
+        $log->save();
+
+        return redirect()->route('admin.presence-recap.index')
+            ->with('success', 'Data presensi berhasil diperbarui dan status telah dihitung ulang.');
+    }
+
+    /**
+     * Menghapus data presensi (Soft Delete).
+     */
+    public function destroy(string $id): RedirectResponse
+    {
+        $log = PresenceLog::findOrFail($id);
+        $log->delete();
+
+        return redirect()->route('admin.presence-recap.index')
+            ->with('success', 'Data presensi berhasil dihapus (Soft Delete).');
     }
 }

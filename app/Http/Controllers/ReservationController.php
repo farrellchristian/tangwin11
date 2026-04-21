@@ -64,6 +64,8 @@ class ReservationController extends Controller
         $statsPending = (clone $statsQuery)->where('status', 'pending')->count();
         $statsApproved = (clone $statsQuery)->where('status', 'approved')->count();
         $statsCompleted = (clone $statsQuery)->where('status', 'completed')->count();
+        $statsExpired = (clone $statsQuery)->where('status', 'expired')->count();
+        $statsRefunded = (clone $statsQuery)->where('status', 'refunded')->count();
 
 
         // 6. Urutkan dan Paginate
@@ -80,7 +82,9 @@ class ReservationController extends Controller
             'statsTotal',
             'statsPending',
             'statsApproved',
-            'statsCompleted'
+            'statsCompleted',
+            'statsExpired',
+            'statsRefunded'
         ));
     }
 
@@ -89,11 +93,24 @@ class ReservationController extends Controller
         $reservation = Reservation::findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:pending,approved,completed,canceled'
+            'status' => 'required|in:pending,approved,completed,canceled,expired,refunded'
         ]);
 
         $reservation->update(['status' => $request->status]);
 
         return redirect()->back()->with('success', 'Status reservasi diperbarui.');
+    }
+
+    public function destroy($id)
+    {
+        try {
+            $reservation = Reservation::findOrFail($id);
+            $reservation->delete(); // Soft delete
+
+            return redirect()->back()->with('success', 'Reservasi berhasil dihapus.');
+        } catch (\Exception $e) {
+            \Log::error('Error deleting reservation: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menghapus reservasi.');
+        }
     }
 }

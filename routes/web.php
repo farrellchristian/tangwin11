@@ -136,11 +136,15 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     // Rute CRUD Store Management
     Route::resource('stores', StoreController::class);
     // Rute untuk Soft Delete Transaksi
-    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])->name('transactions.destroy');
+    // Rute CRUD Transaksi (Edit, Update, Destroy) 
+    Route::resource('transactions', TransactionController::class)->only(['edit', 'update', 'destroy']);
     // Rute untuk CRUD Jadwal Presensi (Setting Presensi)
     Route::resource('presence-schedules', PresenceScheduleController::class);
     // Rute untuk Halaman Rekap Presensi
     Route::get('presence-recap', [PresenceRecapController::class, 'index'])->name('presence-recap.index');
+    Route::get('presence-recap/{id}/edit', [PresenceRecapController::class, 'edit'])->name('presence-recap.edit');
+    Route::put('presence-recap/{id}', [PresenceRecapController::class, 'update'])->name('presence-recap.update');
+    Route::delete('presence-recap/{id}', [PresenceRecapController::class, 'destroy'])->name('presence-recap.destroy');
     // Rute API untuk mengambil karyawan berdasarkan toko
     Route::get('employees/by-store/{store}', [EmployeeController::class, 'getEmployeesByStore'])
         ->name('employees.by-store');
@@ -164,6 +168,7 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::get('/refunds', [RefundController::class, 'index'])->name('refunds.index');
     Route::post('/refunds/{refund}/process', [RefundController::class, 'process'])->name('refunds.process');
     Route::post('/refunds/{refund}/reject', [RefundController::class, 'reject'])->name('refunds.reject');
+    Route::delete('/refunds/{refund}', [RefundController::class, 'destroy'])->name('refunds.destroy');
 
     // --- RUTE API BARU UNTUK MODAL LAPORAN ---
     Route::prefix('reports/details')->name('reports.details.')->group(function () {
@@ -174,36 +179,16 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
         Route::get('/expense/{expense}', [AdminExpenseController::class, 'show'])->name('expense');
     });
 
-    // === MANAJEMEN JADWAL (SLOT) ===
-    // Cukup tulis 'reservation' saja, karena sudah ada di dalam grup 'admin'
-    Route::prefix('reservation')->name('reservation.')->group(function () {
-        // Halaman Kelola Jadwal
-        Route::get('/slots', [ReservationSlotController::class, 'index'])->name('slots.index');
-
-        // AJAX: Ambil slot per hari (lazy-load)
-        Route::get('/slots/day-data', [ReservationSlotController::class, 'daySlots'])->name('slots.dayData');
-
-        // Simpan Jadwal Baru (Generate)
-        Route::post('/slots', [ReservationSlotController::class, 'store'])->name('slots.store');
-
-        // --- TAMBAHKAN INI UNTUK UPDATE ---
-        Route::put('/slots/{id}', [ReservationSlotController::class, 'update'])->name('slots.update');
-
-        // Hapus Semua Jadwal (Reset)
-        Route::delete('/slots/reset', [ReservationSlotController::class, 'destroyAll'])->name('slots.destroyAll');
-
-        // Hapus Satu Slot
-        Route::delete('/slots/{id}', [ReservationSlotController::class, 'destroy'])->name('slots.destroy');
-    });
-
     // Group Admin Reservation
     Route::prefix('reservation')->name('reservation.')->group(function () {
-
+        // 1. DAFTAR RESERVASI
         Route::get('/', [ReservationController::class, 'index'])->name('index');
         Route::put('/{id}/status', [ReservationController::class, 'updateStatus'])->name('update-status');
+        Route::delete('/{id}', [ReservationController::class, 'destroy'])->name('destroy');
 
         // 2. KELOLA JADWAL (SLOTS)
         Route::get('/slots', [ReservationSlotController::class, 'index'])->name('slots.index');
+        Route::get('/slots/day-data', [ReservationSlotController::class, 'daySlots'])->name('slots.dayData');
         Route::post('/slots', [ReservationSlotController::class, 'store'])->name('slots.store');
         Route::put('/slots/{id}', [ReservationSlotController::class, 'update'])->name('slots.update');
         Route::delete('/slots/reset', [ReservationSlotController::class, 'destroyAll'])->name('slots.destroyAll');
