@@ -27,8 +27,8 @@ class PosController extends Controller
         $user = Auth::user();
 
         if ($user->role === 'admin') {
-            // Jika Admin: Ambil semua toko untuk modal pilihan
-            $stores = Store::all();
+            // Jika Admin: Ambil hanya toko yang aktif untuk modal pilihan
+            $stores = Store::where('is_active', true)->get();
 
             // Tampilkan view index POS, kirim data toko
             // View ini nanti akan punya logika untuk menampilkan modal

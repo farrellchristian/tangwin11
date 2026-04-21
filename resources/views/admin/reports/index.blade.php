@@ -661,7 +661,7 @@
              aria-modal="true"
              style="display: none;"
              @keydown.escape.window="showIncomeModal = false">
-            <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
                 <div x-show="showIncomeModal"
                      @click="showIncomeModal = false"
                      x-transition:enter="ease-out duration-300"
@@ -853,7 +853,7 @@
              aria-modal="true"
              style="display: none;"
              @keydown.escape.window="showExpenditureModal = false">
-            <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
                 <div x-show="showExpenditureModal"
                      @click="showExpenditureModal = false"
                      x-transition:enter="ease-out duration-300"
@@ -960,7 +960,7 @@
              aria-modal="true"
              style="display: none;"
              @keydown.escape.window="showProfitLossModal = false">
-            <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
                 <div x-show="showProfitLossModal"
                      @click="showProfitLossModal = false"
                      x-transition:enter="ease-out duration-300"
@@ -1054,7 +1054,7 @@
              aria-modal="true"
              style="display: none;"
              @keydown.escape.window="showTransactionDetailModal = false">
-            <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
                 <div x-show="showTransactionDetailModal"
                      @click="showTransactionDetailModal = false"
                      x-transition:enter="ease-out duration-300"
@@ -1223,7 +1223,7 @@
              aria-modal="true"
              style="display: none;"
              @keydown.escape.window="showExpenseDetailModal = false">
-            <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+            <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
                 <div x-show="showExpenseDetailModal"
                      @click="showExpenseDetailModal = false"
                      x-transition:enter="ease-out duration-300"

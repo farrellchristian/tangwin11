@@ -225,7 +225,7 @@
                 role="dialog"
                 aria-modal="true"
                 style="display: none;">
-                <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
                     <div x-show="showItemModal"
                         x-transition:enter="ease-out duration-300"
                         x-transition:enter-start="opacity-0"
@@ -296,7 +296,7 @@
                 aria-modal="true"
                 style="display: none;">
 
-                <div class="flex items-end justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+                <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
                     <div x-show="showSuccessModal"
                         x-transition:enter="ease-out duration-300"
                         x-transition:enter-start="opacity-0"
