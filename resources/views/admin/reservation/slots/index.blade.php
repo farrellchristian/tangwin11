@@ -366,12 +366,8 @@
 
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1">Interval</label>
-                                        <select name="interval" class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                                            <option value="30">30 menit</option>
-                                            <option value="45">45 menit</option>
-                                            <option value="60" selected>60 menit</option>
-                                        </select>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Interval (menit)</label>
+                                        <input type="number" name="interval" value="60" min="1" class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" required>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Kuota</label>

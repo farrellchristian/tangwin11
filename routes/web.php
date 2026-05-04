@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardRedirectController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Kasir\DashboardController as KasirDashboard;
+use App\Http\Controllers\Kasir\ReservationController as KasirReservationController;
 
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\ProductController;
@@ -206,7 +207,11 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
 Route::middleware(['auth', 'verified'])->prefix('kasir')->name('kasir.')->group(function () {
 
     // Rute: /kasir/dashboard
-    Route::get('/dashboard', KasirDashboard::class)->name('dashboard'); // <-- 6. BUAT INI
+    Route::get('/dashboard', KasirDashboard::class)->name('dashboard');
+
+    // Rute: /kasir/reservation
+    Route::get('/reservation', [KasirReservationController::class, 'index'])->name('reservation.index');
+    Route::put('/reservation/{id}/status', [KasirReservationController::class, 'updateStatus'])->name('reservation.update-status');
 
     // (Nanti rute kasir lain seperti /kasir/transaksi bisa ditambah di sini)
 });

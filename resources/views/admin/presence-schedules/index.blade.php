@@ -140,7 +140,7 @@
                                 </div>
                                 <div>
                                     <div class="text-sm font-bold text-slate-800">{{ $schedule->store->store_name ?? 'N/A' }}</div>
-                                    <div class="text-[10px] text-slate-400">ID: #{{ $schedule->id_presence_schedule }}</div>
+
                                 </div>
                             </div>
                             <div class="flex items-center gap-1.5">
@@ -270,7 +270,7 @@
                                         </div>
                                         <div>
                                             <p class="font-bold text-slate-800">{{ $schedule->store->store_name ?? 'N/A' }}</p>
-                                            <p class="text-xs text-slate-400">ID: #{{ $schedule->id_presence_schedule }}</p>
+
                                         </div>
                                     </div>
                                 </td>

@@ -82,18 +82,7 @@ class PresenceController extends Controller
                 ->with('error', 'Karyawan tidak valid untuk toko ini.');
         }
 
-        // 3. Validasi IP Address
-        $store = Store::find($storeId);
-        if ($store->enable_ip_validation && $store->store_ip_address) {
-            $allowedIps = array_map('trim', explode(',', $store->store_ip_address));
-            if (!in_array($karyawanIp, $allowedIps)) {
-                return redirect()->route('presence.index')
-                    ->with('error', "Presensi ditolak. Anda tidak berada di jaringan WiFi toko yang terdaftar. IP Anda: $karyawanIp");
-            }
-        }
-
-
-        // 4. Validasi Jadwal (Logika Baru: Cari jadwal paling dekat)
+        // 3. Validasi Jadwal (Logika Baru: Cari jadwal paling dekat)
         $now = Carbon::now();
         $todayDayOfWeek = $now->dayOfWeek;
         $currentTime = $now->format('H:i:s');
@@ -170,6 +159,16 @@ class PresenceController extends Controller
                 ->with('error', "Batas waktu presensi hari ini sudah berakhir (maksimal jam $jamSelesai). Silakan hubungi Admin.");
         }
 
+        // 4. Validasi IP Address (Dilakukan setelah memastikan jadwal valid)
+        $store = Store::find($storeId);
+        if ($store->enable_ip_validation && $store->store_ip_address) {
+            $allowedIps = array_map('trim', explode(',', $store->store_ip_address));
+            if (!in_array($karyawanIp, $allowedIps)) {
+                return redirect()->route('presence.index')
+                    ->with('error', "Presensi ditolak. Anda tidak berada di jaringan WiFi toko yang terdaftar. IP Anda: $karyawanIp (Debug: Jadwal Terdeteksi ID #" . $schedule->id_presence_schedule . ")");
+            }
+        }
+
         // 5. Cek apakah sudah Check-in hari ini
         // Kita cek berdasarkan ID Karyawan DAN ID Jadwal (agar bisa absen di 2 shift)
         $existingLog = PresenceLog::where('id_employee', $employeeId)
@@ -207,7 +206,7 @@ class PresenceController extends Controller
             $lateMinutes = (int) ceil(abs($selisihDetik) / 60);
 
             $status = 'Terlambat';
-            $notes = "Terlambat $lateMinutes menit (Toleransi: $thresholdMenit menit).";
+            $notes = "Terlambat $lateMinutes mnt (Tol: $thresholdMenit mnt)";
 
             $redirectResponse = redirect()->route('presence.index')
                 ->with('late', "Presensi berhasil! Status: $status. $notes");

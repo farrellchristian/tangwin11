@@ -21,7 +21,7 @@
             </div>
 
             {{-- STATISTIK --}}
-            <div class="grid grid-cols-2 lg:grid-cols-6 gap-3">
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>
                         <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Total</p>
@@ -66,18 +66,7 @@
                         </svg>
                     </div>
                 </div>
-                <!-- Expired Card -->
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
-                    <div>
-                        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Expired</p>
-                        <h3 class="text-2xl font-bold text-gray-400 mt-0.5">{{ number_format($statsExpired) }}</h3>
-                    </div>
-                    <div class="p-2.5 bg-gray-50 rounded-xl text-gray-500">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                        </svg>
-                    </div>
-                </div>
+
                 <!-- Refunded Card -->
                 <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
                     <div>

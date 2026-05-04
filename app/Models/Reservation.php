@@ -37,4 +37,10 @@ class Reservation extends Model
     {
         return $this->hasOne(Refund::class, 'id_reservation', 'id_reservation');
     }
+
+    // Relasi ke Transaction
+    public function transaction()
+    {
+        return $this->hasOne(Transaction::class, 'id_reservation', 'id_reservation');
+    }
 }

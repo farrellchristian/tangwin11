@@ -526,7 +526,7 @@
                                         <div class="flex items-center space-x-2">
                                             <input type="number"
                                                 x-model="limits[{{ $employee->id_employee }}]"
-                                                placeholder="{{ $employee->daily_expense_limit ?? 'Kosongkan jika tanpa limit' }}"
+                                                placeholder="{{ $employee->daily_expense_limit ?? 'Tanpa limit' }}"
                                                 min="0" step="1000"
                                                 class="block w-40 rounded-lg border-gray-200 shadow-sm focus:border-indigo-400 focus:ring-indigo-400 sm:text-sm">
                                             <button type="submit"

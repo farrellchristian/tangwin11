@@ -102,77 +102,175 @@
 
         </div>
 
-        {{-- 3. TABEL AKTIVITAS TERAKHIR --}}
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8 md:mb-0">
-            <div class="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-800 whitespace-nowrap">Aktivitas Terakhir</h3>
-                <a href="{{ route('pos.history') }}" class="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap ml-2">Lihat Semua &rarr;</a>
-            </div>
+        {{-- WRAPPER UNTUK KEDUA TABEL --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8 md:mb-0">
+            
+            {{-- 3. TABEL AKTIVITAS TERAKHIR --}}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-800 whitespace-nowrap">Aktivitas Terakhir</h3>
+                    <a href="{{ route('pos.history') }}" class="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap ml-2">Lihat Semua &rarr;</a>
+                </div>
 
-            {{-- === MOBILE VIEW: CARD LIST === --}}
-            <div class="block md:hidden divide-y divide-gray-100">
-                @forelse($recentTransactions as $t)
-                    <div class="px-4 py-3 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex flex-col items-center justify-center flex-shrink-0">
-                                <span class="text-[11px] font-bold text-indigo-700 leading-none">{{ $t->transaction_date->format('H:i') }}</span>
+                {{-- === MOBILE VIEW: CARD LIST === --}}
+                <div class="block md:hidden divide-y divide-gray-100">
+                    @forelse($recentTransactions as $t)
+                        <div class="px-4 py-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-50 border border-indigo-100 flex flex-col items-center justify-center flex-shrink-0">
+                                    <span class="text-[11px] font-bold text-indigo-700 leading-none">{{ $t->transaction_date->format('H:i') }}</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-800">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
+                                    <span class="text-[10px] text-gray-400 font-mono">#{{ $t->id_transaction }}</span>
+                                </div>
                             </div>
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-gray-800">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
-                                <span class="text-[10px] text-gray-400 font-mono">#{{ $t->id_transaction }}</span>
+                            <div>
+                                <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-green-100 text-green-700 border border-green-200">
+                                    Berhasil
+                                </span>
                             </div>
                         </div>
-                        <div>
-                            <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-green-100 text-green-700 border border-green-200">
-                                Berhasil
-                            </span>
+                    @empty
+                        <div class="px-4 py-6 text-center text-gray-500 italic text-sm border-t border-gray-50">
+                            Belum ada transaksi hari ini.
                         </div>
-                    </div>
-                @empty
-                    <div class="px-4 py-6 text-center text-gray-500 italic text-sm border-t border-gray-50">
-                        Belum ada transaksi hari ini.
-                    </div>
-                @endforelse
-            </div>
+                    @endforelse
+                </div>
 
-            {{-- === DESKTOP VIEW: TABLE === --}}
-            <div class="hidden md:block overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Transaksi</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        @forelse($recentTransactions as $t)
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                    {{ $t->transaction_date->format('H:i') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-transparent">
-                                    <span class="font-mono text-xs text-gray-500">#{{ $t->id_transaction }}</span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">
-                                    Rp {{ number_format($t->total_amount, 0, ',', '.') }}
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
-                                        Berhasil
-                                    </span>
-                                </td>
-                            </tr>
-                        @empty
+                {{-- === DESKTOP VIEW: TABLE === --}}
+                <div class="hidden md:block overflow-x-auto max-h-[400px] overflow-y-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0 z-10">
                             <tr>
-                                <td colspan="4" class="px-6 py-8 text-center text-gray-500 italic">
-                                    Belum ada transaksi hari ini.
-                                </td>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Transaksi</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($recentTransactions as $t)
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                        {{ $t->transaction_date->format('H:i') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-transparent">
+                                        <span class="font-mono text-xs text-gray-500">#{{ $t->id_transaction }}</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">
+                                        Rp {{ number_format($t->total_amount, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">
+                                            Berhasil
+                                        </span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-6 py-8 text-center text-gray-500 italic">
+                                        Belum ada transaksi hari ini.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {{-- 4. TABEL RESERVASI HARI INI & BESOK --}}
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-800 whitespace-nowrap">Reservasi Mendatang</h3>
+                    @if(Auth::user()->role === 'admin')
+                        <a href="{{ route('admin.reservation.index') }}" class="text-xs sm:text-sm text-indigo-600 hover:text-indigo-800 font-medium whitespace-nowrap ml-2">Kelola &rarr;</a>
+                    @endif
+                </div>
+
+                {{-- === MOBILE VIEW: CARD LIST === --}}
+                <div class="block md:hidden divide-y divide-gray-100 max-h-[400px] overflow-y-auto">
+                    @forelse($upcomingReservations as $r)
+                        <div class="px-4 py-3 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-100 flex flex-col items-center justify-center flex-shrink-0">
+                                    <span class="text-[9px] font-bold text-blue-700 leading-none">{{ \Carbon\Carbon::parse($r->booking_date)->isToday() ? 'Hari Ini' : 'Besok' }}</span>
+                                    <span class="text-[11px] font-bold text-blue-700 leading-none mt-0.5">{{ \Carbon\Carbon::parse($r->booking_time)->format('H:i') }}</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-800">{{ $r->customer_name }}</span>
+                                    <span class="text-[10px] text-gray-500">{{ $r->service->service_name ?? '-' }} ({{ $r->employee->name ?? '-' }})</span>
+                                </div>
+                            </div>
+                            <div>
+                                @if($r->status === 'pending')
+                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-yellow-100 text-yellow-700 border border-yellow-200">Pending</span>
+                                @elseif($r->status === 'approved')
+                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-blue-100 text-blue-700 border border-blue-200">Disetujui</span>
+                                @elseif($r->status === 'completed')
+                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-green-100 text-green-700 border border-green-200">Selesai</span>
+                                @else
+                                    <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-gray-100 text-gray-700 border border-gray-200">{{ ucfirst($r->status) }}</span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="px-4 py-6 text-center text-gray-500 italic text-sm border-t border-gray-50">
+                            Tidak ada reservasi untuk hari ini atau besok.
+                        </div>
+                    @endforelse
+                </div>
+
+                {{-- === DESKTOP VIEW: TABLE === --}}
+                <div class="hidden md:block overflow-x-auto max-h-[400px] overflow-y-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0 z-10">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelanggan</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Detail</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            @forelse($upcomingReservations as $r)
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-bold {{ \Carbon\Carbon::parse($r->booking_date)->isToday() ? 'text-blue-600' : 'text-gray-600' }}">
+                                            {{ \Carbon\Carbon::parse($r->booking_date)->isToday() ? 'Hari Ini' : 'Besok' }}
+                                        </div>
+                                        <div class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($r->booking_time)->format('H:i') }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-bold text-gray-900">{{ $r->customer_name }}</div>
+                                        <div class="text-xs text-gray-500">{{ $r->customer_phone }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $r->service->service_name ?? '-' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $r->employee->name ?? '-' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if($r->status === 'pending')
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800 border border-yellow-200">Pending</span>
+                                        @elseif($r->status === 'approved')
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800 border border-blue-200">Disetujui</span>
+                                        @elseif($r->status === 'completed')
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 border border-green-200">Selesai</span>
+                                        @else
+                                            <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800 border border-gray-200">{{ ucfirst($r->status) }}</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="4" class="px-6 py-8 text-center text-gray-500 italic">
+                                        Tidak ada reservasi untuk hari ini atau besok.
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

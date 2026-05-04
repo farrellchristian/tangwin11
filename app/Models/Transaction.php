@@ -84,4 +84,12 @@ class Transaction extends Model
     {
         return $this->hasMany(TransactionDetail::class, 'id_transaction', 'id_transaction');
     }
+
+    /**
+     * Relasi ke Reservasi
+     */
+    public function reservation()
+    {
+        return $this->belongsTo(Reservation::class, 'id_reservation', 'id_reservation');
+    }
 }

@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Transaction;
 use App\Models\PresenceLog;
+use App\Models\Reservation;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -19,6 +20,7 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
         $today = Carbon::today();
+        $tomorrow = Carbon::tomorrow();
 
         // 1. Ambil Statistik Transaksi Harian (Khusus User ini)
         // Kita hitung berapa transaksi yg dia input hari ini
@@ -35,9 +37,9 @@ class DashboardController extends Controller
         // 3. Cek Status Presensi Hari Ini
         // Apakah dia sudah absen masuk?
         $presence = PresenceLog::where('id_employee', $user->id_employee ?? 0) // Asumsi user terhubung ke employee
-             ->whereDate('created_at', $today)
-             ->first();
-        
+            ->whereDate('created_at', $today)
+            ->first();
+
         $hasClockedIn = $presence && $presence->check_in_time;
 
         // 4. Ambil 5 Transaksi Terakhir Hari Ini
@@ -48,11 +50,20 @@ class DashboardController extends Controller
             ->limit(5)
             ->get();
 
+        // 5. Ambil Reservasi Hari Ini dan Besok untuk Toko ini
+        $upcomingReservations = Reservation::with(['employee', 'service'])
+            ->where('id_store', $user->id_store)
+            ->whereIn('booking_date', [$today->toDateString(), $tomorrow->toDateString()])
+            ->orderBy('booking_date', 'asc')
+            ->orderBy('booking_time', 'asc')
+            ->get();
+
         return view('kasir.dashboard', compact(
-            'dailyTransactions', 
-            'dailyRevenue', 
-            'hasClockedIn', 
-            'recentTransactions'
+            'dailyTransactions',
+            'dailyRevenue',
+            'hasClockedIn',
+            'recentTransactions',
+            'upcomingReservations'
         ));
     }
 }

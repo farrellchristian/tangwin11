@@ -148,9 +148,7 @@ class PresenceRecapController extends Controller
                 $log->status = 'Terlambat';
                 $log->late_minutes = $lateMinutes;
                 // Update notes jika perlu, atau biarkan catatan admin
-                if (!$log->notes) {
-                    $log->notes = "Terlambat $lateMinutes menit (Toleransi: $thresholdMenit menit).";
-                }
+                    $log->notes = "Terlambat $lateMinutes mnt (Tol: $thresholdMenit mnt)";
             } else {
                 $log->status = 'Tepat Waktu';
                 $log->late_minutes = 0;
