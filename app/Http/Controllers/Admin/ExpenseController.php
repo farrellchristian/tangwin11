@@ -38,11 +38,15 @@ class ExpenseController extends Controller
         // $paymentMethods = PaymentMethod::where('is_active', true)->get();
 
         // === Ambil Data Karyawan untuk Setting Limit ===
-        $employees = Employee::with('store')
+        $limitStoreId = $request->input('limit_store_id'); // Filter toko khusus untuk limit
+        $employeesQuery = Employee::with('store')
             ->where('is_active', true)
             ->orderBy('id_store')
-            ->orderBy('employee_name')
-            ->get();
+            ->orderBy('employee_name');
+
+        if ($limitStoreId) {
+            $employeesQuery->where('id_store', $limitStoreId);
+        }
 
         // === Ambil Parameter Filter dari Request (dengan default yang lebih baik) ===
         $filterType = $request->input('filter_type', 'harian');
@@ -63,7 +67,7 @@ class ExpenseController extends Controller
         $expensesQuery = Expense::with(['employee', 'store', 'user'])
             ->latest('expense_date');
 
-        // Filter Toko
+        // Filter Toko (untuk riwayat pengeluaran)
         if ($selectedStoreId) {
             $expensesQuery->where('id_store', $selectedStoreId);
         }
@@ -121,8 +125,9 @@ class ExpenseController extends Controller
         }
 
 
-        // Ambil data pengeluaran
-        $expenses = $expensesQuery->paginate(15)->withQueryString();
+        // Ambil data pengeluaran dan karyawan dengan pagination terpisah
+        $expenses = $expensesQuery->paginate(15, ['*'], 'expense_page')->withQueryString();
+        $employees = $employeesQuery->paginate(10, ['*'], 'limit_page')->withQueryString();
 
         // TODO: Hitung daftar minggu untuk dropdown filter
         $weeksForDropdown = []; // Nanti diisi
@@ -140,6 +145,7 @@ class ExpenseController extends Controller
             'selectedDate' => $validSelectedDateString,
             'availableYears' => $availableYears,
             'weeksForDropdown' => $weeksForDropdown,
+            'limitStoreId' => $limitStoreId,
         ]);
     }
 

@@ -229,7 +229,7 @@
 
         {{-- AWAL BLOK PENGATURAN --}}
         @php
-        $isSettingsActive = request()->routeIs('admin.expenses.index');
+        $isSettingsActive = request()->routeIs('admin.expenses.index') || request()->routeIs('admin.website-setting') || request()->routeIs('admin.announcement');
         @endphp
 
         <div x-data="{ open: {{ $isSettingsActive ? 'true' : 'false' }} }">
@@ -250,6 +250,12 @@
             <div x-show="open && !isSidebarCollapsed" x-collapse class="bg-gray-900/50">
                 <a href="{{ route('admin.expenses.index') }}" class="{{ $subLinkClasses }} {{ request()->routeIs('admin.expenses.index') ? $subActiveClasses : '' }} pl-[52px] pr-6">
                     <span>Setting Pengeluaran</span>
+                </a>
+                <a href="{{ route('admin.website-setting') }}" class="{{ $subLinkClasses }} {{ request()->routeIs('admin.website-setting') ? $subActiveClasses : '' }} pl-[52px] pr-6">
+                    <span>Setting Website</span>
+                </a>
+                <a href="{{ route('admin.announcement') }}" class="{{ $subLinkClasses }} {{ request()->routeIs('admin.announcement') ? $subActiveClasses : '' }} pl-[52px] pr-6">
+                    <span>Pengumuman</span>
                 </a>
 
             </div>

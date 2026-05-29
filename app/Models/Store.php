@@ -27,12 +27,14 @@ class Store extends Model
         'address',
         'phone_number',
         'is_active',
+        'show_on_reservation',
         'store_ip_address',   
         'enable_ip_validation',
     ];
     
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'            => 'boolean',
+        'show_on_reservation'  => 'boolean',
         'enable_ip_validation' => 'boolean',
     ];
 }

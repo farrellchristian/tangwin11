@@ -9,15 +9,13 @@ use App\Models\Expense;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
-use Carbon\Carbon; // Untuk cek tanggal
-use Illuminate\Support\Facades\DB; // Untuk sum
+use Illuminate\Http\RedirectResponse;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ExpenseController extends Controller
 {
-    /**
-     * Menampilkan halaman pilih karyawan untuk input pengeluaran.
-     * Hanya bisa diakses oleh role Kasir.
-     */
+
     public function showSelectEmployee(): View
     {
         $user = Auth::user();
@@ -29,14 +27,14 @@ class ExpenseController extends Controller
 
         $storeId = $user->id_store;
         if (!$storeId) {
-             abort(403, 'Akun kasir tidak terhubung ke toko manapun.');
+            abort(403, 'Akun kasir tidak terhubung ke toko manapun.');
         }
 
         // Ambil karyawan HANYA dari toko kasir tersebut
         $employees = Employee::where('id_store', $storeId)
-                             ->where('is_active', true)
-                             ->orderBy('employee_name')
-                             ->get();
+            ->where('is_active', true)
+            ->orderBy('employee_name')
+            ->get();
 
         // Tampilkan view pilih karyawan (akan kita buat)
         return view('kasir.expenses.select-employee', [
@@ -47,7 +45,7 @@ class ExpenseController extends Controller
     /**
      * Menampilkan form input pengeluaran untuk karyawan yang dipilih.
      */
-    public function create(Employee $employee): View // Gunakan Route Model Binding
+    public function create(Employee $employee): View|RedirectResponse // Gunakan Route Model Binding
     {
         $user = Auth::user();
 
@@ -59,13 +57,13 @@ class ExpenseController extends Controller
         // --- VALIDASI PRESENSI ---
         if (!$employee->hasCheckedInToday()) {
             return redirect()->route('kasir.expenses.select-employee')
-                             ->with('error', 'Karyawan ' . $employee->employee_name . ' belum melakukan presensi hari ini!');
+                ->with('error', 'Karyawan ' . $employee->employee_name . ' belum melakukan presensi hari ini!');
         }
 
         // Hitung total pengeluaran karyawan HARI INI
         $todayExpenses = Expense::where('id_employee', $employee->id_employee)
-                                ->whereDate('expense_date', Carbon::today())
-                                ->sum('amount');
+            ->whereDate('expense_date', Carbon::today())
+            ->sum('amount');
 
         // Tampilkan view form input (akan kita buat)
         return view('kasir.expenses.create', [
@@ -97,27 +95,27 @@ class ExpenseController extends Controller
 
         // Validasi tambahan: Karyawan harus dari toko kasir
         if (!$employee || $employee->id_store !== $user->id_store) {
-             return back()->withErrors(['id_employee' => 'Karyawan tidak valid.'])->withInput();
+            return back()->withErrors(['id_employee' => 'Karyawan tidak valid.'])->withInput();
         }
 
         // --- VALIDASI PRESENSI ---
         if (!$employee->hasCheckedInToday()) {
             return redirect()->route('kasir.expenses.select-employee')
-                             ->with('error', 'Karyawan ' . $employee->employee_name . ' belum melakukan presensi hari ini!');
+                ->with('error', 'Karyawan ' . $employee->employee_name . ' belum melakukan presensi hari ini!');
         }
 
         // Cek Limit Pengeluaran Harian Karyawan
         $limit = $employee->daily_expense_limit; // Ambil limit dari model employee
         if ($limit !== null) { // Hanya cek jika limit di-set (tidak null)
             $todayExpenses = Expense::where('id_employee', $employee->id_employee)
-                                    ->whereDate('expense_date', Carbon::today())
-                                    ->sum('amount');
+                ->whereDate('expense_date', Carbon::today())
+                ->sum('amount');
             $newAmount = $validatedData['amount'];
 
             if (($todayExpenses + $newAmount) > $limit) {
                 // Jika melebihi limit, kembalikan dengan error
                 return back()->withErrors([
-                    'amount' => 'Jumlah pengeluaran melebihi limit harian karyawan (Rp ' . number_format($limit, 0, ',', '.') . '). Sisa limit hari ini: Rp ' . number_format(max(0, $limit - $todayExpenses), 0, ',', '.')
+                    'amount' => 'Jumlah pengeluaran melebihi limit harian karyawan (Rp ' . number_format((float) $limit, 0, ',', '.') . '). Sisa limit hari ini: Rp ' . number_format(max(0, (float) $limit - (float) $todayExpenses), 0, ',', '.')
                 ])->withInput();
             }
         }
@@ -134,6 +132,6 @@ class ExpenseController extends Controller
 
         // Redirect kembali ke halaman pilih karyawan dengan pesan sukses
         return redirect()->route('kasir.expenses.select-employee')
-                         ->with('success', 'Pengeluaran berhasil dicatat.');
+            ->with('success', 'Pengeluaran berhasil dicatat.');
     }
 }

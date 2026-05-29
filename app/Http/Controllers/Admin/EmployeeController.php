@@ -26,14 +26,8 @@ class EmployeeController extends Controller
             $employeesQuery->where('id_store', $request->store_id);
         }
 
-        // 4. Filter berdasarkan status aktif (defaultnya hanya tampilkan yg aktif)
-        if ($request->filled('status') && $request->status == 'nonaktif') {
-            // Jika filter 'nonaktif' dipilih, tampilkan HANYA yang non-aktif
-            $employeesQuery->where('is_active', false);
-        } else {
-            // Selain itu (termasuk filter 'semua' atau tanpa filter), tampilkan HANYA yang aktif
-            $employeesQuery->where('is_active', true);
-        }
+        // 4. Hanya tampilkan karyawan yang aktif
+        $employeesQuery->where('is_active', true);
 
 
         // 5. Ambil data (10 per halaman)
@@ -45,7 +39,7 @@ class EmployeeController extends Controller
             'stores' => $stores,
         ]);
     }
-    
+
     /**
      * Show the form for creating a new resource.
      */
@@ -67,7 +61,6 @@ class EmployeeController extends Controller
         // Validasi (tambahkan validasi lain jika perlu)
         $request->validate([
             'employee_name' => 'required|string|max:255',
-            'position' => 'required|string|max:255',
             'join_date' => 'required|date',
             'id_store' => 'required|exists:stores,id_store',
             'phone_number' => 'nullable|string|max:20', // Contoh validasi nomor HP
@@ -77,7 +70,7 @@ class EmployeeController extends Controller
         // Simpan
         Employee::create([
             'employee_name' => $request->employee_name,
-            'position' => $request->position,
+            'position' => 'Capster',
             'join_date' => $request->join_date,
             'id_store' => $request->id_store,
             'phone_number' => $request->phone_number,
@@ -87,7 +80,7 @@ class EmployeeController extends Controller
 
         // Redirect
         return redirect()->route('admin.employees.index')
-                        ->with('success', 'Karyawan baru berhasil ditambahkan.');
+            ->with('success', 'Karyawan baru berhasil ditambahkan.');
     }
 
     /**
@@ -120,7 +113,6 @@ class EmployeeController extends Controller
         // Validasi
         $request->validate([
             'employee_name' => 'required|string|max:255',
-            'position' => 'required|string|max:255',
             'join_date' => 'required|date',
             'exit_date' => 'nullable|date|after_or_equal:join_date', // Tgl keluar hrs setelah/sama dgn tgl masuk
             'id_store' => 'required|exists:stores,id_store',
@@ -132,7 +124,7 @@ class EmployeeController extends Controller
         // Update
         $employee->update([
             'employee_name' => $request->employee_name,
-            'position' => $request->position,
+            'position' => 'Capster',
             'join_date' => $request->join_date,
             'exit_date' => $request->exit_date,
             'id_store' => $request->id_store,
@@ -143,21 +135,24 @@ class EmployeeController extends Controller
 
         // Redirect
         return redirect()->route('admin.employees.index')
-                        ->with('success', 'Data karyawan berhasil diperbarui.');
+            ->with('success', 'Data karyawan berhasil diperbarui.');
     }
 
     /**
-     * Remove the specified resource from storage.
-     * Kita modifikasi ini menjadi 'Nonaktifkan'
+     * Hapus karyawan dari tampilan aktif (is_active = false).
+     * Data tetap tersimpan untuk keperluan tracking laporan.
      */
     public function destroy(Employee $employee)
     {
-        // Update status is_active menjadi false
-        $employee->update(['is_active' => false]);
+        // Set exit_date ke hari ini jika belum diisi
+        $employee->update([
+            'is_active' => false,
+            'exit_date' => $employee->exit_date ?? now()->toDateString(),
+        ]);
 
         // Redirect
         return redirect()->route('admin.employees.index')
-                        ->with('success', 'Karyawan berhasil dinonaktifkan.');
+            ->with('success', 'Data karyawan berhasil dihapus.');
     }
 
     /**
@@ -167,9 +162,9 @@ class EmployeeController extends Controller
     {
         // Ambil karyawan yang aktif dari toko yang diberikan
         $employees = $store->employees()
-                           ->where('is_active', true)
-                           ->orderBy('employee_name')
-                           ->get(['id_employee', 'employee_name']); // Ambil kolom yang perlu saja
+            ->where('is_active', true)
+            ->orderBy('employee_name')
+            ->get(['id_employee', 'employee_name']); // Ambil kolom yang perlu saja
 
         // Kembalikan sebagai JSON
         return response()->json($employees);

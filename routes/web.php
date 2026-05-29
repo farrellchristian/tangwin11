@@ -25,6 +25,8 @@ use App\Http\Controllers\Admin\PresenceRecapController;
 use App\Http\Controllers\ReservationSlotController;
 use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\Admin\RefundController;
+use App\Http\Controllers\Admin\WebsiteSettingController;
+use App\Http\Controllers\Admin\AnnouncementController;
 
 // Mengalihkan halaman awal ('/') langsung ke route login
 Route::get('/', function () {
@@ -130,6 +132,12 @@ Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('ad
     Route::put('/employees/{employee}/update-limit', [AdminExpenseController::class, 'updateLimit'])->name('employees.update-limit');
     // Rute CRUD standar untuk mengelola data expense (KECUALI index)
     Route::resource('expenses', AdminExpenseController::class)->except(['index']);
+    // Rute Website Setting
+    Route::get('/website-setting', [WebsiteSettingController::class, 'index'])->name('website-setting');
+    Route::post('/website-setting', [WebsiteSettingController::class, 'update'])->name('website-setting.update');
+    // Rute Pengumuman
+    Route::get('/announcement', [AnnouncementController::class, 'index'])->name('announcement');
+    Route::post('/announcement', [AnnouncementController::class, 'update'])->name('announcement.update');
     // Rute CRUD Payment Methods
     Route::resource('payment-methods', PaymentMethodController::class);
     // Rute CRUD User Management

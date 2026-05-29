@@ -20,5 +20,11 @@ class PaymentMethod extends Model
     protected $fillable = [
         'method_name',
         'is_active',
+        'show_on_reservation',
+    ];
+
+    protected $casts = [
+        'is_active'           => 'boolean',
+        'show_on_reservation' => 'boolean',
     ];
 }

@@ -400,10 +400,40 @@
             <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100">
 
                 {{-- Section Header --}}
-                <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 bg-gray-50/30">
-                    <h3 class="font-bold text-slate-800 text-base sm:text-lg">Limit Pengeluaran Harian</h3>
-                    <p class="text-[10px] sm:text-xs text-slate-500">Atur batas pengeluaran harian per karyawan.</p>
+                <div class="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-100 bg-gray-50/30 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base sm:text-lg">Limit Pengeluaran Harian</h3>
+                        <p class="text-[10px] sm:text-xs text-slate-500">Atur batas pengeluaran harian per karyawan.</p>
+                    </div>
+                    {{-- Filter Toko untuk Limit --}}
+                    <form method="GET" action="{{ route('admin.expenses.index') }}" class="flex items-center gap-2">
+                        {{-- Pertahankan filter pengeluaran yang aktif --}}
+                        <input type="hidden" name="filter_type" value="{{ $filterType }}">
+                        <input type="hidden" name="year" value="{{ $selectedYear }}">
+                        <input type="hidden" name="month" value="{{ $selectedMonth }}">
+                        <input type="hidden" name="day" value="{{ $selectedDay }}">
+                        <input type="hidden" name="week" value="{{ $selectedWeek }}">
+                        <input type="hidden" name="store_id" value="{{ request('store_id') }}">
+
+                        <select name="limit_store_id"
+                                class="rounded-lg border-gray-200 text-sm focus:border-indigo-400 focus:ring-indigo-400 bg-white py-2 pl-3 pr-8"
+                                onchange="this.form.submit()">
+                            <option value="">Semua Toko</option>
+                            @foreach ($stores as $store)
+                                <option value="{{ $store->id_store }}" {{ $limitStoreId == $store->id_store ? 'selected' : '' }}>
+                                    {{ $store->store_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if($limitStoreId)
+                        <a href="{{ route('admin.expenses.index', array_merge(request()->except('limit_store_id', 'limit_page'), [])) }}"
+                           class="text-xs text-gray-500 hover:text-red-500 transition whitespace-nowrap">
+                            × Reset
+                        </a>
+                        @endif
+                    </form>
                 </div>
+
 
                 {{-- Bulk Update --}}
                 <div class="p-4 sm:px-6 border-b border-gray-100 bg-amber-50/30" x-data="bulkLimitSettingData()">
@@ -412,10 +442,10 @@
                         <div class="flex items-center gap-2">
                             <div class="relative flex-1 sm:max-w-[200px]">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
-                                <input type="number"
+                                <input type="text"
                                     x-model="globalLimit"
+                                    @input="globalLimit = formatRupiah($event.target.value)"
                                     placeholder="0"
-                                    min="0" step="1000"
                                     class="block w-full pl-9 rounded-lg border-gray-200 text-sm focus:border-indigo-400 focus:ring-indigo-400 bg-white"
                                     required>
                             </div>
@@ -463,10 +493,10 @@
                             <div class="flex items-center gap-2">
                                 <div class="relative flex-1">
                                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs">Rp</span>
-                                    <input type="number"
+                                    <input type="text"
                                         x-model="limits[{{ $employee->id_employee }}]"
-                                        placeholder="{{ $employee->daily_expense_limit ?? 'Tanpa limit' }}"
-                                        min="0" step="1000"
+                                        @input="limits[{{ $employee->id_employee }}] = formatRupiah($event.target.value)"
+                                        placeholder="{{ $employee->daily_expense_limit ? number_format($employee->daily_expense_limit, 0, ',', '.') : 'Tanpa limit' }}"
                                         class="block w-full pl-8 rounded-lg border-gray-200 text-sm focus:border-indigo-400 focus:ring-indigo-400 bg-gray-50">
                                 </div>
                                 <button type="submit"
@@ -524,10 +554,10 @@
                                 <td class="px-6 py-4">
                                     <form @submit.prevent="updateLimit({{ $employee->id_employee }})">
                                         <div class="flex items-center space-x-2">
-                                            <input type="number"
+                                            <input type="text"
                                                 x-model="limits[{{ $employee->id_employee }}]"
-                                                placeholder="{{ $employee->daily_expense_limit ?? 'Tanpa limit' }}"
-                                                min="0" step="1000"
+                                                @input="limits[{{ $employee->id_employee }}] = formatRupiah($event.target.value)"
+                                                placeholder="{{ $employee->daily_expense_limit ? number_format($employee->daily_expense_limit, 0, ',', '.') : 'Tanpa limit' }}"
                                                 class="block w-40 rounded-lg border-gray-200 shadow-sm focus:border-indigo-400 focus:ring-indigo-400 sm:text-sm">
                                             <button type="submit"
                                                 class="px-3 py-2 bg-indigo-600 text-white rounded-lg text-xs font-semibold hover:bg-indigo-700 disabled:opacity-50 transition"
@@ -548,6 +578,11 @@
                         </tbody>
                     </table>
                 </div>
+
+                {{-- PAGINATION LIMIT KARYAWAN --}}
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 bg-gray-50/30">
+                    {{ $employees->links() }}
+                </div>
             </div>
 
         </div>
@@ -561,10 +596,21 @@
                 limits: {},
                 errors: {},
                 loading: false,
+                formatRupiah(value) {
+                    if (!value) return '';
+                    let valStr = value.toString().replace(/\D/g, '');
+                    return valStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                },
                 updateLimit(employeeId) {
                     this.loading = true;
                     this.errors[employeeId] = '';
-                    const newLimit = this.limits[employeeId];
+                    
+                    let newLimit = this.limits[employeeId];
+                    // Hapus titik untuk mendapatkan angka murni
+                    if (newLimit !== undefined && newLimit !== null && typeof newLimit === 'string') {
+                        newLimit = newLimit.replace(/\./g, '');
+                    }
+                    
                     fetch(`/admin/employees/${employeeId}/update-limit`, {
                             method: 'PUT',
                             headers: {
@@ -614,6 +660,11 @@
                 globalLimit: '',
                 error: '',
                 loading: false,
+                formatRupiah(value) {
+                    if (!value) return '';
+                    let valStr = value.toString().replace(/\D/g, '');
+                    return valStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                },
                 updateAllLimits() {
                     this.loading = true;
                     this.error = '';
@@ -622,6 +673,12 @@
                         this.error = 'Masukkan nominal limit.';
                         this.loading = false;
                         return;
+                    }
+                    
+                    // Hapus titik untuk mendapatkan angka murni
+                    let rawLimit = this.globalLimit;
+                    if (typeof rawLimit === 'string') {
+                        rawLimit = rawLimit.replace(/\./g, '');
                     }
 
                     fetch(`/admin/employees/update-limit-bulk`, {
@@ -632,7 +689,7 @@
                                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
                             },
                             body: JSON.stringify({
-                                daily_expense_limit: this.globalLimit
+                                daily_expense_limit: rawLimit
                             })
                         })
                         .then(response => {

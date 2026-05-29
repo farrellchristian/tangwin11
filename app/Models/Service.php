@@ -20,7 +20,8 @@ class Service extends Model
         'description',
         'price',
         'image_path',
-        'id_store', 
+        'id_store',
+        'show_on_reservation',
     ];
 
     /**

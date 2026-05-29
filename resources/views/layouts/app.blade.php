@@ -27,7 +27,7 @@
     <div class="relative min-h-screen bg-gray-100">
 
         <aside
-            class="hidden lg:flex lg:flex-col bg-gray-800 text-white flex-shrink-0 fixed inset-y-0 left-0 z-10 transition-all duration-300 ease-in-out"
+            class="hidden lg:flex lg:flex-col bg-gray-800 text-white flex-shrink-0 fixed inset-y-0 left-0 z-10 transition-all duration-300 ease-in-out w-64"
             :class="isSidebarCollapsed ? 'w-20' : 'w-64'">
             @include('layouts.navigation')
         </aside>
@@ -49,7 +49,7 @@
             style="display: none;">
             @include('layouts.navigation')
         </aside>
-        <div class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
+        <div class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out lg:ml-64"
             :class="isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'">
 
             {{-- Cek apakah ada slot 'header' yang diisi dari view anak --}}

@@ -13,21 +13,25 @@ class Employee extends Model
 
     protected $fillable = [
         'employee_name',
+        'photo',
         'photo_path',
         'position',
         'phone_number',
         'join_date',
         'exit_date',
         'is_active',
+        'show_on_reservation',
         'id_store',
-        'daily_expense_limit', // <-- TAMBAHKAN INI
+        'daily_expense_limit',
+        'instagram_username',
     ];
 
     protected $casts = [
-        'join_date' => 'date',
-        'exit_date' => 'date',
-        'is_active' => 'boolean',
-        'daily_expense_limit' => 'decimal:2', // <-- TAMBAHKAN INI
+        'join_date'            => 'date',
+        'exit_date'            => 'date',
+        'is_active'            => 'boolean',
+        'show_on_reservation'  => 'boolean',
+        'daily_expense_limit'  => 'decimal:2',
     ];
 
     public function store()
