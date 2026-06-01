@@ -14,8 +14,8 @@ class ReservationSlotController extends Controller
     // Menampilkan halaman Kelola Jadwal
     public function index(Request $request)
     {
-        // Ambil semua data Toko untuk filter dropdown
-        $stores = \App\Models\Store::where('is_active', 1)->get();
+        // Ambil semua data Toko (SoftDeletes otomatis mengecualikan yang dihapus)
+        $stores = \App\Models\Store::get();
 
         // Default ke toko pertama (bukan 'all') untuk performa
         $selectedStoreId = $request->input('store_id');
@@ -34,7 +34,7 @@ class ReservationSlotController extends Controller
         $totalSlotCount = $daySummaries->sum('slot_count');
 
         // Ambil data Karyawan (Semua aktif)
-        $employees = \App\Models\Employee::where('is_active', 1)->get();
+        $employees = \App\Models\Employee::get();
 
         return view('admin.reservation.slots.index', compact('daySummaries', 'employees', 'stores', 'selectedStoreId', 'totalSlotCount'));
     }

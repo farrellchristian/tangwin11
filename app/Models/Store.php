@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Store extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     /**
      * Tentukan primary key.
@@ -26,14 +27,12 @@ class Store extends Model
         'store_name',
         'address',
         'phone_number',
-        'is_active',
         'show_on_reservation',
-        'store_ip_address',   
+        'store_ip_address',
         'enable_ip_validation',
     ];
-    
+
     protected $casts = [
-        'is_active'            => 'boolean',
         'show_on_reservation'  => 'boolean',
         'enable_ip_validation' => 'boolean',
     ];

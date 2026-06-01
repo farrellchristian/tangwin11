@@ -67,7 +67,13 @@
                                             <div class="text-sm text-gray-900">Rp {{ number_format($food->price, 0, ',', '.') }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ $food->stock_available }} pcs</div>
+                                            @if($food->stock_available <= 10)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200" title="Stok Hampir Habis!">
+                                                Sisa {{ $food->stock_available }} pcs
+                                                </span>
+                                            @else
+                                                <div class="text-sm text-gray-900">{{ $food->stock_available }} pcs</div>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('admin.foods.edit', $food->id_food) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
@@ -109,7 +115,13 @@
                                         Rp {{ number_format($food->price, 0, ',', '.') }}
                                     </div>
                                     <div>
-                                        <span class="text-xs text-gray-500">Stok: {{ $food->stock_available }} pcs</span>
+                                        @if($food->stock_available <= 10)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-red-100 text-red-800 border border-red-200">
+                                            Sisa stok: {{ $food->stock_available }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">Stok: {{ $food->stock_available }} pcs</span>
+                                        @endif
                                     </div>
                                 </div>
 

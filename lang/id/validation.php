@@ -59,6 +59,12 @@ return [
         'string'  => ':attribute mungkin tidak lebih besar dari :max karakter.',
         'array'   => ':attribute mungkin tidak memiliki lebih dari :max item.',
     ],
+    'min'                  => [
+        'numeric' => ':attribute minimal bernilai :min.',
+        'file'    => ':attribute minimal berukuran :min kilobyte.',
+        'string'  => ':attribute minimal berisi :min karakter.',
+        'array'   => ':attribute minimal memiliki :min item.',
+    ],
     'mimes'                => ':attribute harus berupa berkas berjenis: :values.',
     'mimetypes'            => ':attribute harus berupa berkas berjenis: :values.',
     'numeric'              => ':attribute harus berupa angka.',

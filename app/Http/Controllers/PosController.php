@@ -27,8 +27,8 @@ class PosController extends Controller
         $user = Auth::user();
 
         if ($user->role === 'admin') {
-            // Jika Admin: Ambil hanya toko yang aktif untuk modal pilihan
-            $stores = Store::where('is_active', true)->get();
+            // Jika Admin: Ambil semua toko yang belum dihapus (SoftDeletes otomatis memfilter)
+            $stores = Store::get();
 
             // Tampilkan view index POS, kirim data toko
             // View ini nanti akan punya logika untuk menampilkan modal
@@ -49,7 +49,6 @@ class PosController extends Controller
 
             // Ambil karyawan HANYA dari toko kasir tersebut
             $employees = Employee::where('id_store', $storeId)
-                                 ->where('is_active', true) // Hanya yang aktif
                                  ->orderBy('employee_name')
                                  ->get();
 
@@ -77,7 +76,6 @@ class PosController extends Controller
 
         // Ambil karyawan HANYA dari toko yang dipilih Admin
         $employees = Employee::where('id_store', $store->id_store)
-                            ->where('is_active', true)
                             ->orderBy('employee_name')
                             ->get();
 
@@ -115,7 +113,6 @@ class PosController extends Controller
         $availableProducts = Product::where('id_store', $store->id_store)->where('stock_available', '>', 0)->get(); // Hanya yg ada stok
         $availableFoods = Food::where('id_store', $store->id_store)->where('stock_available', '>', 0)->get(); // Hanya yg ada stok
         $availableEmployeesQuery = Employee::where('id_store', $store->id_store)
-                                    ->where('is_active', true)
                                     ->where('id_employee', '!=', $employee->id_employee);
 
         // Filter: Hanya yang sudah absen hari ini (Kecuali Admin)

@@ -52,7 +52,7 @@
                                  formatNumber() {
                                      let raw = this.formattedPrice.replace(/[^0-9]/g, '');
                                      this.rawPrice = raw;
-                                     this.formattedPrice = new Intl.NumberFormat('id-ID').format(raw) || '';
+                                     this.formattedPrice = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
                                  }
                              }"
                              x-init="formatNumber()"
@@ -67,7 +67,7 @@
                                        x-model="formattedPrice"
                                        @input="formatNumber"
                                        class="block w-full rounded-md border-gray-300 pl-10 pr-12 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                       placeholder="0"
+                                       placeholder=""
                                        required
                                        inputmode="numeric">
                                 <input type="hidden" name="price" id="price" x-model="rawPrice">
@@ -77,9 +77,28 @@
                             @enderror
                         </div>
 
-                        <div class="mt-4">
-                            <label for="stock_available" class="block text-sm font-medium text-gray-700">Stok Tersedia</label>
-                            <input type="number" name="stock_available" id="stock_available" value="{{ old('stock_available', 0) }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required min="0">
+                        <div class="mt-4"
+                             x-data="{
+                                 formattedStock: '{{ old('stock_available') ? number_format(old('stock_available'), 0, ',', '.') : '' }}',
+                                 rawStock: '{{ old('stock_available', '') }}',
+                                 formatStock() {
+                                     let raw = this.formattedStock.replace(/[^0-9]/g, '');
+                                     this.rawStock = raw;
+                                     this.formattedStock = raw ? new Intl.NumberFormat('id-ID').format(raw) : '';
+                                 }
+                             }"
+                             x-init="formatStock()"
+                        >
+                            <label for="stock_display" class="block text-sm font-medium text-gray-700">Stok Tersedia</label>
+                            <input type="text"
+                                   id="stock_display"
+                                   x-model="formattedStock"
+                                   @input="formatStock"
+                                   class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                   placeholder=""
+                                   required
+                                   inputmode="numeric">
+                            <input type="hidden" name="stock_available" id="stock_available" x-model="rawStock">
                             @error('stock_available')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                             @enderror

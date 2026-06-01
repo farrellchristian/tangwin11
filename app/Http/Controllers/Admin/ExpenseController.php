@@ -40,7 +40,6 @@ class ExpenseController extends Controller
         // === Ambil Data Karyawan untuk Setting Limit ===
         $limitStoreId = $request->input('limit_store_id'); // Filter toko khusus untuk limit
         $employeesQuery = Employee::with('store')
-            ->where('is_active', true)
             ->orderBy('id_store')
             ->orderBy('employee_name');
 
@@ -213,7 +212,6 @@ class ExpenseController extends Controller
 
         $stores = Store::all();
         $employees = Employee::where('id_store', $expense->id_store) // Karyawan dari toko expense saja
-            ->where('is_active', true)
             ->orderBy('employee_name')
             ->get();
         $users = User::where('role', 'kasir') // User kasir yg relevan
@@ -314,7 +312,7 @@ class ExpenseController extends Controller
         try {
             DB::beginTransaction();
 
-            Employee::where('is_active', true)->update([
+            Employee::query()->update([
                 'daily_expense_limit' => $validated['daily_expense_limit']
             ]);
 

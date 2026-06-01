@@ -32,7 +32,6 @@ class ExpenseController extends Controller
 
         // Ambil karyawan HANYA dari toko kasir tersebut
         $employees = Employee::where('id_store', $storeId)
-            ->where('is_active', true)
             ->orderBy('employee_name')
             ->get();
 

@@ -26,9 +26,7 @@ class EmployeeController extends Controller
             $employeesQuery->where('id_store', $request->store_id);
         }
 
-        // 4. Hanya tampilkan karyawan yang aktif
-        $employeesQuery->where('is_active', true);
-
+        // 4. (SoftDeletes otomatis menyembunyikan yang terhapus)
 
         // 5. Ambil data (10 per halaman)
         $employees = $employeesQuery->latest('join_date')->paginate(10); // Urutkan berdasarkan tanggal masuk terbaru
@@ -74,7 +72,6 @@ class EmployeeController extends Controller
             'join_date' => $request->join_date,
             'id_store' => $request->id_store,
             'phone_number' => $request->phone_number,
-            'is_active' => true, // Otomatis aktif saat dibuat
             // 'photo_path' => $path ?? null, // Jika pakai upload foto
         ]);
 
@@ -117,7 +114,6 @@ class EmployeeController extends Controller
             'exit_date' => 'nullable|date|after_or_equal:join_date', // Tgl keluar hrs setelah/sama dgn tgl masuk
             'id_store' => 'required|exists:stores,id_store',
             'phone_number' => 'nullable|string|max:20',
-            'is_active' => 'required|boolean', // Tambah validasi status
             // 'photo_path' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
@@ -129,7 +125,6 @@ class EmployeeController extends Controller
             'exit_date' => $request->exit_date,
             'id_store' => $request->id_store,
             'phone_number' => $request->phone_number,
-            'is_active' => $request->is_active,
             // 'photo_path' => $path ?? $employee->photo_path, // Update foto jika ada yg baru
         ]);
 
@@ -146,9 +141,10 @@ class EmployeeController extends Controller
     {
         // Set exit_date ke hari ini jika belum diisi
         $employee->update([
-            'is_active' => false,
             'exit_date' => $employee->exit_date ?? now()->toDateString(),
         ]);
+        
+        $employee->delete();
 
         // Redirect
         return redirect()->route('admin.employees.index')
@@ -160,9 +156,8 @@ class EmployeeController extends Controller
      */
     public function getEmployeesByStore(Store $store)
     {
-        // Ambil karyawan yang aktif dari toko yang diberikan
+        // Ambil karyawan dari toko yang diberikan (yang aktif ditangani SoftDeletes)
         $employees = $store->employees()
-            ->where('is_active', true)
             ->orderBy('employee_name')
             ->get(['id_employee', 'employee_name']); // Ambil kolom yang perlu saja
 

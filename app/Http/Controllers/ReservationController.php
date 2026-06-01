@@ -169,6 +169,20 @@ class ReservationController extends Controller
     {
         try {
             $reservation = Reservation::findOrFail($id);
+
+            // Logika hapus transaksi jika status sebelumnya 'approved'
+            if ($reservation->status === 'approved') {
+                $existingTx = Transaction::where('id_reservation', $reservation->id_reservation)->first();
+                if ($existingTx) {
+                    TransactionDetail::where('id_transaction', $existingTx->id_transaction)->delete();
+                    $existingTx->delete();
+                }
+            }
+
+            // Ubah status menjadi canceled agar slot tersedia kembali
+            $reservation->status = 'canceled';
+            $reservation->save();
+
             $reservation->delete(); // Soft delete
 
             return redirect()->back()->with('success', 'Reservasi berhasil dihapus.');

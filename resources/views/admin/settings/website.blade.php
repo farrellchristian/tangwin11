@@ -131,9 +131,6 @@
                                         <p class="text-xs text-gray-400 truncate mt-0.5">{{ $store->address }}</p>
                                     @endif
                                 </div>
-                                @if(!$store->is_active)
-                                    <span class="text-xs text-red-500 bg-red-50 border border-red-100 px-2 py-0.5 rounded-md flex-shrink-0">Nonaktif</span>
-                                @endif
                             </label>
                         @empty
                             <p class="px-5 py-6 text-sm text-gray-400 text-center">Belum ada cabang.</p>

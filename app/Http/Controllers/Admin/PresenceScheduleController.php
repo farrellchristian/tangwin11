@@ -21,8 +21,8 @@ class PresenceScheduleController extends Controller
      */
     public function index(Request $request): View
     {
-        // Ambil toko aktif (bukan Office) untuk filter
-        $stores = Store::where('is_active', true)->where('store_name', '!=', 'Office')->get();
+        // Ambil toko yang tersedia (bukan Office), SoftDeletes otomatis mengecualikan yang dihapus
+        $stores = Store::where('store_name', '!=', 'Office')->get();
 
         // Tentukan toko yang dipilih. Default ke toko pertama jika ada.
         $selectedStoreId = $request->input('store_id', $stores->first()->id_store ?? null);
@@ -64,7 +64,7 @@ class PresenceScheduleController extends Controller
      */
     public function create(): View
     {
-        $stores = Store::where('is_active', true)->where('store_name', '!=', 'Office')->get();
+        $stores = Store::where('store_name', '!=', 'Office')->get();
         $daysOfWeek = [
             '1' => 'Senin',
             '2' => 'Selasa',
@@ -112,11 +112,10 @@ class PresenceScheduleController extends Controller
                     }
                 }
             ],
-            'jam_check_out' => 'required|date_format:H:i|after:jam_check_in',
+            'jam_check_out' => 'required|date_format:H:i',
             'is_active' => 'required|boolean',
             'late_threshold' => 'required|integer|min:0',
         ], [
-            'jam_check_out.after' => 'Jam pulang harus setelah jam masuk.',
             'late_threshold.min' => 'Batas keterlambatan tidak boleh negatif.',
         ]);
 
@@ -139,7 +138,7 @@ class PresenceScheduleController extends Controller
      */
     public function edit(PresenceSchedule $presenceSchedule): View
     {
-        $stores = Store::where('is_active', true)->where('store_name', '!=', 'Office')->get();
+        $stores = Store::where('store_name', '!=', 'Office')->get();
         $daysOfWeek = [
             '1' => 'Senin',
             '2' => 'Selasa',
@@ -191,11 +190,10 @@ class PresenceScheduleController extends Controller
                     }
                 }
             ],
-            'jam_check_out' => 'required|date_format:H:i|after:jam_check_in',
+            'jam_check_out' => 'required|date_format:H:i',
             'is_active' => 'required|boolean',
             'late_threshold' => 'required|integer|min:0',
         ], [
-            'jam_check_out.after' => 'Jam pulang harus setelah jam masuk.',
             'late_threshold.min' => 'Batas keterlambatan tidak boleh negatif.',
         ]);
 

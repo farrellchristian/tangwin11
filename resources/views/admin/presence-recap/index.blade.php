@@ -354,8 +354,8 @@
                             <th class="px-6 py-4">Toko</th>
                             <th class="px-6 py-4">Check-in</th>
                             <th class="px-6 py-4">Jadwal Masuk</th>
-                            <th class="px-6 py-4">Status</th>
                             <th class="px-6 py-4">Catatan</th>
+                            <th class="px-6 py-4">Status</th>
                             <th class="px-6 py-4 text-center">Aksi</th>
                         </tr>
                     </thead>
@@ -381,6 +381,9 @@
                                 <td class="px-6 py-4 text-gray-500">
                                     {{ $log->schedule ? \Carbon\Carbon::parse($log->schedule->jam_check_in)->format('H:i') : '-' }}
                                 </td>
+                                <td class="px-6 py-4 text-gray-500 max-w-[200px]">
+                                    {{ $log->notes ?? '-' }}
+                                </td>
                                 <td class="px-6 py-4">
                                     @if ($log->status == 'Tepat Waktu')
                                         <span
@@ -401,9 +404,6 @@
                                             {{ $log->status }}
                                         </span>
                                     @endif
-                                </td>
-                                <td class="px-6 py-4 text-gray-500 max-w-[200px]">
-                                    {{ $log->notes ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center justify-center gap-2">

@@ -12,22 +12,54 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
+    <script>
+        // Mencegah FOUC (Flash of Unstyled Content) dengan set state sebelum DOM dirender
+        if (localStorage.getItem('sidebarCollapsed') === 'true') {
+            document.documentElement.classList.add('sidebar-collapsed');
+        }
+    </script>
+    <style>
+        /* Atur ukuran sidebar segera berdasarkan class di tag HTML */
+        @media (min-width: 1024px) {
+            html.sidebar-collapsed .sidebar-container { width: 5rem !important; }
+            html:not(.sidebar-collapsed) .sidebar-container { width: 16rem !important; }
+            
+            html.sidebar-collapsed .main-container { margin-left: 5rem !important; }
+            html:not(.sidebar-collapsed) .main-container { margin-left: 16rem !important; }
+        }
+        
+        /* Matikan semua transisi animasi saat halaman baru dimuat */
+        .preload-transitions * {
+            transition: none !important;
+        }
+    </style>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased" x-data="{ 
+<body class="font-sans antialiased preload-transitions" x-data="{ 
         isSidebarOpen: false, 
         isSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
+        init() {
+            setTimeout(() => {
+                document.body.classList.remove('preload-transitions');
+            }, 50);
+        },
         toggleSidebar() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
             localStorage.setItem('sidebarCollapsed', this.isSidebarCollapsed);
+            if (this.isSidebarCollapsed) {
+                document.documentElement.classList.add('sidebar-collapsed');
+            } else {
+                document.documentElement.classList.remove('sidebar-collapsed');
+            }
         }
     }">
 
     <div class="relative min-h-screen bg-gray-100">
 
         <aside
-            class="hidden lg:flex lg:flex-col bg-gray-800 text-white flex-shrink-0 fixed inset-y-0 left-0 z-10 transition-all duration-300 ease-in-out w-64"
+            class="sidebar-container hidden lg:flex lg:flex-col bg-gray-800 text-white flex-shrink-0 fixed inset-y-0 left-0 z-10 transition-all duration-300 ease-in-out"
             :class="isSidebarCollapsed ? 'w-20' : 'w-64'">
             @include('layouts.navigation')
         </aside>
@@ -49,7 +81,7 @@
             style="display: none;">
             @include('layouts.navigation')
         </aside>
-        <div class="flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out lg:ml-64"
+        <div class="main-container flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
             :class="isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'">
 
             {{-- Cek apakah ada slot 'header' yang diisi dari view anak --}}
@@ -72,12 +104,11 @@
                 </div>
             </header>
             @else
-            {{-- Jika tidak ada header (seperti di Dashboard Admin baru kita), 
-                        kita TAMPILKAN TOMBOL TOGGLE SAJA secara fixed agar tidak makan tempat --}}
+            {{-- Jika tidak ada header (seperti di Dashboard Admin baru kita),kita TAMPILKAN TOMBOL TOGGLE SAJA secara fixed agar tidak makan tempat --}}
             <div class="lg:hidden fixed top-4 left-4 z-50" x-show="!isSidebarOpen" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0">
                 <button
                     @click="isSidebarOpen = !isSidebarOpen"
-                    class="p-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-lg hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 focus:ring-offset-slate-900 transition-all duration-200">
+                    class="p-2.5 rounded-xl bg-white border border-gray-200 text-gray-600 shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-all duration-200">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>

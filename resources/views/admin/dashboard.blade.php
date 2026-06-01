@@ -257,13 +257,16 @@
                         <h3 class="font-bold text-red-800">Stok Menipis</h3>
                     </div>
                     <div class="p-2">
-                        @forelse($lowStockProducts as $prod)
+                        @forelse($lowStockItems as $item)
                         <div class="flex items-center justify-between p-3 hover:bg-red-50/30 rounded-lg transition border-b border-slate-50 last:border-0">
                             <div>
-                                <p class="text-sm font-bold text-slate-800">{{ $prod->product_name }}</p>
-                                <p class="text-[10px] text-slate-500">{{ $prod->store->store_name ?? '-' }}</p>
+                                <div class="flex items-center gap-1.5 mb-0.5">
+                                    <p class="text-sm font-bold text-slate-800">{{ $item->item_name }}</p>
+                                    <span class="text-[9px] px-1.5 py-0.5 rounded-sm {{ $item->type_label == 'Produk' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700' }} font-semibold">{{ $item->type_label }}</span>
+                                </div>
+                                <p class="text-[10px] text-slate-500">{{ $item->store->store_name ?? '-' }}</p>
                             </div>
-                            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-md">Sisa: {{ $prod->stock_available }}</span>
+                            <span class="px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-md">Sisa: {{ $item->stock_available }}</span>
                         </div>
                         @empty
                         <p class="text-center text-xs text-green-600 font-medium py-4">Stok Aman!</p>

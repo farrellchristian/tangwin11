@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Employee extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $primaryKey = 'id_employee';
 
@@ -19,7 +20,6 @@ class Employee extends Model
         'phone_number',
         'join_date',
         'exit_date',
-        'is_active',
         'show_on_reservation',
         'id_store',
         'daily_expense_limit',
@@ -29,7 +29,6 @@ class Employee extends Model
     protected $casts = [
         'join_date'            => 'date',
         'exit_date'            => 'date',
-        'is_active'            => 'boolean',
         'show_on_reservation'  => 'boolean',
         'daily_expense_limit'  => 'decimal:2',
     ];

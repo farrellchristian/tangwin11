@@ -158,7 +158,11 @@
                                 <label for="tips" class="text-sm text-gray-600">Tips (Opsional)</label>
                                 <div class="relative rounded-md shadow-sm w-1/2">
                                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-gray-500 sm:text-sm">Rp</span></div>
-                                    <input type="number" name="tips" id="tips" x-model.number="tips" @input="calculateTotal()" class="block w-full rounded-md border-gray-300 pl-10 pr-1 text-right focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="0" min="0">
+                                    <input type="text" inputmode="numeric" name="tips" id="tips" 
+                                           :value="tips ? formatCurrency(tips) : ''"
+                                           @input="let raw = $event.target.value.replace(/\D/g, ''); tips = raw ? parseInt(raw, 10) : 0; calculateTotal();" 
+                                           class="block w-full rounded-md border-gray-300 pl-10 pr-1 text-right focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                                           placeholder="0">
                                 </div>
                             </div>
                             <div class="flex justify-between font-bold text-lg">
@@ -184,17 +188,27 @@
                                 <label for="amount_paid" class="block text-sm font-medium text-gray-700">Jumlah Uang</label>
                                 <div class="relative mt-1 rounded-md shadow-sm">
                                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-gray-500 sm:text-sm">Rp</span></div>
-                                    <input type="number" name="amount_paid" id="amount_paid" x-model.number="amountPaid" @input="calculateChange()" class="block w-full rounded-md border-gray-300 pl-10 pr-1 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="0" min="0">
+                                    <input type="text" inputmode="numeric" name="amount_paid" id="amount_paid" 
+                                           :value="amountPaid ? formatCurrency(amountPaid) : ''"
+                                           @input="let raw = $event.target.value.replace(/\D/g, ''); amountPaid = raw ? parseInt(raw, 10) : 0; calculateChange();" 
+                                           class="block w-full rounded-md border-gray-300 pl-10 pr-1 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                                           placeholder="0">
                                 </div>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <span>Kembalian:</span>
-                                <span class="font-medium" x-text="'Rp ' + formatCurrency(changeAmount)"></span>
+                            <div class="flex space-x-2 pt-2 pb-1">
+                                <button type="button" @click="setAmountPaid(totalAmount)" 
+                                    :class="amountPaid == totalAmount && totalAmount > 0 ? 'bg-indigo-50 border-indigo-500 text-indigo-700 ring-1 ring-indigo-500' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
+                                    class="flex-1 text-sm font-medium py-2.5 px-3 border rounded transition-all">Uang Pas</button>
+                                <button type="button" @click="setAmountPaid(50000)" 
+                                    :class="amountPaid == 50000 ? 'bg-indigo-50 border-indigo-500 text-indigo-700 ring-1 ring-indigo-500' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
+                                    class="flex-1 text-sm font-medium py-2.5 px-3 border rounded transition-all">50.000</button>
+                                <button type="button" @click="setAmountPaid(100000)" 
+                                    :class="amountPaid == 100000 ? 'bg-indigo-50 border-indigo-500 text-indigo-700 ring-1 ring-indigo-500' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'"
+                                    class="flex-1 text-sm font-medium py-2.5 px-3 border rounded transition-all">100.000</button>
                             </div>
-                            <div class="flex space-x-2 pt-2">
-                                <button type="button" @click="setAmountPaid(totalAmount)" class="flex-1 text-xs py-1 px-2 border rounded hover:bg-gray-100">Uang Pas</button>
-                                <button type="button" @click="setAmountPaid(50000)" class="flex-1 text-xs py-1 px-2 border rounded hover:bg-gray-100">50.000</button>
-                                <button type="button" @click="setAmountPaid(100000)" class="flex-1 text-xs py-1 px-2 border rounded hover:bg-gray-100">100.000</button>
+                            <div class="flex justify-between items-center text-sm pt-2">
+                                <span class="font-medium text-gray-700">Kembalian:</span>
+                                <span class="font-bold text-lg text-green-600" x-text="'Rp ' + formatCurrency(changeAmount)"></span>
                             </div>
                         </div>
 
@@ -203,7 +217,7 @@
                         <div class="mt-6 border-t pt-4">
                             <button @click="submitTransaction"
                                 :disabled="!canSubmit()"
-                                class="w-full inline-flex justify-center items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-50 transition ease-in-out duration-150">
+                                class="w-full inline-flex justify-center items-center px-4 py-3 bg-indigo-600 border border-transparent rounded-md font-semibold text-sm text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-50 transition ease-in-out duration-150">
                                 Proses Pembayaran
                             </button>
                         </div>
@@ -678,7 +692,10 @@
                     if (this.successTransactionId) {
                         window.open(`/pos/struk/${this.successTransactionId}`, '_blank');
                     }
-                    this.backToIndex();
+                    // Tambahkan delay agar window.open sempat tereksekusi sebelum parent window berpindah halaman
+                    setTimeout(() => {
+                        this.backToIndex();
+                    }, 1000);
                 },
 
                 backToIndex() {

@@ -35,7 +35,6 @@ class PresenceController extends Controller
         }
 
         $employees = Employee::where('id_store', $storeId)
-            ->where('is_active', true)
             ->orderBy('employee_name')
             ->get();
 
@@ -189,8 +188,9 @@ class PresenceController extends Controller
         $thresholdMenit = (int) $schedule->late_threshold;
         $batasToleransi = $jamMasukJadwal->copy()->addMinutes($thresholdMenit);
 
+        $timeFormatted = $now->format('H.i');
         $status = 'Tepat Waktu';
-        $notes = 'Presensi masuk berhasil.';
+        $notes = "Presensi jam $timeFormatted, tepat waktu.";
         $lateMinutes = 0; // Default 0
 
         $redirectResponse = null;
@@ -206,13 +206,13 @@ class PresenceController extends Controller
             $lateMinutes = (int) ceil(abs($selisihDetik) / 60);
 
             $status = 'Terlambat';
-            $notes = "Terlambat $lateMinutes mnt (Tol: $thresholdMenit mnt)";
+            $notes = "Presensi jam $timeFormatted, terlambat $lateMinutes menit.";
 
             $redirectResponse = redirect()->route('presence.index')
-                ->with('late', "Presensi berhasil! Status: $status. $notes");
+                ->with('late', "Presensi berhasil $timeFormatted! Status: Terlambat $lateMinutes menit.");
         } else {
             $redirectResponse = redirect()->route('presence.index')
-                ->with('success', "Presensi berhasil! Status: $status. $notes");
+                ->with('success', "Presensi berhasil $timeFormatted!");
         }
 
 

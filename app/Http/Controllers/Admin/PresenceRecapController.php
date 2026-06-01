@@ -66,10 +66,10 @@ class PresenceRecapController extends Controller
                          ->paginate(25)
                          ->withQueryString();
 
-        // 6. Ambil data untuk dropdown filter
-        $stores = Store::where('is_active', true)->orderBy('store_name')->get();
+        // Ambil data toko untuk dropdown filter (SoftDeletes otomatis mengecualikan yang dihapus)
+        $stores = Store::orderBy('store_name')->get();
         
-        $employeesQuery = Employee::where('is_active', true)->orderBy('employee_name');
+        $employeesQuery = Employee::orderBy('employee_name');
         if ($selectedStoreId) {
             $employeesQuery->where('id_store', $selectedStoreId);
         }
@@ -99,7 +99,7 @@ class PresenceRecapController extends Controller
         $log = PresenceLog::with(['employee', 'store', 'schedule'])->findOrFail($id);
 
         // Ambil data pendukung untuk dropdown
-        $employees = Employee::where('id_store', $log->id_store)->where('is_active', true)->get();
+        $employees = Employee::where('id_store', $log->id_store)->get();
         // Jadwal yang tersedia untuk toko ini pada hari tersebut
         $dayOfWeek = Carbon::parse($log->check_in_time)->dayOfWeek;
         $schedules = PresenceSchedule::where('id_store', $log->id_store)

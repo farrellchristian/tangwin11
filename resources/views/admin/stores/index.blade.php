@@ -67,15 +67,9 @@
                                             <div class="text-sm font-medium text-gray-900">{{ $store->store_name }}</div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if ($store->is_active)
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                  Aktif
-                                                </span>
-                                            @else
-                                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                  Non-Aktif
-                                                </span>
-                                            @endif
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Aktif
+                                            </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {{ $store->created_at->format('d M Y') }}
@@ -83,17 +77,15 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('admin.stores.edit', $store->id_store) }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                             
-                                            {{-- Form Nonaktifkan (Destroy) --}}
-                                            @if ($store->is_active && strtolower($store->store_name) !== 'office')
-                                                <form action="{{ route('admin.stores.destroy', $store->id_store) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan toko ini?');">
+                                            {{-- Form Hapus (Soft Delete) --}}
+                                            @if (strtolower($store->store_name) !== 'office')
+                                                <form action="{{ route('admin.stores.destroy', $store->id_store) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus toko ini? Data toko akan disembunyikan dari seluruh sistem.')">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Nonaktifkan</button>
+                                                    <button type="submit" class="text-red-600 hover:text-red-900 ml-4">Hapus</button>
                                                 </form>
-                                            @elseif (strtolower($store->store_name) === 'office')
-                                                 <span class="text-gray-400 ml-4">(Default)</span>
                                             @else
-                                                <span class="text-gray-400 ml-4">Dinonaktifkan</span>
+                                                 <span class="text-gray-400 ml-4">(Default)</span>
                                             @endif
                                         </td>
                                     </tr>
@@ -118,15 +110,9 @@
                                         <p class="text-sm text-gray-500">{{ $store->created_at->format('d M Y') }}</p>
                                     </div>
                                     <div class="flex-shrink-0">
-                                        @if ($store->is_active)
-                                            <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">
-                                              Aktif
-                                            </span>
-                                        @else
-                                            <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800">
-                                              Non-Aktif
-                                            </span>
-                                        @endif
+                                        <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">
+                                            Aktif
+                                        </span>
                                     </div>
                                 </div>
                                 
@@ -135,18 +121,16 @@
                                         Edit
                                     </a>
                                     
-                                    @if ($store->is_active && strtolower($store->store_name) !== 'office')
-                                        <form action="{{ route('admin.stores.destroy', $store->id_store) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan toko ini?');">
+                                    @if (strtolower($store->store_name) !== 'office')
+                                        <form action="{{ route('admin.stores.destroy', $store->id_store) }}" method="POST" class="inline-block m-0" onsubmit="return confirm('Apakah Anda yakin ingin menghapus toko ini? Data toko akan disembunyikan dari seluruh sistem.')">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 text-sm font-medium rounded-md hover:bg-red-100 transition-colors">
-                                                Nonaktifkan
+                                                Hapus
                                             </button>
                                         </form>
-                                    @elseif (strtolower($store->store_name) === 'office')
-                                         <span class="px-3 py-1.5 text-gray-400 text-sm">(Default)</span>
                                     @else
-                                        <span class="px-3 py-1.5 text-gray-400 text-sm">Dinonaktifkan</span>
+                                         <span class="px-3 py-1.5 text-gray-400 text-sm">(Default)</span>
                                     @endif
                                 </div>
                             </div>

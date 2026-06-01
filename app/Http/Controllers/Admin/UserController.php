@@ -54,10 +54,9 @@ class UserController extends Controller
     {
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', \Illuminate\Validation\Rule::unique(User::class)->whereNull('deleted_at')],
+            'password' => ['required', 'confirmed'],
             'id_store' => ['required', 'exists:stores,id_store'],
-            'is_active' => ['required', 'boolean'],
         ]);
 
         User::create([
@@ -66,7 +65,7 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'role' => 'kasir', // Otomatis set role 'kasir'
             'id_store' => $request->id_store,
-            'is_active' => $request->is_active,
+            'is_active' => 1, // Tetap default 1 untuk legacy
         ]);
 
         return redirect()->route('admin.users.index')
@@ -99,14 +98,13 @@ class UserController extends Controller
 
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class.',email,'.$user->id], // Ignore ID user ini
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', \Illuminate\Validation\Rule::unique(User::class)->ignore($user->id)->whereNull('deleted_at')],
             'id_store' => ['required', 'exists:stores,id_store'],
-            'is_active' => ['required', 'boolean'],
         ];
 
         // Cek jika admin ingin mengganti password
         if ($request->filled('password')) {
-            $rules['password'] = ['required', 'confirmed', Rules\Password::defaults()];
+            $rules['password'] = ['required', 'confirmed'];
         }
 
         $validatedData = $request->validate($rules);
@@ -115,7 +113,6 @@ class UserController extends Controller
         $user->name = $validatedData['name'];
         $user->email = $validatedData['email'];
         $user->id_store = $validatedData['id_store'];
-        $user->is_active = $validatedData['is_active'];
 
         // Update password HANYA jika diisi
         if ($request->filled('password')) {
@@ -129,20 +126,20 @@ class UserController extends Controller
     }
 
     /**
-     * Menonaktifkan akun kasir (bukan Hapus permanen).
+     * Menghapus akun kasir (Soft Delete).
      */
     public function destroy(User $user): RedirectResponse
     {
-        // Pastikan kita tidak menonaktifkan admin
+        // Pastikan kita tidak menghapus admin
         if ($user->role === 'admin') {
              return redirect()->route('admin.users.index')
-                         ->with('error', 'Tidak bisa menonaktifkan akun Admin.');
+                         ->with('error', 'Tidak bisa menghapus akun Admin.');
         }
 
-        // Kita tidak menghapus, kita set 'is_active' = false
-        $user->update(['is_active' => false]);
+        // Hapus akun (Soft Delete karena model User pakai trait SoftDeletes)
+        $user->delete();
 
         return redirect()->route('admin.users.index')
-                         ->with('success', 'Akun kasir berhasil dinonaktifkan.');
+                         ->with('success', 'Akun kasir berhasil dihapus.');
     }
 }

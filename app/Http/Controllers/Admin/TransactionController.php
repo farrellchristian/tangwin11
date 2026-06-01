@@ -29,7 +29,6 @@ class TransactionController extends Controller
 
         $stores = Store::all();
         $employees = Employee::where('id_store', $transaction->id_store)
-            ->where('is_active', true)
             ->orderBy('employee_name')
             ->get();
         $paymentMethods = PaymentMethod::where('is_active', true)->get();

@@ -59,7 +59,7 @@
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {{ $service->store->store_name }}
+                                                {{ $service->store?->store_name ?? '-' }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -96,7 +96,7 @@
                                     </div>
                                     <div class="flex-shrink-0">
                                         <span class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            {{ $service->store->store_name }}
+                                            {{ $service->store?->store_name ?? '-' }}
                                         </span>
                                     </div>
                                 </div>

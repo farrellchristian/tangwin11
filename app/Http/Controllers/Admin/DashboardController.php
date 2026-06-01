@@ -81,17 +81,25 @@ class DashboardController extends Controller
             ->get();
 
         // 6. STOK MENIPIS
-        $lowStockProducts = Product::with('store')
-            ->where('stock_available', '<=', 10)
-            ->orderBy('stock_available', 'asc')
-            ->take(5)
-            ->get();
+        $lowProducts = Product::with('store')->where('stock_available', '<=', 10)->get()->map(function($item) {
+            $item->item_name = $item->product_name;
+            $item->type_label = 'Produk';
+            return $item;
+        });
+
+        $lowFoods = \App\Models\Food::with('store')->where('stock_available', '<=', 10)->get()->map(function($item) {
+            $item->item_name = $item->food_name;
+            $item->type_label = 'Mamin';
+            return $item;
+        });
+
+        $lowStockItems = $lowProducts->concat($lowFoods)->sortBy('stock_available')->take(5);
 
         return view('admin.dashboard', compact(
             'stats', 
             'recentTransactions', 
             'topEmployees', 
-            'lowStockProducts',
+            'lowStockItems',
             'chartLabels', // Kirim ke View
             'chartValues', // Kirim ke View
             'pieLabels',   // Kirim ke View

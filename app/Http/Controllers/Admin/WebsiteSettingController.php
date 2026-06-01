@@ -21,7 +21,7 @@ class WebsiteSettingController extends Controller
     {
         $stores = Store::orderBy('store_name')->get();
         $services = Service::with('store')->orderBy('id_store')->orderBy('service_name')->get();
-        $employees = Employee::with('store')->where('is_active', true)->orderBy('id_store')->orderBy('employee_name')->get();
+        $employees = Employee::with('store')->orderBy('id_store')->orderBy('employee_name')->get();
         $paymentMethods = PaymentMethod::orderBy('method_name')->get();
 
         return view('admin.settings.website', compact(
@@ -59,7 +59,7 @@ class WebsiteSettingController extends Controller
         Employee::query()->update(['show_on_reservation' => false]);
 
         // Proses setiap employee aktif untuk update visibilitas dan foto jika ada
-        $activeEmployees = Employee::where('is_active', true)->get();
+        $activeEmployees = Employee::all();
         $base64Photos = $request->input('employee_photos_base64', []);
         $instagramUsernames = $request->input('instagram_usernames', []);
 

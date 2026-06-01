@@ -61,9 +61,7 @@
                                     <th scope="col"
                                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Tgl Masuk</th>
-                                    <th scope="col"
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status</th>
+
                                     <th scope="col" class="relative px-6 py-3">
                                         <span class="sr-only">Actions</span>
                                     </th>
@@ -80,7 +78,7 @@
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span
                                                 class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                                {{ $employee->store->store_name }}
+                                                {{ $employee->store?->store_name ?? '-' }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
@@ -90,24 +88,11 @@
                                             <div class="text-sm text-gray-900">{{ $employee->join_date->format('d M Y') }}
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            @if ($employee->is_active)
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                    Aktif
-                                                </span>
-                                            @else
-                                                <span
-                                                    class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                                                    Sudah Keluar
-                                                </span>
-                                            @endif
-                                        </td>
+
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <a href="{{ route('admin.employees.edit', $employee->id_employee) }}"
                                                 class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                             {{-- Kita gunakan form berbeda untuk Soft Delete / Restore --}}
-                                            @if ($employee->is_active)
                                                 <form action="{{ route('admin.employees.destroy', $employee->id_employee) }}"
                                                     method="POST" class="inline-block"
                                                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus data karyawan ini?');">
@@ -116,9 +101,6 @@
                                                     <button type="submit"
                                                         class="text-red-600 hover:text-red-900 ml-4">Hapus</button>
                                                 </form>
-                                            @else
-                                                {{-- Nanti kita tambahkan tombol Restore di sini --}}
-                                            @endif
                                         </td>
                                     </tr>
                                 @empty
@@ -144,17 +126,10 @@
                                         <p class="text-sm text-gray-500">{{ $employee->phone_number }}</p>
                                     </div>
                                     <div class="flex-shrink-0">
-                                        @if ($employee->is_active)
                                             <span
                                                 class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-green-100 text-green-800">
                                                 Aktif
                                             </span>
-                                        @else
-                                            <span
-                                                class="px-2 py-1 inline-flex text-xs leading-4 font-semibold rounded-full bg-red-100 text-red-800">
-                                                Sudah Keluar
-                                            </span>
-                                        @endif
                                     </div>
                                 </div>
 
@@ -166,7 +141,7 @@
                                                 d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
                                             </path>
                                         </svg>
-                                        <span class="truncate font-medium">{{ $employee->store->store_name }}</span>
+                                        <span class="truncate font-medium">{{ $employee->store?->store_name ?? '-' }}</span>
                                     </div>
                                     <div class="flex items-center">
                                         <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor"
@@ -188,7 +163,6 @@
                                         Edit
                                     </a>
 
-                                    @if ($employee->is_active)
                                         <form action="{{ route('admin.employees.destroy', $employee->id_employee) }}"
                                             method="POST" class="inline-block m-0"
                                             onsubmit="return confirm('Apakah Anda yakin ingin menghapus data karyawan ini?');">
@@ -199,7 +173,6 @@
                                                 Hapus
                                             </button>
                                         </form>
-                                    @endif
                                 </div>
                             </div>
                         @empty

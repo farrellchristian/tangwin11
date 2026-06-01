@@ -90,19 +90,7 @@
                             @enderror
                         </div>
 
-                        <div class="mt-4"> <label for="is_active"
-                                class="block text-sm font-medium text-gray-700">Status</label>
-                            <select id="is_active" name="is_active"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="1" {{ old('is_active', $employee->is_active) == 1 ? 'selected' : '' }}>
-                                    Aktif</option>
-                                <option value="0" {{ old('is_active', $employee->is_active) == 0 ? 'selected' : '' }}>
-                                    Non-Aktif</option>
-                            </select>
-                            @error('is_active')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+
 
                         {{-- Input Foto (jika diperlukan nanti) --}}
                         {{-- <div class="mt-4">

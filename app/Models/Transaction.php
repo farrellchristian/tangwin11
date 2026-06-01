@@ -50,7 +50,7 @@ class Transaction extends Model
      */
     public function employee()
     {
-        return $this->belongsTo(Employee::class, 'id_employee_primary', 'id_employee');
+        return $this->belongsTo(Employee::class, 'id_employee_primary', 'id_employee')->withTrashed();
     }
 
     /**
@@ -58,7 +58,7 @@ class Transaction extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user', 'id');
+        return $this->belongsTo(User::class, 'id_user', 'id')->withTrashed();
     }
 
     /**
@@ -66,7 +66,7 @@ class Transaction extends Model
      */
     public function cashierUser()
     {
-        return $this->belongsTo(User::class, 'id_user', 'id');
+        return $this->belongsTo(User::class, 'id_user', 'id')->withTrashed();
     }
 
     /**

@@ -34,9 +34,8 @@ class StoreController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'store_name' => 'required|string|max:255|unique:stores,store_name',
-            'is_active' => 'required|boolean',
-            'store_ip_address' => 'nullable|string|max:255', // Bisa diisi IP, dipisah koma
+            'store_name'           => 'required|string|max:255|unique:stores,store_name',
+            'store_ip_address'     => 'nullable|string|max:255',
             'enable_ip_validation' => 'required|boolean',
         ]);
 
@@ -59,40 +58,35 @@ class StoreController extends Controller
      */
     public function update(Request $request, Store $store): RedirectResponse
     {
-         $validated = $request->validate([
-            'store_name' => 'required|string|max:255|unique:stores,store_name,' . $store->id_store . ',id_store',
-            'is_active' => 'required|boolean',
-            'store_ip_address' => 'nullable|string|max:255',
+        $validated = $request->validate([
+            'store_name'           => 'required|string|max:255|unique:stores,store_name,' . $store->id_store . ',id_store',
+            'store_ip_address'     => 'nullable|string|max:255',
             'enable_ip_validation' => 'required|boolean',
         ]);
-        
-        if (strtolower($store->store_name) === 'office') {
-            $validated['is_active'] = true;
-        }
 
         $store->update($validated);
 
-         return redirect()->route('admin.stores.index')
+        return redirect()->route('admin.stores.index')
                          ->with('success', 'Data toko berhasil diperbarui.');
     }
 
     /**
-     * Menonaktifkan toko (kita gunakan is_active).
+     * Menghapus toko (Soft Delete via deleted_at).
      */
     public function destroy(Store $store): RedirectResponse
     {
         if (strtolower($store->store_name) === 'office') {
-             return redirect()->route('admin.stores.index')
-                         ->with('error', 'Toko "Office" tidak bisa dinonaktifkan.');
+            return redirect()->route('admin.stores.index')
+                         ->with('error', 'Toko "Office" tidak bisa dihapus.');
         }
 
         try {
-            $store->update(['is_active' => false]);
+            $store->delete(); // Soft delete: mengisi kolom deleted_at
             return redirect()->route('admin.stores.index')
-                         ->with('success', 'Toko berhasil dinonaktifkan.');
+                         ->with('success', 'Toko berhasil dihapus.');
         } catch (\Exception $e) {
             return redirect()->route('admin.stores.index')
-                         ->with('error', 'Gagal menonaktifkan toko.');
+                         ->with('error', 'Gagal menghapus toko.');
         }
     }
 }

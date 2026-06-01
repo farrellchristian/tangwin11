@@ -56,6 +56,6 @@ class Expense extends Model
      */
     public function user()
     {
-        return $this->belongsTo(User::class, 'id_user'); // Asumsi primary key User adalah 'id'
+        return $this->belongsTo(User::class, 'id_user')->withTrashed(); // Asumsi primary key User adalah 'id'
     }
 }

@@ -34,17 +34,6 @@
                             @enderror
                         </div>
 
-                        <div class="mt-4">
-                            <label for="is_active" class="block text-sm font-medium text-gray-700">Status Toko</label>
-                            <select id="is_active" name="is_active"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="1" {{ old('is_active', '1') == '1' ? 'selected' : '' }}>Aktif</option>
-                                <option value="0" {{ old('is_active') == '0' ? 'selected' : '' }}>Non-Aktif</option>
-                            </select>
-                            @error('is_active')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
 
                         <div class="mt-6 border-t pt-4">
                             <h4 class="text-md font-medium text-gray-800">Pengaturan Presensi (Opsional)</h4>
@@ -52,12 +41,21 @@
                                 dari WiFi toko.</p>
 
                             <div class="mt-4">
-                                <label for="store_ip_address" class="block text-sm font-medium text-gray-700">IP Address
-                                    Toko (Opsional)</label>
-                                <input type="text" name="store_ip_address" id="store_ip_address"
-                                    value="{{ old('store_ip_address') }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                    placeholder="Contoh: 192.168.1.1">
+                                <label for="store_ip_address" class="block text-sm font-medium text-gray-700">IP Address Toko (Opsional)</label>
+                                <div class="flex mt-1 shadow-sm rounded-md">
+                                    <input type="text" name="store_ip_address" id="store_ip_address"
+                                        value="{{ old('store_ip_address') }}"
+                                        class="block w-full rounded-none rounded-l-md border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                        placeholder="Contoh: 192.168.1.1">
+                                    <button type="button" onclick="document.getElementById('store_ip_address').value = '{{ request()->ip() }}'"
+                                        class="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 whitespace-nowrap">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 text-gray-400">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                        </svg>
+                                        <span>Deteksi IP</span>
+                                    </button>
+                                </div>
                                 <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak pakai. Bisa diisi beberapa IP
                                     dipisah koma (cth: 192.168.1.1, 10.0.0.1)</p>
                                 @error('store_ip_address')
