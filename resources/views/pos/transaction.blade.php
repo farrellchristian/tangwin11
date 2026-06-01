@@ -148,23 +148,8 @@
                     <div class="p-6 text-gray-900">
                         <h3 class="text-lg font-semibold border-b pb-2 mb-4">Ringkasan Pembayaran</h3>
 
-                        {{-- Total Harga --}}
+                        {{-- Total Harga (Tips TIDAK masuk hitungan total) --}}
                         <div class="border-t pt-4 space-y-2">
-                            <div class="flex justify-between font-semibold">
-                                <span>Subtotal</span>
-                                <span x-text="'Rp ' + formatCurrency(calculateSubtotal())"></span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <label for="tips" class="text-sm text-gray-600">Tips (Opsional)</label>
-                                <div class="relative rounded-md shadow-sm w-1/2">
-                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-gray-500 sm:text-sm">Rp</span></div>
-                                    <input type="text" inputmode="numeric" name="tips" id="tips" 
-                                           :value="tips ? formatCurrency(tips) : ''"
-                                           @input="let raw = $event.target.value.replace(/\D/g, ''); tips = raw ? parseInt(raw, 10) : 0; calculateTotal();" 
-                                           class="block w-full rounded-md border-gray-300 pl-10 pr-1 text-right focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
-                                           placeholder="0">
-                                </div>
-                            </div>
                             <div class="flex justify-between font-bold text-lg">
                                 <span>Total</span>
                                 <span x-text="'Rp ' + formatCurrency(calculateTotal())"></span>
@@ -174,7 +159,7 @@
                         {{-- Metode Pembayaran --}}
                         <div class="mt-6 border-t pt-4">
                             <label for="payment_method" class="block text-sm font-medium text-gray-700 mb-1">Metode Pembayaran</label>
-                            <select id="payment_method" name="payment_method" x-model="paymentMethodId" @change="calculateChange()" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                            <select id="payment_method" name="payment_method" x-model="paymentMethodId" @change="onPaymentMethodChange()" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                                 <option value="">-- Pilih Metode --</option>
                                 @foreach ($paymentMethods as $method)
                                 <option value="{{ $method->id_payment_method }}">{{ $method->method_name }}</option>
@@ -208,7 +193,91 @@
                             </div>
                             <div class="flex justify-between items-center text-sm pt-2">
                                 <span class="font-medium text-gray-700">Kembalian:</span>
-                                <span class="font-bold text-lg text-green-600" x-text="'Rp ' + formatCurrency(changeAmount)"></span>
+                                <span class="font-bold text-lg" :class="tipMode === 'change' ? 'text-gray-400 line-through' : 'text-green-600'" x-text="'Rp ' + formatCurrency(rawChangeAmount)"></span>
+                            </div>
+
+                            {{-- ===== AREA TIP (Muncul hanya jika ada kembalian > 0) ===== --}}
+                            <div x-show="rawChangeAmount > 0" class="mt-3 pt-3 border-t border-dashed border-gray-200 space-y-3" x-transition>
+                                <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Opsi Tip untuk Capster</p>
+
+                                {{-- Opsi 1: Jadikan Kembalian sebagai Tip --}}
+                                <button type="button" @click="setTipMode('change')"
+                                    :class="tipMode === 'change' 
+                                        ? 'bg-amber-50 border-amber-400 ring-2 ring-amber-400/30' 
+                                        : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'"
+                                    class="w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all duration-200">
+                                    <div class="flex items-center gap-3">
+                                        <div :class="tipMode === 'change' ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-400'"
+                                            class="w-8 h-8 rounded-full flex items-center justify-center transition-all">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        </div>
+                                        <div class="text-left">
+                                            <p class="text-sm font-bold" :class="tipMode === 'change' ? 'text-amber-800' : 'text-gray-700'">Jadikan kembalian sebagai Tip</p>
+                                            <p class="text-xs" :class="tipMode === 'change' ? 'text-amber-600' : 'text-gray-400'">Seluruh kembalian Rp <span x-text="formatCurrency(rawChangeAmount)"></span> menjadi tip</p>
+                                        </div>
+                                    </div>
+                                    <div :class="tipMode === 'change' ? 'bg-amber-500 border-amber-500' : 'bg-white border-gray-300'"
+                                        class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all">
+                                        <svg x-show="tipMode === 'change'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                </button>
+
+                                {{-- Opsi 2: Tips Manual --}}
+                                <div>
+                                    <button type="button" @click="setTipMode('manual')"
+                                        :class="tipMode === 'manual' 
+                                            ? 'bg-indigo-50 border-indigo-400 ring-2 ring-indigo-400/30' 
+                                            : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300'"
+                                        class="w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all duration-200">
+                                        <div class="flex items-center gap-3">
+                                            <div :class="tipMode === 'manual' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-400'"
+                                                class="w-8 h-8 rounded-full flex items-center justify-center transition-all">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                            </div>
+                                            <div class="text-left">
+                                                <p class="text-sm font-bold" :class="tipMode === 'manual' ? 'text-indigo-800' : 'text-gray-700'">Tips Opsional (Input Manual)</p>
+                                                <p class="text-xs" :class="tipMode === 'manual' ? 'text-indigo-600' : 'text-gray-400'">Masukkan jumlah tip terpisah dari kembalian</p>
+                                            </div>
+                                        </div>
+                                        <div :class="tipMode === 'manual' ? 'bg-indigo-500 border-indigo-500' : 'bg-white border-gray-300'"
+                                            class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all">
+                                            <svg x-show="tipMode === 'manual'" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        </div>
+                                    </button>
+                                    {{-- Input Manual Tips (hanya muncul jika tipMode === 'manual') --}}
+                                    <div x-show="tipMode === 'manual'" x-transition class="mt-2 pl-11">
+                                        <div class="relative rounded-md shadow-sm">
+                                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-gray-500 sm:text-sm">Rp</span></div>
+                                            <input type="text" inputmode="numeric" 
+                                                   :value="tips ? formatCurrency(tips) : ''"
+                                                   @input="let raw = $event.target.value.replace(/\D/g, ''); tips = raw ? parseInt(raw, 10) : 0;" 
+                                                   class="block w-full rounded-md border-gray-300 pl-10 pr-1 text-right focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" 
+                                                   placeholder="0">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Opsi 3: Tidak ada tip (batal) --}}
+                                <button type="button" @click="setTipMode(null)" x-show="tipMode !== null"
+                                    class="w-full text-center text-xs font-medium text-gray-400 hover:text-red-500 py-1 transition-colors">
+                                    ✕ Batalkan Tip
+                                </button>
+                            </div>
+
+                            {{-- Ringkasan jika ada tip --}}
+                            <div x-show="tips > 0" class="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200" x-transition>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm font-semibold text-amber-800">💰 Tip Capster</span>
+                                    <span class="text-sm font-bold text-amber-700" x-text="'Rp ' + formatCurrency(tips)"></span>
+                                </div>
+                                <div x-show="tipMode === 'change'" class="flex justify-between items-center mt-1">
+                                    <span class="text-xs text-amber-600">Kembalian setelah tip:</span>
+                                    <span class="text-xs font-bold text-amber-700">Rp 0</span>
+                                </div>
                             </div>
                         </div>
 
@@ -402,9 +471,11 @@
                 primaryEmployeeId: {{ $primaryEmployee->id_employee }},
                 cart: [],
                 tips: 0,
+                tipMode: null, // null = no tip, 'change' = kembalian jadi tip, 'manual' = input manual
                 paymentMethodId: '',
                 amountPaid: 0,
                 changeAmount: 0,
+                rawChangeAmount: 0, // kembalian asli sebelum tip
                 totalAmount: 0,
 
                 isProcessing: false,
@@ -450,12 +521,14 @@
                     if (type === 'product') this.modalTitle = 'Pilih Produk';
                     if (type === 'food') this.modalTitle = 'Pilih Minuman';
                     this.showItemModal = true;
+                    document.body.style.overflow = 'hidden';
                 },
 
                 closeItemModal() {
                     this.showItemModal = false;
                     this.currentItemType = '';
                     this.modalTitle = '';
+                    document.body.style.overflow = '';
                 },
 
                 addItem(type, id, name, price) {
@@ -543,7 +616,8 @@
                 },
 
                 calculateTotal() {
-                    this.totalAmount = this.calculateSubtotal() + parseFloat(this.tips || 0);
+                    // Tips TIDAK masuk hitungan total (terpisah)
+                    this.totalAmount = this.calculateSubtotal();
                     this.calculateChange();
                     return this.totalAmount;
                 },
@@ -551,8 +625,16 @@
                 calculateChange() {
                     const cashMethodId = {{ $paymentMethods->firstWhere('method_name', 'Cash')?->id_payment_method ?? 'null' }};
                     if (this.paymentMethodId && this.paymentMethodId == cashMethodId) {
-                        this.changeAmount = Math.max(0, parseFloat(this.amountPaid || 0) - this.totalAmount);
+                        this.rawChangeAmount = Math.max(0, parseFloat(this.amountPaid || 0) - this.totalAmount);
+                        // Jika tip dari kembalian aktif, kembalian yang ditampilkan = 0
+                        if (this.tipMode === 'change') {
+                            this.tips = this.rawChangeAmount;
+                            this.changeAmount = 0;
+                        } else {
+                            this.changeAmount = this.rawChangeAmount;
+                        }
                     } else {
+                        this.rawChangeAmount = 0;
                         this.changeAmount = 0;
                     }
                     return this.changeAmount;
@@ -560,6 +642,37 @@
 
                 setAmountPaid(amount) {
                     this.amountPaid = amount;
+                    this.calculateChange();
+                },
+
+                setTipMode(mode) {
+                    if (this.tipMode === mode) {
+                        // Klik lagi = matikan
+                        this.tipMode = null;
+                        this.tips = 0;
+                        this.calculateChange();
+                        return;
+                    }
+                    this.tipMode = mode;
+                    if (mode === 'change') {
+                        // Seluruh kembalian jadi tip
+                        this.tips = this.rawChangeAmount;
+                        this.changeAmount = 0;
+                    } else if (mode === 'manual') {
+                        // Reset tip, user input sendiri
+                        this.tips = 0;
+                        this.changeAmount = this.rawChangeAmount;
+                    } else {
+                        // null = tidak ada tip
+                        this.tips = 0;
+                        this.changeAmount = this.rawChangeAmount;
+                    }
+                },
+
+                onPaymentMethodChange() {
+                    // Reset tip mode saat ganti metode pembayaran
+                    this.tipMode = null;
+                    this.tips = 0;
                     this.calculateChange();
                 },
 
@@ -606,9 +719,9 @@
                         id_store: this.storeId,
                         id_employee_primary: this.primaryEmployeeId,
                         id_payment_method: this.paymentMethodId,
-                        total_amount: this.totalAmount, // Ini adalah Subtotal + Tips
+                        total_amount: this.totalAmount, // Subtotal saja (tips terpisah)
                         amount_paid: this.amountPaid,
-                        change_amount: this.changeAmount,
+                        change_amount: this.tipMode === 'change' ? 0 : this.changeAmount, // Jika tip dari kembalian, change = 0
                         tips: this.tips,
                         cart: this.cart.map(item => ({
                             id_item: item.id,
@@ -666,6 +779,7 @@
                             if (data.success) {
                                 this.successTransactionId = data.transaction_id;
                                 this.showSuccessModal = true;
+                                document.body.style.overflow = 'hidden';
                             } else {
                                 alert('Error: ' + (data.message || 'Gagal menyimpan transaksi.'));
                             }
@@ -699,6 +813,7 @@
                 },
 
                 backToIndex() {
+                    document.body.style.overflow = '';
                     window.location.href = "{{ route('pos.index') }}";
                 }
 

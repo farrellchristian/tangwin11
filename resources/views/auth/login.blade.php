@@ -3,10 +3,12 @@
         /* 1. LAYOUT CONTAINER UTAMA */
         .login-wrapper {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            height: 100dvh;
             width: 100%;
             background-color: #f1f5f9;
             position: relative;
+            overflow: hidden;
         }
 
         /* 2. SIDEBAR (HANYA DESKTOP) */
@@ -39,6 +41,9 @@
             flex-direction: column;
             position: relative;
             width: 100%;
+            height: 100vh;
+            height: 100dvh;
+            overflow-y: auto;
         }
 
         /* 4. HEADER MOBILE (HANYA HP) */
@@ -71,7 +76,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1.5rem;
             position: relative;
             z-index: 10;
         }
@@ -87,7 +92,7 @@
         /* 6. CARD DESAIN */
         .login-card {
             width: 100%;
-            max-width: 450px;
+            max-width: 420px;
             background: #ffffff;
             border-radius: 20px;
             box-shadow: 
@@ -95,8 +100,11 @@
                 0 20px 40px -5px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
-            padding: 2.5rem;
+            padding: 2rem;
             animation: fadeIn Up 0.5s ease-out;
+            display: flex;
+            flex-direction: column;
+            max-height: 100%;
         }
 
         .card-top-line {
@@ -126,14 +134,15 @@
 
         /* Password Toggle Button */
         .password-toggle {
-            position: absolute; right: 16px; top: 43px; 
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
             color: #94a3b8; cursor: pointer; transition: color 0.3s;
-            background: none; border: none; padding: 0;
+            background: none; border: none; padding: 0; display: flex; align-items: center;
         }
         .password-toggle:hover { color: #0f172a; }
 
         .input-icon {
-            position: absolute; left: 16px; top: 43px; color: #94a3b8;
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            color: #94a3b8;
             transition: color 0.3s; width: 22px; height: 22px;
         }
         .input-wrapper:focus-within .input-icon { color: #0f172a; }
@@ -155,6 +164,23 @@
             .sidebar-section { display: flex; }
             .mobile-header { display: none; }
             .form-container { padding: 3rem; }
+        }
+
+        /* HEIGHT RESPONSIVE (SHORT SCREENS) */
+        @media (max-height: 768px) {
+            .form-container { padding: 1rem; }
+            .login-card { padding: 1.5rem; }
+            .input-wrapper { margin-bottom: 0.85rem; }
+            .custom-input { padding: 10px 16px 10px 40px; font-size: 0.85rem; }
+            .input-icon { width: 18px; height: 18px; left: 12px; }
+            .password-toggle { right: 12px; }
+            .password-toggle svg { width: 18px; height: 18px; }
+            .btn-submit { padding: 12px; font-size: 1rem; margin-top: 0.25rem; }
+            .title-area { margin-bottom: 1rem !important; }
+            .title-area h2 { font-size: 1.5rem; line-height: 1.2; }
+            .title-area p { font-size: 0.75rem; }
+            .remember-area { margin-bottom: 0.5rem !important; }
+            .footer-area { margin-top: 1rem !important; padding-top: 0.75rem !important; }
         }
 
         /* MOBILE FIX */
@@ -197,7 +223,7 @@
                 <div class="login-card">
                     <div class="card-top-line"></div>
 
-                    <div class="mb-8 text-center sm:text-left">
+                    <div class="mb-6 text-center sm:text-left title-area">
                         <h2 class="font-oswald text-3xl text-[#0f172a] font-bold mb-1">WELCOME BACK</h2>
                         <p class="text-slate-500 text-sm">Please enter your credentials to access.</p>
                     </div>
@@ -209,34 +235,38 @@
 
                         <div class="input-wrapper">
                             <label for="email" class="custom-label">Email Address</label>
-                            <input id="email" class="custom-input" type="email" name="email" :value="old('email')" required autofocus placeholder="manager@tangwin.com">
-                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            <div class="relative w-full">
+                                <input id="email" class="custom-input" type="email" name="email" :value="old('email')" required autofocus placeholder="manager@tangwin.com">
+                                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                            </div>
                             <x-input-error :messages="$errors->get('email')" class="mt-2 text-red-500 text-xs" />
                         </div>
 
                         <div class="input-wrapper">
                             <div class="flex justify-between items-center">
                                 <label for="password" class="custom-label">Password</label>
-                                </div>
+                            </div>
                             
-                            <input id="password" class="custom-input" type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
-                            
-                            <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            <div class="relative w-full">
+                                <input id="password" class="custom-input" type="password" name="password" required autocomplete="current-password" placeholder="••••••••">
+                                
+                                <svg class="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
 
-                            <button type="button" class="password-toggle" onclick="togglePassword()">
-                                <svg id="eye-open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                </svg>
-                                <svg id="eye-closed" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                                </svg>
-                            </button>
+                                <button type="button" class="password-toggle" onclick="togglePassword()">
+                                    <svg id="eye-open" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="display: none;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <svg id="eye-closed" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                                    </svg>
+                                </button>
+                            </div>
 
                             <x-input-error :messages="$errors->get('password')" class="mt-2 text-red-500 text-xs" />
                         </div>
 
-                        <div class="mb-6">
+                        <div class="mb-4 remember-area">
                             <label for="remember_me" class="inline-flex items-center cursor-pointer select-none">
                                 <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-[#0f172a] shadow-sm focus:ring-[#0f172a] w-5 h-5" name="remember">
                                 <span class="ml-3 text-sm text-slate-600 font-medium">Keep me logged in on this device</span>
@@ -248,7 +278,7 @@
                         </button>
                     </form>
 
-                    <div class="mt-8 text-center border-t border-slate-100 pt-6">
+                    <div class="mt-6 text-center border-t border-slate-100 pt-4 footer-area">
                         <p class="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">
                             &copy; {{ date('Y') }} Tangwin Cut Studio
                         </p>

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full overflow-hidden">
 
 <head>
     <meta charset="utf-8">
@@ -37,7 +37,7 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="font-sans antialiased preload-transitions" x-data="{ 
+<body class="h-full overflow-hidden font-sans antialiased preload-transitions" x-data="{ 
         isSidebarOpen: false, 
         isSidebarCollapsed: localStorage.getItem('sidebarCollapsed') === 'true',
         init() {
@@ -56,7 +56,7 @@
         }
     }">
 
-    <div class="relative min-h-screen bg-gray-100">
+    <div class="relative h-full w-full overflow-hidden bg-gray-100">
 
         <aside
             class="sidebar-container hidden lg:flex lg:flex-col bg-gray-800 text-white flex-shrink-0 fixed inset-y-0 left-0 z-10 transition-all duration-300 ease-in-out"
@@ -81,7 +81,7 @@
             style="display: none;">
             @include('layouts.navigation')
         </aside>
-        <div class="main-container flex-1 flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
+        <div class="main-container h-full flex flex-col overflow-hidden transition-all duration-300 ease-in-out"
             :class="isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64'">
 
             {{-- Cek apakah ada slot 'header' yang diisi dari view anak --}}

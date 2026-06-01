@@ -614,6 +614,11 @@
                                             @endforeach
                                         </tbody>
                                     </table>
+                                    @if ($empData['transactions']->sum('tips') > 0)
+                                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+                                            <span class="text-sm font-bold text-gray-700">Total Tips: <span class="text-green-600">Rp {{ number_format($empData['transactions']->sum('tips'), 0, ',', '.') }}</span></span>
+                                        </div>
+                                    @endif
                                 </div>
                                 <!-- Mobile View: Cards -->
                                 <!-- Mobile View: Cards -->
@@ -721,6 +726,12 @@
                                             </div>
                                         </div>
                                     @endforeach
+                                    @if ($empData['transactions']->sum('tips') > 0)
+                                        <div class="px-4 py-3 bg-white border border-gray-100 shadow-sm rounded-2xl flex justify-between items-center mt-2">
+                                            <span class="text-sm font-bold text-gray-700">Total Tips</span>
+                                            <span class="text-sm font-black text-green-600">Rp {{ number_format($empData['transactions']->sum('tips'), 0, ',', '.') }}</span>
+                                        </div>
+                                    @endif
                                 </div>
                             @else
                                 <p class="text-sm text-gray-500 mb-6 italic">Tidak ada transaksi untuk karyawan ini pada periode
@@ -813,6 +824,9 @@
                                             @endforeach
                                         </tbody>
                                     </table>
+                                    <div class="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+                                        <span class="text-sm font-bold text-gray-700">Total Pengeluaran: <span class="text-red-600">Rp {{ number_format($empData['expenses']->sum('amount'), 0, ',', '.') }}</span></span>
+                                    </div>
                                 </div>
                                 <!-- Mobile View: Cards -->
                                 <div class="block md:hidden space-y-4">
@@ -874,6 +888,10 @@
                                             </div>
                                         </div>
                                     @endforeach
+                                    <div class="px-4 py-3 bg-white border border-gray-100 shadow-sm rounded-2xl flex justify-between items-center mt-2">
+                                        <span class="text-sm font-bold text-gray-700">Total Pengeluaran</span>
+                                        <span class="text-sm font-black text-red-600">Rp {{ number_format($empData['expenses']->sum('amount'), 0, ',', '.') }}</span>
+                                    </div>
                                 </div>
                             @else
                                 <p class="text-sm text-gray-500 italic">Tidak ada pengeluaran untuk karyawan ini pada periode

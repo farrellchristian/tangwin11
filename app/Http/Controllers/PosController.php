@@ -340,16 +340,27 @@ class PosController extends Controller
         // 3. Ambil semua transaksi lalu group per capster
         $allTransactions = $query->orderBy('transaction_date', 'desc')->get();
 
+        // Ambil semua pengeluaran hari ini per store
+        $allExpenses = \App\Models\Expense::with('employee')
+            ->where('id_store', $user->id_store)
+            ->whereDate('expense_date', $date)
+            ->orderBy('expense_date', 'desc')
+            ->get();
+
         // Group transaksi berdasarkan employee (capster)
-        $groupedByCapster = $allTransactions->groupBy('id_employee_primary')->map(function ($transactions, $employeeId) {
+        $groupedByCapster = $allTransactions->groupBy('id_employee_primary')->map(function ($transactions, $employeeId) use ($allExpenses) {
             $employee = $transactions->first()->employee;
+            // Ambil pengeluaran yang terkait capster ini
+            $expenses = $allExpenses->where('id_employee', $employeeId)->values();
             return [
-                'employee' => $employee,
-                'transactions' => $transactions,
-                'total_trx' => $transactions->count(),
-                'total_amount' => $transactions->sum('total_amount'),
-                'total_tips' => $transactions->sum('tips'),
-                'total_cash' => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
+                'employee'      => $employee,
+                'transactions'  => $transactions,
+                'expenses'      => $expenses,
+                'total_trx'     => $transactions->count(),
+                'total_amount'  => $transactions->sum('total_amount'),
+                'total_tips'    => $transactions->sum('tips'),
+                'total_expenses'=> $expenses->sum('amount'),
+                'total_cash'    => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
                 'total_digital' => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name !== 'Cash')->sum('total_amount'),
             ];
         })->sortByDesc('total_trx');
