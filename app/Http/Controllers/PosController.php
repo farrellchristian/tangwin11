@@ -94,11 +94,11 @@ class PosController extends Controller
     public function showTransactionPage(Store $store, Employee $employee): View
     {
         // Validasi tambahan (misal: pastikan employee ada di store yg benar)
-        if ($employee->id_store !== $store->id_store) {
+        if ($employee->id_store != $store->id_store) {
             abort(404, 'Karyawan tidak ditemukan di toko ini.');
         }
         // Jika user adalah Kasir, pastikan dia hanya bisa akses tokonya sendiri
-        if (Auth::user()->role === 'kasir' && Auth::user()->id_store !== $store->id_store) {
+        if (Auth::user()->role === 'kasir' && Auth::user()->id_store != $store->id_store) {
             abort(403, 'Anda tidak bisa mengakses toko ini.');
         }
         

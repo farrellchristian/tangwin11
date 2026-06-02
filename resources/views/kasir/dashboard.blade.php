@@ -117,7 +117,6 @@
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-gray-800">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
-                                    <span class="text-[10px] text-gray-400 font-mono">#{{ $t->id_transaction }}</span>
                                 </div>
                             </div>
                             <div>
@@ -139,7 +138,6 @@
                         <thead class="bg-gray-50 sticky top-0 z-10">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Transaksi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             </tr>
@@ -149,9 +147,6 @@
                                 <tr class="hover:bg-slate-50 transition">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                         {{ $t->transaction_date->format('H:i') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-transparent">
-                                        <span class="font-mono text-xs text-gray-500">#{{ $t->id_transaction }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">
                                         Rp {{ number_format($t->total_amount, 0, ',', '.') }}

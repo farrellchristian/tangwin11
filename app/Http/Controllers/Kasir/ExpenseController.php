@@ -49,7 +49,7 @@ class ExpenseController extends Controller
         $user = Auth::user();
 
         // Validasi: Pastikan kasir hanya bisa input untuk karyawan di tokonya
-        if ($user->role !== 'kasir' || $user->id_store !== $employee->id_store) {
+        if ($user->role !== 'kasir' || $user->id_store != $employee->id_store) {
             abort(403, 'Akses ditolak.');
         }
 
@@ -93,7 +93,7 @@ class ExpenseController extends Controller
         $employee = Employee::find($validatedData['id_employee']);
 
         // Validasi tambahan: Karyawan harus dari toko kasir
-        if (!$employee || $employee->id_store !== $user->id_store) {
+        if (!$employee || $employee->id_store != $user->id_store) {
             return back()->withErrors(['id_employee' => 'Karyawan tidak valid.'])->withInput();
         }
 

@@ -77,7 +77,7 @@ class ReservationController extends Controller
         $reservation = Reservation::findOrFail($id);
 
         // Pastikan reservasi milik toko kasir ini
-        if ($reservation->id_store !== Auth::user()->id_store) {
+        if ($reservation->id_store != Auth::user()->id_store) {
             return redirect()->back()->with('error', 'Anda tidak memiliki akses ke reservasi ini.');
         }
 

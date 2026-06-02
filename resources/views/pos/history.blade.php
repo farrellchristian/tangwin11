@@ -133,7 +133,6 @@
                                             <span class="text-[8px] text-green-600 font-medium">+Tips {{ number_format($t->tips, 0, ',', '.') }}</span>
                                             @endif
                                         </div>
-                                        <span class="text-[9px] text-gray-400 font-mono">#{{ $t->id_transaction }}</span>
                                     </div>
                                 </div>
                                 <button onclick="window.open('{{ route('pos.print-struk', $t->id_transaction) }}', '_blank', 'width=400,height=600')"
@@ -182,7 +181,6 @@
                                     <tr>
                                         <th class="px-4 py-2 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider w-10">No</th>
                                         <th class="px-4 py-2 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider w-28">Waktu</th>
-                                        <th class="px-4 py-2 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider">ID Transaksi</th>
                                         <th class="px-4 py-2 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider">Total</th>
                                         <th class="px-4 py-2 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider">Tips</th>
                                         <th class="px-4 py-2 text-left text-[10px] font-medium text-gray-400 uppercase tracking-wider">Metode</th>
@@ -195,9 +193,6 @@
                                             <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-400">{{ $index + 1 }}</td>
                                             <td class="px-4 py-2 whitespace-nowrap">
                                                 <span class="text-xs font-semibold text-gray-700">{{ \Carbon\Carbon::parse($t->transaction_date)->format('d M Y H:i') }}</span>
-                                            </td>
-                                            <td class="px-4 py-2 whitespace-nowrap">
-                                                <span class="text-xs text-gray-400 font-mono bg-gray-100 px-1.5 py-0.5 rounded">#{{ $t->id_transaction }}</span>
                                             </td>
                                             <td class="px-4 py-2 whitespace-nowrap">
                                                 <span class="text-xs font-bold text-gray-800">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
