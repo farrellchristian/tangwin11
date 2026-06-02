@@ -71,6 +71,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Rute untuk melihat riwayat transaksi
     Route::get('/pos/history', [PosController::class, 'history'])->name('pos.history');
+
+    // Rute untuk melihat detail transaksi (view only, no edit)
+    Route::get('/pos/transaction-detail/{id}', [PosController::class, 'transactionDetail'])->name('pos.transaction-detail');
 });
 
 

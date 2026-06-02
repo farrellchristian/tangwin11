@@ -314,17 +314,46 @@ class PosController extends Controller
     {
         $user = \Illuminate\Support\Facades\Auth::user();
         $date = $request->input('date', date('Y-m-d'));
-        $query = \App\Models\Transaction::with(['employee', 'paymentMethod'])
+        $query = \App\Models\Transaction::with(['employee', 'paymentMethod', 'details'])
                     ->where('id_store', $user->id_store)
                     ->whereDate('transaction_date', $date);
         
         // 2. Hitung Summary Hari Ini
         $allToday = (clone $query)->get();
 
+        // Hitung total pengeluaran seluruh toko hari ini
+        $expensesToday = \App\Models\Expense::where('id_store', $user->id_store)
+            ->whereDate('expense_date', $date)
+            ->get();
+        $totalExpensesToday = $expensesToday->sum('amount');
+        $countExpensesToday = $expensesToday->count();
+
+        // Hitung total penjualan produk (item_type = 'product') hari ini
+        $allProductDetails  = $allToday->flatMap(fn($t) => $t->details)->where('item_type', 'product');
+        $totalProductSales  = $allProductDetails->sum('subtotal');
+        $countProductSales  = (int) $allProductDetails->sum('quantity');
+
+        $cashTrx     = $allToday->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash');
+        $qrisTrx     = $allToday->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Qris');
+        $transferTrx = $allToday->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Transfer');
+        $totalCash     = $cashTrx->sum('total_amount');
+        $totalQris     = $qrisTrx->sum('total_amount');
+        $totalTransfer = $transferTrx->sum('total_amount');
+        $totalIncome   = $totalCash + $totalQris + $totalTransfer;
+
         $summary = [
-            'total_trx'     => $allToday->count(),
-            'total_cash'    => $allToday->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
-            'total_digital' => $allToday->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name !== 'Cash')->sum('total_amount'),
+            'total_trx'                 => $allToday->count(),
+            'total_cash'                => $totalCash,
+            'total_cash_count'          => $cashTrx->count(),
+            'total_digital'             => $totalQris,
+            'total_qris_count'          => $qrisTrx->count(),
+            'total_transfer'            => $totalTransfer,
+            'total_transfer_count'      => $transferTrx->count(),
+            'total_income'              => $totalIncome,
+            'total_expenses'            => $totalExpensesToday,
+            'total_expenses_count'      => $countExpensesToday,
+            'total_product_sales'       => $totalProductSales,
+            'total_product_sales_count' => $countProductSales,
         ];
 
         if ($request->filled('search')) {
@@ -350,21 +379,77 @@ class PosController extends Controller
         // Group transaksi berdasarkan employee (capster)
         $groupedByCapster = $allTransactions->groupBy('id_employee_primary')->map(function ($transactions, $employeeId) use ($allExpenses) {
             $employee = $transactions->first()->employee;
-            // Ambil pengeluaran yang terkait capster ini
             $expenses = $allExpenses->where('id_employee', $employeeId)->values();
+            $allDetails = $transactions->flatMap(fn($t) => $t->details);
             return [
-                'employee'      => $employee,
-                'transactions'  => $transactions,
-                'expenses'      => $expenses,
-                'total_trx'     => $transactions->count(),
-                'total_amount'  => $transactions->sum('total_amount'),
-                'total_tips'    => $transactions->sum('tips'),
-                'total_expenses'=> $expenses->sum('amount'),
-                'total_cash'    => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
-                'total_digital' => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name !== 'Cash')->sum('total_amount'),
+                'employee'            => $employee,
+                'transactions'        => $transactions,
+                'expenses'            => $expenses,
+                'total_trx'           => $transactions->count(),
+                'total_amount'        => $transactions->sum('total_amount'),
+                'total_tips'          => $transactions->sum('tips'),
+                'total_expenses'      => $expenses->sum('amount'),
+                'total_cash'          => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
+                'total_digital'       => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name !== 'Cash')->sum('total_amount'),
+                'total_product_qty'   => (int) $allDetails->where('item_type', 'product')->sum('quantity'),
+                'total_food_qty'      => (int) $allDetails->where('item_type', 'food')->sum('quantity'),
             ];
         })->sortByDesc('total_trx');
 
         return view('pos.history', compact('groupedByCapster', 'summary', 'date'));
+    }
+
+    public function transactionDetail($id)
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        $transaction = \App\Models\Transaction::with([
+            'store',
+            'employee',
+            'user',
+            'paymentMethod',
+            'details.service',
+            'details.product',
+            'details.food',
+            'details.employee',
+        ])->where('id_store', $user->id_store)->findOrFail($id);
+
+        // Grouping detail item sama dengan printStruk
+        $groupedDetails = collect();
+        foreach ($transaction->details as $item) {
+            $key = $item->item_type . '-' .
+                   ($item->id_service ?? $item->id_product ?? $item->id_food) . '-' .
+                   $item->price_at_sale;
+            if ($groupedDetails->has($key)) {
+                $existing = $groupedDetails->get($key);
+                $existing->quantity  += $item->quantity;
+                $existing->subtotal  += $item->subtotal;
+            } else {
+                $groupedDetails->put($key, clone $item);
+            }
+        }
+
+        return response()->json([
+            'id'             => $transaction->id_transaction,
+            'date'           => \Carbon\Carbon::parse($transaction->transaction_date)->format('d M Y, H:i'),
+            'kasir'          => $transaction->user->name ?? '-',
+            'capster'        => $transaction->employee->employee_name ?? '-',
+            'payment_method' => $transaction->paymentMethod->method_name ?? '-',
+            'tips'           => $transaction->tips ?? 0,
+            'total_amount'   => $transaction->total_amount,
+            'items'          => $groupedDetails->values()->map(fn($d) => [
+                'type'     => $d->item_type,
+                'name'     => match($d->item_type) {
+                    'service' => $d->service->service_name ?? 'Layanan',
+                    'product' => $d->product->product_name ?? 'Produk',
+                    'food'    => $d->food->food_name ?? 'Makanan',
+                    default   => 'Item',
+                },
+                'capster'  => $d->employee->employee_name ?? null,
+                'qty'      => $d->quantity,
+                'price'    => $d->price_at_sale,
+                'subtotal' => $d->subtotal,
+            ]),
+        ]);
     }
 }
