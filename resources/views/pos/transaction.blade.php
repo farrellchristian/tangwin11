@@ -169,10 +169,12 @@
                             </select>
                         </div>
 
-                        {{-- Form Pembayaran (Muncul jika Cash) --}}
-                        <div x-show="paymentMethodId == {{ $paymentMethods->firstWhere('method_name', 'Cash')?->id_payment_method ?? 'null' }}" class="mt-4 border-t pt-4 space-y-2">
+                        {{-- Form Pembayaran (Muncul jika Cash ATAU QRIS) --}}
+                        <div x-show="paymentMethodId == {{ $paymentMethods->firstWhere('method_name', 'Cash')?->id_payment_method ?? 'null' }} || paymentMethodId == {{ $paymentMethods->firstWhere('method_name', 'Qris')?->id_payment_method ?? 'null' }}" class="mt-4 border-t pt-4 space-y-2">
                             <div>
-                                <label for="amount_paid" class="block text-sm font-medium text-gray-700">Jumlah Uang</label>
+                                <label class="block text-sm font-medium text-gray-700">
+                                    <span x-text="paymentMethodId == {{ $paymentMethods->firstWhere('method_name', 'Qris')?->id_payment_method ?? 'null' }} ? 'Jumlah Transfer QRIS' : 'Jumlah Uang'"></span>
+                                </label>
                                 <div class="relative mt-1 rounded-md shadow-sm">
                                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3"><span class="text-gray-500 sm:text-sm">Rp</span></div>
                                     <input type="text" inputmode="numeric" name="amount_paid" id="amount_paid" 
@@ -626,7 +628,11 @@
 
                 calculateChange() {
                     const cashMethodId = {{ $paymentMethods->firstWhere('method_name', 'Cash')?->id_payment_method ?? 'null' }};
-                    if (this.paymentMethodId && this.paymentMethodId == cashMethodId) {
+                    const qrisMethodId = {{ $paymentMethods->firstWhere('method_name', 'Qris')?->id_payment_method ?? 'null' }};
+                    const isCashOrQris = this.paymentMethodId && 
+                        (this.paymentMethodId == cashMethodId || this.paymentMethodId == qrisMethodId);
+
+                    if (isCashOrQris) {
                         this.rawChangeAmount = Math.max(0, parseFloat(this.amountPaid || 0) - this.totalAmount);
                         // Jika tip dari kembalian aktif, kembalian yang ditampilkan = 0
                         if (this.tipMode === 'change') {
@@ -692,7 +698,9 @@
                     if (!this.paymentMethodId) return false;
 
                     const cashMethodId = {{ $paymentMethods->firstWhere('method_name', 'Cash')?->id_payment_method ?? 'null' }};
-                    if (this.paymentMethodId == cashMethodId) {
+                    const qrisMethodId = {{ $paymentMethods->firstWhere('method_name', 'Qris')?->id_payment_method ?? 'null' }};
+                    // Cash dan QRIS: wajib isi jumlah yang dibayar >= total
+                    if (this.paymentMethodId == cashMethodId || this.paymentMethodId == qrisMethodId) {
                         if (parseFloat(this.amountPaid || 0) < this.totalAmount) return false;
                     }
 
