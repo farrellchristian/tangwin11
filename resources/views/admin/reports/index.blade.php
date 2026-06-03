@@ -431,92 +431,233 @@
 
             <!-- Summary Cards -->
             <div class="bg-gradient-to-br from-gray-50 to-indigo-100 overflow-hidden shadow-md sm:rounded-lg">
-                <div class="p-6 text-gray-900">
-                    <div class="flex justify-between items-start">
+                <div class="p-4 sm:p-6 text-gray-900">
+                    <div class="flex justify-between items-start mb-4">
                         <div>
-                            <h3 class="text-xl font-semibold text-gray-800">Ringkasan Keuangan
-                                {{ ucfirst($filterType) }}</h3>
+                            <h3 class="text-xl font-semibold text-gray-800">Ringkasan Keuangan {{ ucfirst($filterType) }}</h3>
                             <p class="text-sm text-gray-600">{{ $reportTitleDate }}</p>
                         </div>
-
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-4">
-                        <!-- Total Pemasukan -->
-                        <div
-                            class="p-3 sm:p-5 bg-white rounded-xl shadow-sm border border-gray-100 border-l-4 border-green-500 flex flex-col justify-between">
-                            <div>
-                                <p class="text-[11px] sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">
-                                    💰 Total Pemasukan</p>
-                                <p class="text-xl sm:text-3xl font-black text-gray-800">Rp
-                                    {{ number_format($totalIncome, 0, ',', '.') }}</p>
+
+                    {{-- Baris 1: Transaksi, Cash, QRIS --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-3">
+                        {{-- Card: Transaksi --}}
+                        <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3.5 h-3.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                                </div>
+                                <p class="text-[9px] sm:text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Transaksi</p>
                             </div>
-                            <div class="mt-3 text-right">
-                                <button @click.prevent="openIncomeModal()"
-                                    class="text-xs font-medium text-green-600 hover:text-green-800">
-                                    Lihat Rincian &rarr;
-                                </button>
-                            </div>
+                            <h3 class="text-xl sm:text-2xl font-extrabold text-gray-800">{{ $totalTrxCount }}</h3>
+                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Total pelanggan periode ini</p>
+                            <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-indigo-50/60 to-transparent"></div>
                         </div>
 
-                        <!-- Total Pengeluaran -->
-                        <div
-                            class="p-3 sm:p-5 bg-white rounded-xl shadow-sm border border-gray-100 border-l-4 border-red-500 flex flex-col justify-between">
-                            <div>
-                                <p class="text-[11px] sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">
-                                    💸 Total Pengeluaran</p>
-                                <p class="text-xl sm:text-3xl font-black text-gray-800">Rp
-                                    {{ number_format($totalExpenditure, 0, ',', '.') }}</p>
+                        {{-- Card: Cash --}}
+                        <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-7 h-7 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3.5 h-3.5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </div>
+                                <p class="text-[9px] sm:text-[10px] font-bold text-green-600 uppercase tracking-wider">Cash</p>
                             </div>
-                            <div class="mt-3 text-right">
-                                <button @click.prevent="openExpenditureModal()"
-                                    class="text-xs font-medium text-red-600 hover:text-red-800">
-                                    Lihat Rincian &rarr;
-                                </button>
+                            <div class="flex items-baseline gap-1.5 flex-wrap">
+                                <h3 class="text-sm sm:text-xl font-extrabold text-gray-800">
+                                    <span class="text-[10px] font-normal text-gray-400">Rp </span>{{ number_format($totalCash, 0, ',', '.') }}
+                                </h3>
+                                <span class="text-[9px] font-semibold text-green-500 bg-green-50 border border-green-100 rounded-full px-1.5 py-0.5">({{ $totalCashCount }} trx)</span>
                             </div>
+                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Pendapatan cash periode ini</p>
+                            <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-green-50/60 to-transparent"></div>
                         </div>
 
-                        <!-- Laba / Rugi Bersih -->
-                        <div
-                            class="p-3 sm:p-5 bg-white rounded-xl shadow-sm border border-gray-100 border-l-4 {{ $netProfitLoss >= 0 ? 'border-blue-500' : 'border-orange-500' }} flex flex-col justify-between">
-                            <div>
-                                <p class="text-[11px] sm:text-sm font-bold text-gray-400 uppercase tracking-wider mb-1">
-                                    📈 Laba/Rugi Bersih</p>
-                                <p
-                                    class="text-xl sm:text-3xl font-black {{ $netProfitLoss >= 0 ? 'text-blue-700' : 'text-orange-600' }}">
-                                    Rp {{ number_format(abs($netProfitLoss), 0, ',', '.') }}</p>
-                                <p
-                                    class="text-[10px] font-bold {{ $netProfitLoss >= 0 ? 'text-blue-500' : 'text-orange-400' }}">
-                                    ({{ $netProfitLoss >= 0 ? 'Laba' : 'Rugi' }})</p>
+                        {{-- Card: QRIS --}}
+                        <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3.5 h-3.5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                                </div>
+                                <p class="text-[9px] sm:text-[10px] font-bold text-purple-600 uppercase tracking-wider">QRIS</p>
                             </div>
-                            <div class="mt-3 text-right">
-                                <button @click.prevent="openProfitLossModal()"
-                                    class="text-xs font-medium {{ $netProfitLoss >= 0 ? 'text-blue-600 hover:text-blue-800' : 'text-orange-600 hover:text-orange-800' }}">
-                                    Lihat Rincian &rarr;
-                                </button>
+                            <div class="flex items-baseline gap-1.5 flex-wrap">
+                                <h3 class="text-sm sm:text-xl font-extrabold text-gray-800">
+                                    <span class="text-[10px] font-normal text-gray-400">Rp </span>{{ number_format($totalQris, 0, ',', '.') }}
+                                </h3>
+                                <span class="text-[9px] font-semibold text-purple-500 bg-purple-50 border border-purple-100 rounded-full px-1.5 py-0.5">({{ $totalQrisCount }} trx)</span>
                             </div>
+                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Masuk ke rekening</p>
+                            <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-purple-50/60 to-transparent"></div>
                         </div>
+                    </div>
+
+                    {{-- Baris 2: Penjualan Produk, Total Pengeluaran, Hasil Cash Kasir, Total Pemasukan --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4 mb-3">
+                        {{-- Card: Penjualan Produk --}}
+                        <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-7 h-7 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                </div>
+                                <p class="text-[9px] sm:text-[10px] font-bold text-amber-600 uppercase tracking-wider">Penjualan Produk</p>
+                            </div>
+                            <div class="flex items-baseline gap-1.5 flex-wrap">
+                                <h3 class="text-sm sm:text-xl font-extrabold text-gray-800">
+                                    <span class="text-[10px] font-normal text-gray-400">Rp </span>{{ number_format($totalProductSales, 0, ',', '.') }}
+                                </h3>
+                                <span class="text-[9px] font-semibold text-amber-600 bg-amber-50 border border-amber-100 rounded-full px-1.5 py-0.5">({{ $totalProductSalesQty }} item)</span>
+                            </div>
+                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Produk terjual periode ini</p>
+                            <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-amber-50/60 to-transparent"></div>
+                        </div>
+
+                        {{-- Card: Total Pengeluaran --}}
+                        <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <p class="text-[9px] sm:text-[10px] font-bold text-red-500 uppercase tracking-wider">Total Pengeluaran</p>
+                            </div>
+                            <div class="flex items-baseline gap-1.5 flex-wrap">
+                                <h3 class="text-sm sm:text-xl font-extrabold text-red-600">
+                                    <span class="text-[10px] font-normal text-gray-400">Rp </span>{{ number_format($totalExpenses, 0, ',', '.') }}
+                                </h3>
+                            </div>
+                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Bon & beli barang periode ini</p>
+                            <div class="mt-2">
+                                <button @click.prevent="openExpenditureModal()" class="text-[10px] font-medium text-red-500 hover:text-red-700">Lihat Rincian →</button>
+                            </div>
+                            <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-red-50/60 to-transparent"></div>
+                        </div>
+
+                        {{-- Card: Hasil Cash Kasir --}}
+                        <div class="bg-gradient-to-br from-indigo-500 to-violet-600 p-3 sm:p-4 rounded-xl shadow-md relative overflow-hidden group hover:shadow-lg transition-shadow">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </div>
+                                <p class="text-[9px] sm:text-[10px] font-bold text-indigo-100 uppercase tracking-wider">Hasil Cash Kasir</p>
+                            </div>
+                            <h3 class="text-sm sm:text-xl font-extrabold text-white">
+                                <span class="text-[10px] font-normal text-indigo-200">Rp </span>{{ number_format($hasilCashKasir, 0, ',', '.') }}
+                            </h3>
+                            <p class="text-[9px] sm:text-xs text-indigo-200 mt-0.5">Cash - Pengeluaran</p>
+                            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full"></div>
+                            <div class="absolute -right-1 -top-4 w-14 h-14 bg-white/5 rounded-full"></div>
+                        </div>
+
+                        {{-- Card: Total Pemasukan --}}
+                        <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-3 sm:p-4 rounded-xl shadow-md relative overflow-hidden group hover:shadow-lg transition-shadow">
+                            <div class="flex items-center gap-2 mb-1.5">
+                                <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <p class="text-[9px] sm:text-[10px] font-bold text-emerald-100 uppercase tracking-wider">Total Pemasukan</p>
+                            </div>
+                            <h3 class="text-sm sm:text-xl font-extrabold text-white">
+                                <span class="text-[10px] font-normal text-emerald-200">Rp </span>{{ number_format($totalIncome, 0, ',', '.') }}
+                            </h3>
+                            <p class="text-[9px] sm:text-xs text-emerald-200 mt-0.5">Cash + QRIS</p>
+                            <div class="mt-1">
+                                <button @click.prevent="openIncomeModal()" class="text-[10px] font-medium text-emerald-100 hover:text-white">Lihat Rincian →</button>
+                            </div>
+                            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full"></div>
+                            <div class="absolute -right-1 -top-4 w-14 h-14 bg-white/5 rounded-full"></div>
+                        </div>
+                    </div>
+
+                    {{-- Baris 3: Laba/Rugi Bersih (full width) --}}
+                    <div class="bg-gradient-to-br {{ $netProfitLoss >= 0 ? 'from-blue-500 to-cyan-600' : 'from-orange-500 to-red-600' }} p-3 sm:p-4 rounded-xl shadow-md relative overflow-hidden">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $netProfitLoss >= 0 ? 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' : 'M13 17h8m0 0V9m0 8l-8-8-4 4-6-6' }}"></path></svg>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-[10px] font-bold {{ $netProfitLoss >= 0 ? 'text-blue-100' : 'text-orange-100' }} uppercase tracking-wider">Laba/Rugi Bersih</p>
+                                    <div class="flex items-baseline gap-2 flex-wrap">
+                                        <h3 class="text-lg sm:text-2xl font-extrabold text-white leading-none mt-1 sm:mt-0">
+                                            <span class="text-[10px] font-normal {{ $netProfitLoss >= 0 ? 'text-blue-200' : 'text-orange-200' }}">Rp </span>{{ number_format(abs($netProfitLoss), 0, ',', '.') }}
+                                        </h3>
+                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/20 text-white">{{ $netProfitLoss >= 0 ? 'LABA' : 'RUGI' }}</span>
+                                    </div>
+                                    <p class="text-[9px] {{ $netProfitLoss >= 0 ? 'text-blue-200' : 'text-orange-200' }} mt-0.5">Total Pemasukan − Total Pengeluaran</p>
+                                </div>
+                            </div>
+                            <button @click.prevent="openProfitLossModal()" class="text-[10px] sm:text-xs font-bold text-white/80 hover:text-white bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition-colors flex-shrink-0 self-start sm:self-center">
+                                Lihat Rincian →
+                            </button>
+                        </div>
+                        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full"></div>
+                        <div class="absolute right-16 -top-6 w-16 h-16 bg-white/5 rounded-full"></div>
                     </div>
                 </div>
             </div>
 
             <!-- Employee Details Section -->
             @if ($employeesDetails->isNotEmpty())
-                <h3 class="text-base sm:text-xl font-black text-gray-800 mt-8 mb-4 px-1">Rincian Aktivitas per Karyawan</h3>
+                <h3 class="text-base sm:text-xl font-black text-gray-800 mt-8 mb-4 px-4 sm:px-1">Rincian Aktivitas per Karyawan</h3>
                 @foreach ($employeesDetails as $empData)
                     <div class="bg-white overflow-hidden shadow-md sm:rounded-lg mb-6">
                         <div class="p-6 text-gray-900">
                             <!-- Header Karyawan -->
-                            <div class="flex items-center space-x-3 mb-4 border-b border-gray-200 pb-3">
-                                <svg class="w-8 h-8 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-                                </svg>
-                                <div>
-                                    <h3 class="text-lg font-semibold text-gray-800">{{ $empData['employee']->employee_name }}
-                                    </h3>
-                                    <span
-                                        class="text-sm text-gray-500">{{ $empData['employee']->store->store_name ?? 'N/A' }}</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 border-b border-gray-200 pb-3">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                                        <span class="text-indigo-700 font-black text-sm">{{ strtoupper(substr($empData['employee']->employee_name, 0, 1)) }}</span>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-base font-bold text-gray-800">{{ $empData['employee']->employee_name }}</h3>
+                                        <span class="text-xs text-gray-500">{{ $empData['employee']->store->store_name ?? 'N/A' }}</span>
+                                    </div>
+                                </div>
+                                {{-- Mini Summary Badges --}}
+                                <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:justify-end mt-2 sm:mt-0">
+                                    <div class="bg-white rounded px-2 py-1 border border-gray-200 text-center">
+                                        <p class="text-[8px] font-semibold text-gray-400 uppercase">Potong</p>
+                                        <p class="text-sm font-extrabold text-indigo-600">{{ $empData['total_trx'] }}</p>
+                                    </div>
+                                    @if($empData['cash_count'] > 0)
+                                    <div class="bg-green-50 rounded px-2 py-1 border border-green-200 text-center">
+                                        <p class="text-[8px] font-semibold text-green-500 uppercase">Cash</p>
+                                        <p class="text-sm font-extrabold text-green-600">{{ $empData['cash_count'] }}x</p>
+                                    </div>
+                                    @endif
+                                    @if($empData['qris_count'] > 0)
+                                    <div class="bg-purple-50 rounded px-2 py-1 border border-purple-200 text-center">
+                                        <p class="text-[8px] font-semibold text-purple-500 uppercase">QRIS</p>
+                                        <p class="text-sm font-extrabold text-purple-600">{{ $empData['qris_count'] }}x</p>
+                                    </div>
+                                    @endif
+                                    @if($empData['total_product_qty'] > 0)
+                                    <div class="bg-white rounded px-2 py-1 border border-amber-200 text-center">
+                                        <p class="text-[8px] font-semibold text-amber-500 uppercase">Produk</p>
+                                        <p class="text-sm font-extrabold text-amber-600">{{ $empData['total_product_qty'] }}</p>
+                                    </div>
+                                    @endif
+                                    @if($empData['total_food_qty'] > 0)
+                                    <div class="bg-white rounded px-2 py-1 border border-orange-200 text-center">
+                                        <p class="text-[8px] font-semibold text-orange-500 uppercase">Makanan</p>
+                                        <p class="text-sm font-extrabold text-orange-600">{{ $empData['total_food_qty'] }}</p>
+                                    </div>
+                                    @endif
+                                    @if($empData['total_tips'] > 0)
+                                    <div class="bg-white rounded px-2 py-1 border border-green-200 text-center">
+                                        <p class="text-[8px] font-semibold text-green-500 uppercase">Tip</p>
+                                        <p class="text-xs font-bold text-green-600"><span class="text-[9px] font-normal text-gray-400">Rp</span> {{ number_format($empData['total_tips'], 0, ',', '.') }}</p>
+                                    </div>
+                                    @endif
+                                    @if($empData['total_expenses'] > 0)
+                                    <div class="bg-white rounded px-2 py-1 border border-red-200 text-center">
+                                        <p class="text-[8px] font-semibold text-red-400 uppercase">Keluar</p>
+                                        <p class="text-xs font-bold text-red-600">Rp {{ number_format($empData['total_expenses'], 0, ',', '.') }}</p>
+                                    </div>
+                                    @endif
+                                    <div class="bg-white rounded px-2 py-1 border border-gray-200 text-center">
+                                        <p class="text-[8px] font-semibold text-gray-400 uppercase">Total</p>
+                                        <p class="text-xs font-bold text-gray-800"><span class="text-[9px] font-normal text-gray-400">Rp</span> {{ number_format($empData['total_amount'], 0, ',', '.') }}</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -544,15 +685,23 @@
                                         <tbody class="bg-white divide-y divide-gray-200">
                                             @foreach ($empData['transactions'] as $index => $transaction)
                                                 <tr class="hover:bg-indigo-50">
-                                                    <td class="px-4 py-2">{{ $index + 1 }}</td>
-                                                    <td class="px-4 py-2 whitespace-nowrap">
+                                                    <td class="px-4 py-2 text-xs text-gray-500">{{ $index + 1 }}</td>
+                                                    <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-600">
                                                         {{ $transaction->transaction_date->format('d M Y H:i') }}</td>
-                                                    <td class="px-4 py-2 whitespace-nowrap font-medium text-gray-800">Rp
+                                                    <td class="px-4 py-2 whitespace-nowrap font-semibold text-gray-800 text-xs">Rp
                                                         {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
-                                                    <td class="px-4 py-2 whitespace-nowrap text-gray-600">Rp
-                                                        {{ number_format($transaction->tips ?? 0, 0, ',', '.') }}</td>
+                                                    <td class="px-4 py-2 whitespace-nowrap text-xs">
+                                                        @if(($transaction->tips ?? 0) > 0)
+                                                            <span class="text-green-600 font-semibold">Rp {{ number_format($transaction->tips, 0, ',', '.') }}</span>
+                                                        @else
+                                                            <span class="text-gray-400">Rp 0</span>
+                                                        @endif
+                                                    </td>
                                                     <td class="px-4 py-2 whitespace-nowrap">
-                                                        {{ $transaction->paymentMethod->method_name ?? 'N/A' }}</td>
+                                                        @php $mn = $transaction->paymentMethod->method_name ?? 'N/A'; @endphp
+                                                        <span class="text-xs font-bold px-2 py-0.5 rounded-full
+                                                            {{ $mn === 'Cash' ? 'bg-green-100 text-green-700' : ($mn === 'Qris' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600') }}">{{ $mn }}</span>
+                                                    </td>
                                                     <td
                                                         class="px-4 py-2 whitespace-nowrap text-left font-medium flex items-center gap-2">
                                                         <!-- Tombol Lihat Detail -->
@@ -620,119 +769,101 @@
                                         </div>
                                     @endif
                                 </div>
-                                <!-- Mobile View: Cards -->
-                                <!-- Mobile View: Cards -->
-                                <div class="block md:hidden space-y-4 mb-6">
-                                    @foreach ($empData['transactions'] as $index => $transaction)
-                                        <div
-                                            class="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition duration-200">
-                                            <div class="flex justify-between items-start">
-                                                <div class="flex items-center gap-3">
-                                                    <div
-                                                        class="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0">
-                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div>
-                                                        <div
-                                                            class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                                                            {{ $transaction->transaction_date->format('d M Y H:i') }}
-                                                        </div>
-                                                        <div class="text-sm font-black text-gray-800">
-                                                            Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}
-                                                        </div>
-                                                        <div
-                                                            class="text-[11px] text-gray-500 font-medium bg-gray-50 px-2 py-0.5 rounded-md inline-block mt-1">
-                                                            {{ $transaction->paymentMethod->method_name ?? 'N/A' }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                @if($transaction->tips > 0)
-                                                    <div
-                                                        class="bg-blue-50 text-blue-600 px-2.5 py-1 rounded-xl text-[10px] font-black border border-blue-100">
-                                                        TIP Rp{{ number_format($transaction->tips, 0, ',', '.') }}
-                                                    </div>
+                                <!-- Mobile View: Mini Table -->
+                                <div class="block md:hidden mb-4">
+                                    {{-- Mini Table Header --}}
+                                    <div class="grid grid-cols-12 px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                                        <div class="col-span-1">No</div>
+                                        <div class="col-span-3">Waktu</div>
+                                        <div class="col-span-3">Total</div>
+                                        <div class="col-span-2">Tips</div>
+                                        <div class="col-span-2">Metode</div>
+                                        <div class="col-span-1 text-right">Aksi</div>
+                                    </div>
+                                    <div class="divide-y divide-gray-100">
+                                        @foreach ($empData['transactions'] as $index => $transaction)
+                                        @php $mn = $transaction->paymentMethod->method_name ?? 'N/A'; @endphp
+                                        <div class="grid grid-cols-12 px-3 py-2 items-center gap-0.5 hover:bg-indigo-50/40 transition">
+                                            <div class="col-span-1 text-[9px] text-gray-400">{{ $index + 1 }}</div>
+                                            <div class="col-span-3">
+                                                <span class="text-[10px] font-semibold text-gray-700 leading-tight block">{{ $transaction->transaction_date->format('H:i') }}</span>
+                                                <span class="text-[8px] text-gray-400 leading-tight block">{{ $transaction->transaction_date->format('d M') }}</span>
+                                            </div>
+                                            <div class="col-span-3">
+                                                <span class="text-[10px] font-bold text-gray-800">Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+                                            </div>
+                                            <div class="col-span-2">
+                                                @if(($transaction->tips ?? 0) > 0)
+                                                    <span class="text-[9px] font-semibold text-green-600">{{ number_format($transaction->tips, 0, ',', '.') }}</span>
+                                                @else
+                                                    <span class="text-[9px] text-gray-300">-</span>
                                                 @endif
                                             </div>
-                                            <div class="flex gap-2 pt-3 border-t border-gray-50 mt-1">
-                                                {{-- Detail --}}
-                                                <button @click.prevent="openTransactionModal({{ $transaction->id_transaction }})"
-                                                    class="flex-1 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100 items-center justify-center inline-flex gap-1.5 active:scale-95 transform">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                                    </svg>
-                                                    Detail
-                                                </button>
-
-                                                {{-- Edit --}}
-                                                <a href="{{ route('admin.transactions.edit', $transaction->id_transaction) }}"
-                                                    class="flex-1 py-2.5 bg-amber-50 text-amber-700 rounded-xl text-xs font-bold hover:bg-amber-100 transition-colors border border-amber-100 items-center justify-center inline-flex gap-1.5 active:scale-95 transform">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
-                                                    Edit
-                                                </a>
-
-                                                {{-- Hapus (Modal) --}}
-                                                <button type="button"
-                                                    @click="$dispatch('open-modal', 'delete-transaction-mobile-{{ $transaction->id_transaction }}')"
-                                                    class="flex-1 py-2.5 bg-red-50 text-red-700 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors border border-red-100 items-center justify-center inline-flex gap-1.5 active:scale-95 transform">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
-                                                    Hapus
-                                                </button>
-
-                                                {{-- Modal Konfirmasi Hapus Transaksi (Mobile) --}}
-                                                <x-modal name="delete-transaction-mobile-{{ $transaction->id_transaction }}" focusable>
+                                            <div class="col-span-2">
+                                                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full
+                                                    {{ $mn === 'Cash' ? 'bg-green-100 text-green-700' : ($mn === 'Qris' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600') }}">
+                                                    {{ $mn === 'Qris' ? 'QRIS' : $mn }}
+                                                </span>
+                                            </div>
+                                            <div class="col-span-1 flex justify-end">
+                                                {{-- Dropdown Aksi --}}
+                                                <div x-data="{ open: false }" class="relative">
+                                                    <button @click="open = !open" class="p-1 bg-white border border-slate-200 rounded text-gray-500 hover:text-indigo-600 transition">
+                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"/></svg>
+                                                    </button>
+                                                    <div x-show="open" @click.outside="open = false"
+                                                        x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                                        class="absolute right-0 bottom-7 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 w-28" style="display:none;">
+                                                        <button @click="open=false; $dispatch('open-alpine-event', 'detail-{{ $transaction->id_transaction }}')"
+                                                            @click.prevent="openTransactionModal({{ $transaction->id_transaction }})"
+                                                            class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 flex items-center gap-1.5">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                                            Detail
+                                                        </button>
+                                                        <a href="{{ route('admin.transactions.edit', $transaction->id_transaction) }}"
+                                                            class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-amber-600 hover:bg-amber-50 flex items-center gap-1.5">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                                            Edit
+                                                        </a>
+                                                        <button @click="open=false; $dispatch('open-modal', 'delete-mob2-{{ $transaction->id_transaction }}')"
+                                                            class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-red-600 hover:bg-red-50 flex items-center gap-1.5">
+                                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                            Hapus
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {{-- Modal Konfirmasi Hapus (Mobile v2) --}}
+                                                <x-modal name="delete-mob2-{{ $transaction->id_transaction }}" focusable>
                                                     <div class="p-6">
-                                                        <div class="flex flex-col items-center text-center gap-4 mb-6">
-                                                            <div
-                                                                class="w-16 h-16 rounded-3xl bg-red-100 flex items-center justify-center text-red-600 shadow-inner">
-                                                                <svg class="w-8 h-8" fill="none" stroke="currentColor"
-                                                                    viewBox="0 0 24 24">
-                                                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                                                        stroke-width="2"
-                                                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                                </svg>
+                                                        <div class="flex items-center gap-4 mb-4">
+                                                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
+                                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                                                             </div>
                                                             <div>
-                                                                <h2 class="text-xl font-black text-gray-900 leading-tight">Hapus
-                                                                    Transaksi?</h2>
-                                                                <p class="text-sm text-gray-500 font-medium mt-1 italic">Aksi ini akan
-                                                                    menghapus Transaksi #{{ $transaction->id_transaction }} dan
-                                                                    mengembalikan stok barang.</p>
+                                                                <h2 class="text-lg font-black text-gray-900">Konfirmasi Hapus</h2>
+                                                                <p class="text-sm text-gray-500 font-medium">Hapus Transaksi #{{ $transaction->id_transaction }}? Stok akan dikembalikan.</p>
                                                             </div>
                                                         </div>
-                                                        <form method="post"
-                                                            action="{{ route('admin.transactions.destroy', $transaction->id_transaction) }}"
-                                                            class="flex flex-col gap-3">
+                                                        <form method="post" action="{{ route('admin.transactions.destroy', $transaction->id_transaction) }}" class="flex justify-end gap-3">
                                                             @csrf @method('delete')
-                                                            <x-danger-button
-                                                                class="w-full py-4 rounded-2xl font-black text-base justify-center shadow-lg shadow-red-500/20 bg-red-600">YA,
-                                                                HAPUS DATA</x-danger-button>
-                                                            <x-secondary-button x-on:click="$dispatch('close')"
-                                                                class="w-full py-4 rounded-2xl font-black text-base justify-center">BATAL</x-secondary-button>
+                                                            <x-secondary-button x-on:click="$dispatch('close')" class="rounded-xl font-bold">Batal</x-secondary-button>
+                                                            <x-danger-button class="rounded-xl font-black bg-red-600 hover:bg-red-700">Hapus</x-danger-button>
                                                         </form>
                                                     </div>
                                                 </x-modal>
                                             </div>
                                         </div>
-                                    @endforeach
+                                        @endforeach
+                                    </div>
                                     @if ($empData['transactions']->sum('tips') > 0)
-                                        <div class="px-4 py-3 bg-white border border-gray-100 shadow-sm rounded-2xl flex justify-between items-center mt-2">
-                                            <span class="text-sm font-bold text-gray-700">Total Tips</span>
-                                            <span class="text-sm font-black text-green-600">Rp {{ number_format($empData['transactions']->sum('tips'), 0, ',', '.') }}</span>
-                                        </div>
+                                    <div class="px-3 py-2 bg-green-50 border-t border-green-100 flex justify-between">
+                                        <span class="text-[10px] font-bold text-gray-500">Total Tips</span>
+                                        <span class="text-[10px] font-black text-green-600">Rp {{ number_format($empData['transactions']->sum('tips'), 0, ',', '.') }}</span>
+                                    </div>
                                     @endif
                                 </div>
+
                             @else
                                 <p class="text-sm text-gray-500 mb-6 italic">Tidak ada transaksi untuk karyawan ini pada periode
                                     terpilih.</p>
@@ -828,69 +959,70 @@
                                         <span class="text-sm font-bold text-gray-700">Total Pengeluaran: <span class="text-red-600">Rp {{ number_format($empData['expenses']->sum('amount'), 0, ',', '.') }}</span></span>
                                     </div>
                                 </div>
-                                <!-- Mobile View: Cards -->
-                                <div class="block md:hidden space-y-4">
-                                    @foreach ($empData['expenses'] as $index => $expense)
-                                        <div
-                                            class="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col gap-3 hover:shadow-md transition duration-200">
-                                            <div class="flex justify-between items-start">
-                                                <div class="flex items-center gap-3">
-                                                    <div
-                                                        class="w-10 h-10 rounded-xl bg-red-50 text-red-600 flex items-center justify-center flex-shrink-0">
-                                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                                d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                        </svg>
-                                                    </div>
-                                                    <div class="flex-1">
-                                                        <div
-                                                            class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">
-                                                            {{ $expense->expense_date->format('d M Y H:i') }}
-                                                        </div>
-                                                        <div class="text-[13px] font-bold text-gray-800 line-clamp-2 leading-snug">
-                                                            {{ $expense->description }}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div
-                                                    class="bg-red-50 text-red-700 px-2.5 py-1 rounded-xl text-[11px] font-black whitespace-nowrap border border-red-100">
-                                                    -Rp{{ number_format($expense->amount, 0, ',', '.') }}
-                                                </div>
+                                <!-- Mobile View: Mini List (Pengeluaran) -->
+                                <div class="block md:hidden mb-4 border border-gray-100 rounded-xl overflow-hidden mt-4">
+                                    <div class="px-3 pt-3 pb-2 bg-gray-50 border-b border-gray-100">
+                                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Riwayat Pengeluaran</p>
+                                    </div>
+                                    <div class="divide-y divide-gray-100 bg-white">
+                                        @foreach ($empData['expenses'] as $expense)
+                                        <div class="px-3 py-2.5 flex justify-between items-center hover:bg-red-50/40 transition">
+                                            <div class="flex-1 pr-2">
+                                                <div class="text-xs font-semibold text-gray-700 line-clamp-1">{{ $expense->description }}</div>
+                                                <div class="text-[9px] text-gray-400">{{ $expense->expense_date->format('d M Y H:i') }} WIB</div>
                                             </div>
-                                            <div class="flex gap-2 pt-3 border-t border-gray-50 mt-1">
-                                                <button @click.prevent="openExpenseModal({{ $expense->id_expense }})"
-                                                    class="flex-1 py-2.5 bg-indigo-50 text-indigo-700 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-colors border border-indigo-100 items-center justify-center inline-flex gap-1.5 active:scale-95 transform">Detail</button>
-                                                <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}"
-                                                    class="flex-1 py-2.5 bg-amber-50 text-amber-700 rounded-xl text-xs font-bold hover:bg-amber-100 transition-colors border border-amber-100 items-center justify-center inline-flex gap-1.5 active:scale-95 transform text-center">Edit</a>
-
-                                                <button type="button"
-                                                    @click="$dispatch('open-modal', 'delete-expense-mobile-{{ $expense->id_expense }}')"
-                                                    class="flex-1 py-2.5 bg-red-50 text-red-700 rounded-xl text-xs font-bold hover:bg-red-100 transition-colors border border-red-100 items-center justify-center inline-flex gap-1.5 active:scale-95 transform text-center">Hapus</button>
-
-                                                {{-- Modal Konfirmasi Hapus Pengeluaran (Mobile) --}}
-                                                <x-modal name="delete-expense-mobile-{{ $expense->id_expense }}" focusable>
-                                                    <div class="p-6 text-left">
-                                                        <h2 class="text-xl font-black text-gray-900 leading-tight">Hapus Data?</h2>
-                                                        <p class="text-sm text-gray-500 font-medium mt-1 italic">Apakah Anda yakin ingin
-                                                            menghapus catatan pengeluaran ini?</p>
-                                                        <form method="post"
-                                                            action="{{ route('admin.expenses.destroy', $expense->id_expense) }}"
-                                                            class="mt-6 flex flex-col gap-3">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-[11px] font-black text-red-600">-Rp {{ number_format($expense->amount, 0, ',', '.') }}</span>
+                                                
+                                                {{-- Dropdown Aksi --}}
+                                                <div x-data="{ open: false }" class="relative">
+                                                    <button @click="open = !open" class="p-1 bg-white border border-slate-200 rounded text-gray-500 hover:text-red-600 transition flex-shrink-0">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01"/></svg>
+                                                    </button>
+                                                    <div x-show="open" @click.outside="open = false"
+                                                        x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
+                                                        x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                                                        class="absolute right-0 bottom-8 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 w-24" style="display:none;">
+                                                        <button @click="open=false; @this.openExpenseModal({{ $expense->id_expense }})" @click.prevent="openExpenseModal({{ $expense->id_expense }})"
+                                                            class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50">
+                                                            Detail
+                                                        </button>
+                                                        <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}"
+                                                            class="block w-full text-left px-3 py-1.5 text-[11px] font-semibold text-amber-600 hover:bg-amber-50">
+                                                            Edit
+                                                        </a>
+                                                        <button @click="open=false; $dispatch('open-modal', 'delete-exp-mob-{{ $expense->id_expense }}')"
+                                                            class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-red-600 hover:bg-red-50">
+                                                            Hapus
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {{-- Modal Konfirmasi Hapus (Mobile) --}}
+                                                <x-modal name="delete-exp-mob-{{ $expense->id_expense }}" focusable>
+                                                    <div class="p-6">
+                                                        <div class="flex items-center gap-4 mb-4">
+                                                            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
+                                                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                                            </div>
+                                                            <div>
+                                                                <h2 class="text-lg font-black text-gray-900">Konfirmasi Hapus</h2>
+                                                                <p class="text-sm text-gray-500 font-medium">Hapus Pengeluaran ini?</p>
+                                                            </div>
+                                                        </div>
+                                                        <form method="post" action="{{ route('admin.expenses.destroy', $expense->id_expense) }}" class="flex justify-end gap-3">
                                                             @csrf @method('delete')
-                                                            <x-danger-button
-                                                                class="w-full py-4 rounded-2xl font-black justify-center bg-red-600 text-base shadow-lg shadow-red-500/20 uppercase tracking-wider">Ya,
-                                                                Hapus Data</x-danger-button>
-                                                            <x-secondary-button x-on:click="$dispatch('close')"
-                                                                class="w-full py-4 rounded-2xl font-black justify-center text-base uppercase tracking-wider">Batal</x-secondary-button>
+                                                            <x-secondary-button x-on:click="$dispatch('close')" class="rounded-xl font-bold">Batal</x-secondary-button>
+                                                            <x-danger-button class="rounded-xl font-black bg-red-600 hover:bg-red-700">Hapus</x-danger-button>
                                                         </form>
                                                     </div>
                                                 </x-modal>
                                             </div>
                                         </div>
-                                    @endforeach
-                                    <div class="px-4 py-3 bg-white border border-gray-100 shadow-sm rounded-2xl flex justify-between items-center mt-2">
-                                        <span class="text-sm font-bold text-gray-700">Total Pengeluaran</span>
-                                        <span class="text-sm font-black text-red-600">Rp {{ number_format($empData['expenses']->sum('amount'), 0, ',', '.') }}</span>
+                                        @endforeach
+                                    </div>
+                                    <div class="px-3 py-2.5 bg-red-50 border-t border-red-100 flex justify-between items-center">
+                                        <span class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Total Pengeluaran</span>
+                                        <span class="text-[11px] font-black text-red-600">Rp {{ number_format($empData['expenses']->sum('amount'), 0, ',', '.') }}</span>
                                     </div>
                                 </div>
                             @else

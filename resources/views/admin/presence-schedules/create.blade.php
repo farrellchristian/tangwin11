@@ -77,7 +77,7 @@
                         <!-- Batas Keterlambatan -->
                         <div class="mt-4">
                             <label for="late_threshold" class="block text-sm font-medium text-gray-700">Batas Keterlambatan (Menit)</label>
-                            <input type="number" name="late_threshold" id="late_threshold" value="{{ old('late_threshold', 0) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                            <input type="number" name="late_threshold" id="late_threshold" value="{{ old('late_threshold', 0) }}" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" oninput="this.value = this.value.replace(/^0+(?=\d)/, '')" required>
                             <p class="text-xs text-gray-500 mt-1">Isi 0 jika tidak ada toleransi.</p>
                             @error('late_threshold')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>

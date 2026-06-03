@@ -391,6 +391,8 @@ class PosController extends Controller
                 'total_expenses'      => $expenses->sum('amount'),
                 'total_cash'          => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
                 'total_digital'       => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name !== 'Cash')->sum('total_amount'),
+                'cash_count'          => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->count(),
+                'qris_count'          => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Qris')->count(),
                 'total_product_qty'   => (int) $allDetails->where('item_type', 'product')->sum('quantity'),
                 'total_food_qty'      => (int) $allDetails->where('item_type', 'food')->sum('quantity'),
             ];

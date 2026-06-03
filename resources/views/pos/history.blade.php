@@ -16,7 +16,7 @@
             {{-- 1. SHIFT SUMMARY CARDS --}}
             {{-- 1. SHIFT SUMMARY CARDS --}}
             {{-- Baris 1: Transaksi, Cash, QRIS, Transfer --}}
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
 
                 {{-- Card: Transaksi --}}
                 <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
@@ -67,27 +67,11 @@
                     <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-purple-50/60 to-transparent"></div>
                 </div>
 
-                {{-- Card: Transfer --}}
-                <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                            <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                        </div>
-                        <p class="text-[9px] sm:text-[10px] font-bold text-blue-600 uppercase tracking-wider">Transfer</p>
-                    </div>
-                    <div class="flex items-baseline gap-1.5 flex-wrap">
-                        <h3 class="text-sm sm:text-xl font-extrabold text-gray-800">
-                            <span class="text-[10px] font-normal text-gray-400">Rp </span>{{ number_format($summary['total_transfer'], 0, ',', '.') }}
-                        </h3>
-                        <span class="text-[9px] font-semibold text-blue-500 bg-blue-50 border border-blue-100 rounded-full px-1.5 py-0.5">({{ $summary['total_transfer_count'] }} trx)</span>
-                    </div>
-                    <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Transfer bank hari ini</p>
-                    <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-blue-50/60 to-transparent"></div>
-                </div>
+
             </div>
 
-            {{-- Baris 2: Total Penjualan Produk, Total Pengeluaran, Total Pemasukan --}}
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
+            {{-- Baris 2: Total Penjualan Produk, Total Pengeluaran, Hasil Cash Kasir, Total Pemasukan --}}
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-2 sm:gap-4">
 
                 {{-- Card: Total Penjualan Produk --}}
                 <div class="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-100 relative overflow-hidden group hover:shadow-md transition-shadow">
@@ -125,6 +109,23 @@
                     <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-red-50/60 to-transparent"></div>
                 </div>
 
+                {{-- Card: Hasil Cash Kasir --}}
+                @php $hasil_cash_kasir = $summary['total_cash'] - $summary['total_expenses']; @endphp
+                <div class="bg-gradient-to-br from-indigo-500 to-violet-600 p-3 sm:p-4 rounded-xl shadow-md relative overflow-hidden group hover:shadow-lg transition-shadow">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                            <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <p class="text-[9px] sm:text-[10px] font-bold text-indigo-100 uppercase tracking-wider">Hasil Cash Kasir</p>
+                    </div>
+                    <h3 class="text-sm sm:text-xl font-extrabold text-white">
+                        <span class="text-[10px] font-normal text-indigo-200">Rp </span>{{ number_format(max(0, $hasil_cash_kasir), 0, ',', '.') }}
+                    </h3>
+                    <p class="text-[9px] sm:text-xs text-indigo-200 mt-0.5">Cash - Pengeluaran</p>
+                    <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full"></div>
+                    <div class="absolute -right-1 -top-4 w-14 h-14 bg-white/5 rounded-full"></div>
+                </div>
+
                 {{-- Card: Total Pemasukan --}}
                 <div class="bg-gradient-to-br from-emerald-500 to-teal-600 p-3 sm:p-4 rounded-xl shadow-md relative overflow-hidden group hover:shadow-lg transition-shadow">
                     <div class="flex items-center gap-2 mb-1.5">
@@ -136,7 +137,7 @@
                     <h3 class="text-sm sm:text-xl font-extrabold text-white">
                         <span class="text-[10px] font-normal text-emerald-200">Rp </span>{{ number_format($summary['total_income'], 0, ',', '.') }}
                     </h3>
-                    <p class="text-[9px] sm:text-xs text-emerald-200 mt-0.5">Cash + QRIS + Transfer</p>
+                    <p class="text-[9px] sm:text-xs text-emerald-200 mt-0.5">Cash + QRIS</p>
                     <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full"></div>
                     <div class="absolute -right-1 -top-4 w-14 h-14 bg-white/5 rounded-full"></div>
                 </div>
@@ -198,10 +199,18 @@
                                 <p class="text-[8px] font-semibold text-gray-400 uppercase">Potong</p>
                                 <p class="text-sm font-extrabold text-indigo-600">{{ $capsterData['total_trx'] }}</p>
                             </div>
-                            <div class="bg-white rounded px-2 py-1 border border-gray-200 text-center">
-                                <p class="text-[8px] font-semibold text-gray-400 uppercase">Total</p>
-                                <p class="text-xs font-bold text-gray-800"><span class="text-[9px] font-normal text-gray-400">Rp</span> {{ number_format($capsterData['total_amount'], 0, ',', '.') }}</p>
+                            @if($capsterData['cash_count'] > 0)
+                            <div class="bg-green-50 rounded px-2 py-1 border border-green-200 text-center">
+                                <p class="text-[8px] font-semibold text-green-500 uppercase">Cash</p>
+                                <p class="text-sm font-extrabold text-green-600">{{ $capsterData['cash_count'] }}x</p>
                             </div>
+                            @endif
+                            @if($capsterData['qris_count'] > 0)
+                            <div class="bg-purple-50 rounded px-2 py-1 border border-purple-200 text-center">
+                                <p class="text-[8px] font-semibold text-purple-500 uppercase">QRIS</p>
+                                <p class="text-sm font-extrabold text-purple-600">{{ $capsterData['qris_count'] }}x</p>
+                            </div>
+                            @endif
                             @if($capsterData['total_product_qty'] > 0)
                             <div class="bg-white rounded px-2 py-1 border border-amber-200 text-center">
                                 <p class="text-[8px] font-semibold text-amber-500 uppercase">Produk</p>
@@ -226,34 +235,63 @@
                                 <p class="text-xs font-bold text-red-600">Rp {{ number_format($capsterData['total_expenses'], 0, ',', '.') }}</p>
                             </div>
                             @endif
+                            <div class="bg-white rounded px-2 py-1 border border-gray-200 text-center">
+                                <p class="text-[8px] font-semibold text-gray-400 uppercase">Total</p>
+                                <p class="text-xs font-bold text-gray-800"><span class="text-[9px] font-normal text-gray-400">Rp</span> {{ number_format($capsterData['total_amount'], 0, ',', '.') }}</p>
+                            </div>
                         </div>
                     </div>
 
                     {{-- ===== MOBILE VIEW ===== --}}
                     <div class="block md:hidden">
                         {{-- Mobile: Transaksi --}}
-                        <p class="px-3 pt-3 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Riwayat Transaksi</p>
+                        <div class="px-3 pt-3 pb-1 border-b border-gray-100">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Riwayat Transaksi</p>
+                        </div>
+                        {{-- Mini Table Header --}}
+                        <div class="grid grid-cols-12 px-3 py-1.5 bg-gray-50 border-b border-gray-100 text-[9px] font-bold text-gray-400 uppercase tracking-wider">
+                            <div class="col-span-1">No</div>
+                            <div class="col-span-3">Waktu</div>
+                            <div class="col-span-3">Total</div>
+                            <div class="col-span-2">Tips</div>
+                            <div class="col-span-2">Metode</div>
+                            <div class="col-span-1 text-right">Aksi</div>
+                        </div>
                         <div class="divide-y divide-gray-100">
-                            @foreach($capsterData['transactions'] as $t)
-                            <div class="px-3 py-2.5 flex items-center justify-between gap-2">
-                                <div class="flex items-center gap-2 flex-1 min-w-0">
-                                    <div class="w-8 h-8 rounded-lg bg-gray-50 border border-gray-200 flex flex-col items-center justify-center flex-shrink-0">
-                                        <span class="text-[10px] font-bold text-gray-800 leading-none">{{ \Carbon\Carbon::parse($t->transaction_date)->format('H:i') }}</span>
-                                        <span class="text-[7px] text-gray-400 leading-none">WIB</span>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="text-xs font-bold text-gray-900">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
-                                            @if($t->tips > 0)
-                                            <span class="text-[8px] text-green-600 font-medium">+Tips {{ number_format($t->tips, 0, ',', '.') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
+                            @foreach($capsterData['transactions'] as $index => $t)
+                            @php $mn = $t->paymentMethod->method_name ?? '-'; @endphp
+                            <div class="grid grid-cols-12 px-3 py-2 items-center gap-0.5 hover:bg-indigo-50/40 transition">
+                                <div class="col-span-1 text-[9px] text-gray-400">{{ $index + 1 }}</div>
+                                <div class="col-span-3">
+                                    <span class="text-[10px] font-semibold text-gray-700 leading-tight block">{{ \Carbon\Carbon::parse($t->transaction_date)->format('H:i') }}</span>
+                                    <span class="text-[8px] text-gray-400 leading-tight block">{{ \Carbon\Carbon::parse($t->transaction_date)->format('d M') }}</span>
                                 </div>
-                                <button onclick="window.open('{{ route('pos.print-struk', $t->id_transaction) }}', '_blank', 'width=400,height=600')"
-                                    class="p-1.5 bg-white border border-slate-200 rounded text-indigo-500 hover:text-indigo-700 transition flex-shrink-0">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                                </button>
+                                <div class="col-span-3">
+                                    <span class="text-[10px] font-bold text-gray-800">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
+                                </div>
+                                <div class="col-span-2">
+                                    @if(($t->tips ?? 0) > 0)
+                                        <span class="text-[9px] font-semibold text-green-600">{{ number_format($t->tips, 0, ',', '.') }}</span>
+                                    @else
+                                        <span class="text-[9px] text-gray-300">-</span>
+                                    @endif
+                                </div>
+                                <div class="col-span-2">
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full
+                                        {{ $mn === 'Cash' ? 'bg-green-100 text-green-700' : ($mn === 'Qris' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600') }}">
+                                        {{ $mn === 'Qris' ? 'QRIS' : $mn }}
+                                    </span>
+                                </div>
+                                <div class="col-span-1 flex justify-end flex-col sm:flex-row items-end sm:items-center gap-1">
+                                    <button onclick="openDetailModal({{ $t->id_transaction }})"
+                                        class="p-1 bg-white border border-slate-200 rounded text-gray-500 hover:text-indigo-600 transition flex-shrink-0">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </button>
+                                    <button onclick="window.open('{{ route('pos.print-struk', $t->id_transaction) }}', '_blank', 'width=400,height=600')"
+                                        class="p-1 bg-white border border-slate-200 rounded text-indigo-500 hover:text-indigo-700 transition flex-shrink-0">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                                    </button>
+                                </div>
                             </div>
                             @endforeach
                         </div>
@@ -269,12 +307,17 @@
                         <p class="px-3 pt-3 pb-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-t border-gray-100">Riwayat Pengeluaran</p>
                         <div class="divide-y divide-gray-100">
                             @foreach($capsterData['expenses'] as $expense)
-                            <div class="px-3 py-2.5 flex justify-between items-center">
-                                <div>
-                                    <div class="text-xs font-semibold text-gray-700">{{ $expense->description }}</div>
+                            <div class="px-3 py-2.5 flex justify-between items-center hover:bg-red-50/40 transition">
+                                <div class="flex-1 pr-2">
+                                    <div class="text-xs font-semibold text-gray-700 line-clamp-1">{{ $expense->description }}</div>
                                     <div class="text-[9px] text-gray-400">{{ \Carbon\Carbon::parse($expense->expense_date)->format('H:i') }} WIB</div>
                                 </div>
-                                <span class="text-xs font-black text-red-600">-Rp {{ number_format($expense->amount, 0, ',', '.') }}</span>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <span class="text-xs font-black text-red-600">-Rp {{ number_format($expense->amount, 0, ',', '.') }}</span>
+                                    <button onclick="openPosExpenseModal('{{ \Carbon\Carbon::parse($expense->expense_date)->format('d M Y H:i') }}', `{{ addslashes($expense->description) }}`, '{{ number_format($expense->amount, 0, ',', '.') }}')" class="p-1.5 bg-white border border-slate-200 rounded text-gray-500 hover:text-indigo-600 transition">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </button>
+                                </div>
                             </div>
                             @endforeach
                         </div>
@@ -284,6 +327,7 @@
                         </div>
                         @endif
                     </div>
+
 
                     {{-- ===== DESKTOP: RIWAYAT TRANSAKSI ===== --}}
                     <div class="hidden md:block">
@@ -406,6 +450,42 @@
                     </div>
                 </div>
             @endforelse
+        </div>
+    </div>
+
+    {{-- ===== MODAL DETAIL PENGELUARAN POS ===== --}}
+    <div id="posExpenseModal" class="fixed inset-0 z-50 hidden" aria-modal="true" role="dialog">
+        <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" onclick="closePosExpenseModal()"></div>
+        <div class="absolute inset-0 flex items-center justify-center p-4">
+            <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all scale-100">
+                <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-900">Detail Pengeluaran</h3>
+                            <p id="peTime" class="text-xs text-gray-500 mt-0.5"></p>
+                        </div>
+                    </div>
+                    <button onclick="closePosExpenseModal()" class="p-1.5 rounded-lg hover:bg-gray-200 transition text-gray-400 hover:text-gray-600">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="px-5 py-5">
+                    <div class="mb-5">
+                        <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">Keterangan</h4>
+                        <p id="peDesc" class="text-sm text-gray-800 bg-gray-50 p-3 rounded-xl border border-gray-100 leading-relaxed"></p>
+                    </div>
+                    <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total</p>
+                        <p id="peTotal" class="text-lg font-black text-red-600"></p>
+                    </div>
+                </div>
+                <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-end bg-gray-50">
+                    <button onclick="closePosExpenseModal()" class="w-full sm:w-auto px-4 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 transition shadow-sm">Tutup</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -562,6 +642,25 @@
         document.body.style.overflow = '';
     }
 
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailModal(); });
+    document.addEventListener('keydown', e => { 
+        if (e.key === 'Escape') {
+            closeDetailModal(); 
+            closePosExpenseModal();
+        }
+    });
+
+    function openPosExpenseModal(time, desc, total) {
+        document.getElementById('peTime').textContent = time + ' WIB';
+        document.getElementById('peDesc').textContent = desc;
+        document.getElementById('peTotal').textContent = '-Rp ' + total;
+        
+        document.getElementById('posExpenseModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closePosExpenseModal() {
+        document.getElementById('posExpenseModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
     </script>
 </x-app-layout>

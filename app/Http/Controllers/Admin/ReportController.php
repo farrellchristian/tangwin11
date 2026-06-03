@@ -88,19 +88,32 @@ class ReportController extends Controller
         }
 
         // === Hitung Ringkasan Keuangan ===
-        $totalIncome = Transaction::whereBetween('transaction_date', [$startDate, $endDate])
+        $allTrxForSummary = Transaction::with(['paymentMethod', 'details'])
+            ->whereBetween('transaction_date', [$startDate, $endDate])
             ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
             ->when($selectedPaymentMethodId, fn($q) => $q->where('id_payment_method', $selectedPaymentMethodId))
-            ->sum('total_amount');
+            ->get();
+
+        $cashTrx     = $allTrxForSummary->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash');
+        $qrisTrx     = $allTrxForSummary->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Qris');
+        $totalCash         = $cashTrx->sum('total_amount');
+        $totalQris         = $qrisTrx->sum('total_amount');
+        $totalCashCount    = $cashTrx->count();
+        $totalQrisCount    = $qrisTrx->count();
+        $totalTrxCount     = $allTrxForSummary->count();
+        $totalIncome       = $allTrxForSummary->sum('total_amount');
+
+        $allProductDetails = $allTrxForSummary->flatMap(fn($t) => $t->details)->where('item_type', 'product');
+        $totalProductSales    = $allProductDetails->sum('subtotal');
+        $totalProductSalesQty = (int) $allProductDetails->sum('quantity');
 
         $totalExpenses = Expense::whereBetween('expense_date', [$startDate, $endDate])
             ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
             ->sum('amount');
-        $totalTips = Transaction::whereBetween('transaction_date', [$startDate, $endDate])
-            ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
-            ->sum('tips');
+        $totalTips = $allTrxForSummary->sum('tips');
         $totalExpenditure = $totalExpenses + $totalTips;
-        $netProfitLoss = $totalIncome - $totalExpenditure;
+        $netProfitLoss    = $totalIncome - $totalExpenditure;
+        $hasilCashKasir   = max(0, $totalCash - $totalExpenses);
 
         // === Ambil Detail Transaksi & Pengeluaran per Karyawan ===
         $involvedEmployeeIds = Transaction::whereBetween('transaction_date', [$startDate, $endDate])
@@ -126,27 +139,53 @@ class ReportController extends Controller
                     ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
                     ->latest('expense_date')
                     ->get();
-                return [$employee->id_employee => ['employee' => $employee, 'transactions' => $transactions, 'expenses' => $expenses]];
+                $allDetails = $transactions->flatMap(fn($t) => $t->details ?? collect());
+                $empCashTrx = $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash');
+                $empQrisTrx = $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Qris');
+                return [$employee->id_employee => [
+                    'employee'          => $employee,
+                    'transactions'      => $transactions,
+                    'expenses'          => $expenses,
+                    'total_trx'         => $transactions->count(),
+                    'total_amount'      => $transactions->sum('total_amount'),
+                    'total_tips'        => $transactions->sum('tips'),
+                    'total_expenses'    => $expenses->sum('amount'),
+                    'cash_count'        => $empCashTrx->count(),
+                    'qris_count'        => $empQrisTrx->count(),
+                    'total_cash'        => $empCashTrx->sum('total_amount'),
+                    'total_qris'        => $empQrisTrx->sum('total_amount'),
+                    'total_product_qty' => (int) $allDetails->where('item_type', 'product')->sum('quantity'),
+                    'total_food_qty'    => (int) $allDetails->where('item_type', 'food')->sum('quantity'),
+                ]];
             });
 
         // === Kirim Data ke View ===
         return view('admin.reports.index', [
-            'stores' => $stores,
-            'paymentMethods' => $paymentMethods,
-            'availableYears' => $availableYears,
-            'filterType' => $filterType,
-            'selectedYear' => $selectedYear,
-            'selectedMonth' => $selectedMonth,
-            'selectedDay' => $selectedDay,
-            'selectedWeek' => $selectedWeekValue,
-            'selectedStoreId' => $selectedStoreId,
+            'stores'                  => $stores,
+            'paymentMethods'          => $paymentMethods,
+            'availableYears'          => $availableYears,
+            'filterType'              => $filterType,
+            'selectedYear'            => $selectedYear,
+            'selectedMonth'           => $selectedMonth,
+            'selectedDay'             => $selectedDay,
+            'selectedWeek'            => $selectedWeekValue,
+            'selectedStoreId'         => $selectedStoreId,
             'selectedPaymentMethodId' => $selectedPaymentMethodId,
-            'reportTitleDate' => $reportTitleDate,
-            'totalIncome' => $totalIncome,
-            'totalExpenditure' => $totalExpenditure,
-            'netProfitLoss' => $netProfitLoss,
-            'employeesDetails' => $employeesDetails,
-            'weeksForDropdown' => $weeksOfMonth, // Kirim hasil perhitungan minggu
+            'reportTitleDate'         => $reportTitleDate,
+            'totalIncome'             => $totalIncome,
+            'totalCash'               => $totalCash,
+            'totalQris'               => $totalQris,
+            'totalCashCount'          => $totalCashCount,
+            'totalQrisCount'          => $totalQrisCount,
+            'totalTrxCount'           => $totalTrxCount,
+            'totalProductSales'       => $totalProductSales,
+            'totalProductSalesQty'    => $totalProductSalesQty,
+            'totalExpenditure'        => $totalExpenditure,
+            'totalExpenses'           => $totalExpenses,
+            'hasilCashKasir'          => $hasilCashKasir,
+            'netProfitLoss'           => $netProfitLoss,
+            'employeesDetails'        => $employeesDetails,
+            'weeksForDropdown'        => $weeksOfMonth,
         ]);
     }
 
@@ -641,4 +680,4 @@ class ReportController extends Controller
             ], 500);
         }
     }
-} // Akhir Class
+}

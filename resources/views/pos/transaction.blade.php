@@ -162,7 +162,9 @@
                             <select id="payment_method" name="payment_method" x-model="paymentMethodId" @change="onPaymentMethodChange()" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                                 <option value="">-- Pilih Metode --</option>
                                 @foreach ($paymentMethods as $method)
-                                <option value="{{ $method->id_payment_method }}">{{ $method->method_name }}</option>
+                                    @if(in_array(strtolower($method->method_name), ['cash', 'qris']))
+                                        <option value="{{ $method->id_payment_method }}">{{ $method->method_name }}</option>
+                                    @endif
                                 @endforeach
                             </select>
                         </div>
