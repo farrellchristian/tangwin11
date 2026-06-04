@@ -89,10 +89,6 @@
                     <td>: {{ date('d/m/y H:i', strtotime($transaction->transaction_date)) }}</td>
                 </tr>
                 <tr>
-                    <td>No.Nota</td>
-                    <td>: #{{ $transaction->id_transaction }}</td>
-                </tr>
-                <tr>
                     <td>Store</td>
                     <td>: {{ $transaction->store->store_name }}</td>
                 </tr>

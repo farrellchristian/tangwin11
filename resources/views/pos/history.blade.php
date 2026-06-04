@@ -27,7 +27,7 @@
                         <p class="text-[9px] sm:text-[10px] font-bold text-indigo-500 uppercase tracking-wider">Transaksi</p>
                     </div>
                     <h3 class="text-xl sm:text-2xl font-extrabold text-gray-800">{{ $summary['total_trx'] }}</h3>
-                    <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Pelanggan hari ini</p>
+                    <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Total nota/struk hari ini</p>
                     <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-indigo-50/60 to-transparent"></div>
                 </div>
 
@@ -195,8 +195,8 @@
 
                         {{-- Mini Summary Badges --}}
                         <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
-                            <div class="bg-white rounded px-2 py-1 border border-gray-200 text-center">
-                                <p class="text-[8px] font-semibold text-gray-400 uppercase">Potong</p>
+                            <div class="bg-white rounded px-2 py-1 border border-gray-200 text-center" title="Jumlah sesi layanan capster ini (1 transaksi bisa melibatkan 2 capster)">
+                                <p class="text-[8px] font-semibold text-gray-400 uppercase">Sesi Potong</p>
                                 <p class="text-sm font-extrabold text-indigo-600">{{ $capsterData['total_trx'] }}</p>
                             </div>
                             @if($capsterData['cash_count'] > 0)
@@ -267,11 +267,11 @@
                                     <span class="text-[8px] text-gray-400 leading-tight block">{{ \Carbon\Carbon::parse($t->transaction_date)->format('d M') }}</span>
                                 </div>
                                 <div class="col-span-3">
-                                    <span class="text-[10px] font-bold text-gray-800">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
+                                    <span class="text-[10px] font-bold text-gray-800">Rp {{ number_format($t->display_amount ?? $t->total_amount, 0, ',', '.') }}</span>
                                 </div>
                                 <div class="col-span-2">
-                                    @if(($t->tips ?? 0) > 0)
-                                        <span class="text-[9px] font-semibold text-green-600">{{ number_format($t->tips, 0, ',', '.') }}</span>
+                                    @if(($t->display_tips ?? $t->tips ?? 0) > 0)
+                                        <span class="text-[9px] font-semibold text-green-600">{{ number_format($t->display_tips ?? $t->tips, 0, ',', '.') }}</span>
                                     @else
                                         <span class="text-[9px] text-gray-300">-</span>
                                     @endif
@@ -354,11 +354,11 @@
                                                 <span class="text-xs font-semibold text-gray-700">{{ \Carbon\Carbon::parse($t->transaction_date)->format('d M Y H:i') }}</span>
                                             </td>
                                             <td class="px-4 py-2 whitespace-nowrap">
-                                                <span class="text-xs font-bold text-gray-800">Rp {{ number_format($t->total_amount, 0, ',', '.') }}</span>
+                                                <span class="text-xs font-bold text-gray-800">Rp {{ number_format($t->display_amount ?? $t->total_amount, 0, ',', '.') }}</span>
                                             </td>
                                             <td class="px-4 py-2 whitespace-nowrap">
-                                                <span class="text-xs {{ $t->tips > 0 ? 'text-green-600 font-semibold' : 'text-gray-400' }}">
-                                                    Rp {{ number_format($t->tips ?? 0, 0, ',', '.') }}
+                                                <span class="text-xs {{ ($t->display_tips ?? $t->tips ?? 0) > 0 ? 'text-green-600 font-semibold' : 'text-gray-400' }}">
+                                                    Rp {{ number_format($t->display_tips ?? $t->tips ?? 0, 0, ',', '.') }}
                                                 </span>
                                             </td>
                                             <td class="px-4 py-2 whitespace-nowrap">

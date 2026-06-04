@@ -269,12 +269,14 @@ class PosController extends Controller
         ])->findOrFail($id);
 
         // --- LOGIKA GROUPING ITEM ---
+        // Sertakan id_employee di key agar item capster berbeda tidak di-merge
         $groupedDetails = collect();
 
         foreach ($transaction->details as $item) {
             $key = $item->item_type . '-' . 
                    ($item->id_service ?? $item->id_product ?? $item->id_food) . '-' . 
-                   $item->price_at_sale;
+                   $item->price_at_sale . '-' .
+                   ($item->id_employee ?? 0);
 
             if ($groupedDetails->has($key)) {
                 // Jika sudah ada, tambahkan quantity dan subtotal
@@ -367,7 +369,7 @@ class PosController extends Controller
         }
 
         // 3. Ambil semua transaksi lalu group per capster
-        $allTransactions = $query->orderBy('transaction_date', 'desc')->get();
+        $allTransactions = $query->with(['details.employee'])->orderBy('transaction_date', 'desc')->get();
 
         // Ambil semua pengeluaran hari ini per store
         $allExpenses = \App\Models\Expense::with('employee')
@@ -376,25 +378,86 @@ class PosController extends Controller
             ->orderBy('expense_date', 'desc')
             ->get();
 
-        // Group transaksi berdasarkan employee (capster)
-        $groupedByCapster = $allTransactions->groupBy('id_employee_primary')->map(function ($transactions, $employeeId) use ($allExpenses) {
-            $employee = $transactions->first()->employee;
+        $capsterMap = []; // [ id_employee => [ 'employee'=>..., 'entries'=>[] ] ]
+
+        foreach ($allTransactions as $trx) {
+            // Kelompokkan detail berdasarkan id_employee di tiap item
+            $detailsByEmployee = $trx->details->groupBy(function ($detail) use ($trx) {
+                // Gunakan id_employee dari detail; fallback ke primary capster
+                return $detail->id_employee ?? $trx->id_employee_primary;
+            });
+
+            foreach ($detailsByEmployee as $empId => $details) {
+                if (!isset($capsterMap[$empId])) {
+                    // Ambil objek employee: coba dari detail, fallback ke trx->employee
+                    $empObj = $details->first()->employee ?? $trx->employee;
+                    $capsterMap[$empId] = [
+                        'employee' => $empObj,
+                        'entries'  => [], // [ ['trx'=>..., 'amount'=>..., 'tips'=>...] ]
+                    ];
+                }
+
+                // Hitung subtotal porsi capster ini dalam transaksi ini
+                $portionAmount = $details->sum('subtotal');
+
+                // Hitung apakah transaksi ini murni 1 capster atau split
+                $totalDetailAmount = $trx->details->sum('subtotal');
+                $tipsPortion = $totalDetailAmount > 0
+                    ? round(($portionAmount / $totalDetailAmount) * ($trx->tips ?? 0))
+                    : 0;
+
+                $capsterMap[$empId]['entries'][] = [
+                    'trx'    => $trx,
+                    'amount' => $portionAmount,
+                    'tips'   => $tipsPortion,
+                ];
+            }
+        }
+
+        // Bangun $groupedByCapster dari capsterMap
+        $groupedByCapster = collect($capsterMap)->map(function ($capsterData, $employeeId) use ($allExpenses, $allTransactions) {
+            $entries  = collect($capsterData['entries']);
             $expenses = $allExpenses->where('id_employee', $employeeId)->values();
-            $allDetails = $transactions->flatMap(fn($t) => $t->details);
+
+            // Kumpulkan transaksi unik (untuk ditampilkan di tabel)
+            // Tambahkan metadata porsi ke setiap transaksi untuk tampilan
+            $transactions = $entries->map(function ($entry) {
+                // Clone transaksi dan override total_amount & tips dengan porsi capster ini
+                $trxClone = clone $entry['trx'];
+                $trxClone->display_amount = $entry['amount'];
+                $trxClone->display_tips   = $entry['tips'];
+                return $trxClone;
+            });
+
+            $totalAmount   = $entries->sum('amount');
+            $totalTips     = $entries->sum('tips');
+            $totalTrx      = $entries->count();
+
+            // Hitung cash_count dan qris_count dari transaksi yang masuk ke capster ini
+            $cashCount = $entries->filter(fn($e) =>
+                $e['trx']->paymentMethod && $e['trx']->paymentMethod->method_name === 'Cash'
+            )->count();
+            $qrisCount = $entries->filter(fn($e) =>
+                $e['trx']->paymentMethod && $e['trx']->paymentMethod->method_name === 'Qris'
+            )->count();
+
+            // Hitung qty produk & makanan milik capster ini
+            $allMyDetails = $entries->flatMap(fn($e) => $e['trx']->details->filter(
+                fn($d) => ($d->id_employee ?? $e['trx']->id_employee_primary) == $employeeId
+            ));
+
             return [
-                'employee'            => $employee,
-                'transactions'        => $transactions,
-                'expenses'            => $expenses,
-                'total_trx'           => $transactions->count(),
-                'total_amount'        => $transactions->sum('total_amount'),
-                'total_tips'          => $transactions->sum('tips'),
-                'total_expenses'      => $expenses->sum('amount'),
-                'total_cash'          => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->sum('total_amount'),
-                'total_digital'       => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name !== 'Cash')->sum('total_amount'),
-                'cash_count'          => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash')->count(),
-                'qris_count'          => $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Qris')->count(),
-                'total_product_qty'   => (int) $allDetails->where('item_type', 'product')->sum('quantity'),
-                'total_food_qty'      => (int) $allDetails->where('item_type', 'food')->sum('quantity'),
+                'employee'          => $capsterData['employee'],
+                'transactions'      => $transactions,
+                'expenses'          => $expenses,
+                'total_trx'         => $totalTrx,
+                'total_amount'      => $totalAmount,
+                'total_tips'        => $totalTips,
+                'total_expenses'    => $expenses->sum('amount'),
+                'cash_count'        => $cashCount,
+                'qris_count'        => $qrisCount,
+                'total_product_qty' => (int) $allMyDetails->where('item_type', 'product')->sum('quantity'),
+                'total_food_qty'    => (int) $allMyDetails->where('item_type', 'food')->sum('quantity'),
             ];
         })->sortByDesc('total_trx');
 
@@ -416,12 +479,13 @@ class PosController extends Controller
             'details.employee',
         ])->where('id_store', $user->id_store)->findOrFail($id);
 
-        // Grouping detail item sama dengan printStruk
+        // Grouping detail item — sertakan id_employee di key agar item capster berbeda tidak di-merge
         $groupedDetails = collect();
         foreach ($transaction->details as $item) {
             $key = $item->item_type . '-' .
                    ($item->id_service ?? $item->id_product ?? $item->id_food) . '-' .
-                   $item->price_at_sale;
+                   $item->price_at_sale . '-' .
+                   ($item->id_employee ?? 0);
             if ($groupedDetails->has($key)) {
                 $existing = $groupedDetails->get($key);
                 $existing->quantity  += $item->quantity;

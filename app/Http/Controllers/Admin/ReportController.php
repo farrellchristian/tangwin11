@@ -116,46 +116,100 @@ class ReportController extends Controller
         $hasilCashKasir   = max(0, $totalCash - $totalExpenses);
 
         // === Ambil Detail Transaksi & Pengeluaran per Karyawan ===
-        $involvedEmployeeIds = Transaction::whereBetween('transaction_date', [$startDate, $endDate])
+        // Ambil semua transaksi dalam periode ini (dengan details.employee)
+        $allTrxForEmployees = Transaction::with(['paymentMethod', 'store', 'details.employee'])
+            ->whereBetween('transaction_date', [$startDate, $endDate])
             ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
-            ->pluck('id_employee_primary')
-            ->merge(Expense::whereBetween('expense_date', [$startDate, $endDate])->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))->pluck('id_employee'))
+            ->when($selectedPaymentMethodId, fn($q) => $q->where('id_payment_method', $selectedPaymentMethodId))
+            ->latest('transaction_date')
+            ->get();
+
+        $involvedEmployeeIds = $allTrxForEmployees->pluck('id_employee_primary')
+            ->merge(
+                $allTrxForEmployees->flatMap(fn($t) => $t->details->pluck('id_employee'))->filter()
+            )
+            ->merge(
+                Expense::whereBetween('expense_date', [$startDate, $endDate])
+                    ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
+                    ->pluck('id_employee')
+            )
             ->unique()->filter()->sort()->values();
+
+        // Bangun capsterMap: tiap capster mendapat porsi subtotal item miliknya
+        $capsterMapAdmin = [];
+        foreach ($allTrxForEmployees as $trx) {
+            $detailsByEmployee = $trx->details->groupBy(function ($detail) use ($trx) {
+                return $detail->id_employee ?? $trx->id_employee_primary;
+            });
+
+            foreach ($detailsByEmployee as $empId => $details) {
+                if (!isset($capsterMapAdmin[$empId])) {
+                    $capsterMapAdmin[$empId] = ['entries' => []];
+                }
+                $portionAmount = $details->sum('subtotal');
+                $totalDetailAmount = $trx->details->sum('subtotal');
+                $tipsPortion = $totalDetailAmount > 0
+                    ? round(($portionAmount / $totalDetailAmount) * ($trx->tips ?? 0))
+                    : 0;
+                $capsterMapAdmin[$empId]['entries'][] = [
+                    'trx'    => $trx,
+                    'amount' => $portionAmount,
+                    'tips'   => $tipsPortion,
+                ];
+            }
+        }
+
+        $allExpensesForEmployees = Expense::with('store')
+            ->whereBetween('expense_date', [$startDate, $endDate])
+            ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
+            ->latest('expense_date')
+            ->get();
 
         $employeesDetails = Employee::whereIn('id_employee', $involvedEmployeeIds)
             ->orderBy('employee_name')
             ->get()
-            ->mapWithKeys(function ($employee) use ($startDate, $endDate, $selectedStoreId, $selectedPaymentMethodId) {
-                $transactions = Transaction::with('paymentMethod', 'store')
-                    ->where('id_employee_primary', $employee->id_employee)
-                    ->whereBetween('transaction_date', [$startDate, $endDate])
-                    ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
-                    ->when($selectedPaymentMethodId, fn($q) => $q->where('id_payment_method', $selectedPaymentMethodId))
-                    ->latest('transaction_date')
-                    ->get();
-                $expenses = Expense::with('store')
-                    ->where('id_employee', $employee->id_employee)
-                    ->whereBetween('expense_date', [$startDate, $endDate])
-                    ->when($selectedStoreId, fn($q) => $q->where('id_store', $selectedStoreId))
-                    ->latest('expense_date')
-                    ->get();
-                $allDetails = $transactions->flatMap(fn($t) => $t->details ?? collect());
-                $empCashTrx = $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Cash');
-                $empQrisTrx = $transactions->filter(fn($t) => $t->paymentMethod && $t->paymentMethod->method_name === 'Qris');
+            ->mapWithKeys(function ($employee) use ($capsterMapAdmin, $allExpensesForEmployees) {
+                $entries  = collect($capsterMapAdmin[$employee->id_employee]['entries'] ?? []);
+                $expenses = $allExpensesForEmployees->where('id_employee', $employee->id_employee)->values();
+
+                // Buat collection transaksi dengan porsi per capster (dengan display_amount)
+                $transactions = $entries->map(function ($entry) {
+                    $trxClone = clone $entry['trx'];
+                    $trxClone->display_amount = $entry['amount'];
+                    $trxClone->display_tips   = $entry['tips'];
+                    return $trxClone;
+                });
+
+                $totalAmount = $entries->sum('amount');
+                $totalTips   = $entries->sum('tips');
+                $totalTrx    = $entries->count();
+
+                $cashCount = $entries->filter(fn($e) =>
+                    $e['trx']->paymentMethod && $e['trx']->paymentMethod->method_name === 'Cash'
+                )->count();
+                $qrisCount = $entries->filter(fn($e) =>
+                    $e['trx']->paymentMethod && $e['trx']->paymentMethod->method_name === 'Qris'
+                )->count();
+
+                // Qty produk & makanan milik capster ini
+                $allMyDetails = $entries->flatMap(fn($e) => $e['trx']->details->filter(
+                    fn($d) => ($d->id_employee ?? $e['trx']->id_employee_primary) == $employee->id_employee
+                ));
+
                 return [$employee->id_employee => [
                     'employee'          => $employee,
                     'transactions'      => $transactions,
                     'expenses'          => $expenses,
-                    'total_trx'         => $transactions->count(),
-                    'total_amount'      => $transactions->sum('total_amount'),
-                    'total_tips'        => $transactions->sum('tips'),
+                    'total_trx'         => $totalTrx,
+                    'total_amount'      => $totalAmount,
+                    'total_tips'        => $totalTips,
                     'total_expenses'    => $expenses->sum('amount'),
-                    'cash_count'        => $empCashTrx->count(),
-                    'qris_count'        => $empQrisTrx->count(),
-                    'total_cash'        => $empCashTrx->sum('total_amount'),
-                    'total_qris'        => $empQrisTrx->sum('total_amount'),
-                    'total_product_qty' => (int) $allDetails->where('item_type', 'product')->sum('quantity'),
-                    'total_food_qty'    => (int) $allDetails->where('item_type', 'food')->sum('quantity'),
+                    'cash_count'        => $cashCount,
+                    'qris_count'        => $qrisCount,
+                    'total_cash'        => $entries->filter(fn($e) => $e['trx']->paymentMethod && $e['trx']->paymentMethod->method_name === 'Cash')->sum('amount'),
+                    'total_qris'        => $entries->filter(fn($e) => $e['trx']->paymentMethod && $e['trx']->paymentMethod->method_name === 'Qris')->sum('amount'),
+                    'total_product_qty' => (int) $allMyDetails->where('item_type', 'product')->sum('quantity'),
+                    'total_food_qty'    => (int) $allMyDetails->where('item_type', 'food')->sum('quantity'),
                 ]];
             });
 

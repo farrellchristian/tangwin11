@@ -450,7 +450,7 @@
                                 <p class="text-[9px] sm:text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Transaksi</p>
                             </div>
                             <h3 class="text-xl sm:text-2xl font-extrabold text-gray-800">{{ $totalTrxCount }}</h3>
-                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Total pelanggan periode ini</p>
+                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Total nota/struk periode ini</p>
                             <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-indigo-50/60 to-transparent"></div>
                         </div>
 
@@ -614,8 +614,8 @@
                                 </div>
                                 {{-- Mini Summary Badges --}}
                                 <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:justify-end mt-2 sm:mt-0">
-                                    <div class="bg-white rounded px-2 py-1 border border-gray-200 text-center">
-                                        <p class="text-[8px] font-semibold text-gray-400 uppercase">Potong</p>
+                                    <div class="bg-white rounded px-2 py-1 border border-gray-200 text-center" title="Jumlah sesi layanan yang dilakukan capster ini (1 transaksi bisa melibatkan 2 capster)">
+                                        <p class="text-[8px] font-semibold text-gray-400 uppercase">Sesi Potong</p>
                                         <p class="text-sm font-extrabold text-indigo-600">{{ $empData['total_trx'] }}</p>
                                     </div>
                                     @if($empData['cash_count'] > 0)
@@ -689,10 +689,10 @@
                                                     <td class="px-4 py-2 whitespace-nowrap text-xs text-gray-600">
                                                         {{ $transaction->transaction_date->format('d M Y H:i') }}</td>
                                                     <td class="px-4 py-2 whitespace-nowrap font-semibold text-gray-800 text-xs">Rp
-                                                        {{ number_format($transaction->total_amount, 0, ',', '.') }}</td>
+                                                        {{ number_format($transaction->display_amount ?? $transaction->total_amount, 0, ',', '.') }}</td>
                                                     <td class="px-4 py-2 whitespace-nowrap text-xs">
-                                                        @if(($transaction->tips ?? 0) > 0)
-                                                            <span class="text-green-600 font-semibold">Rp {{ number_format($transaction->tips, 0, ',', '.') }}</span>
+                                                        @if(($transaction->display_tips ?? $transaction->tips ?? 0) > 0)
+                                                            <span class="text-green-600 font-semibold">Rp {{ number_format($transaction->display_tips ?? $transaction->tips, 0, ',', '.') }}</span>
                                                         @else
                                                             <span class="text-gray-400">Rp 0</span>
                                                         @endif
@@ -790,11 +790,11 @@
                                                 <span class="text-[8px] text-gray-400 leading-tight block">{{ $transaction->transaction_date->format('d M') }}</span>
                                             </div>
                                             <div class="col-span-3">
-                                                <span class="text-[10px] font-bold text-gray-800">Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span>
+                                                <span class="text-[10px] font-bold text-gray-800">Rp {{ number_format($transaction->display_amount ?? $transaction->total_amount, 0, ',', '.') }}</span>
                                             </div>
                                             <div class="col-span-2">
-                                                @if(($transaction->tips ?? 0) > 0)
-                                                    <span class="text-[9px] font-semibold text-green-600">{{ number_format($transaction->tips, 0, ',', '.') }}</span>
+                                                @if(($transaction->display_tips ?? $transaction->tips ?? 0) > 0)
+                                                    <span class="text-[9px] font-semibold text-green-600">{{ number_format($transaction->display_tips ?? $transaction->tips, 0, ',', '.') }}</span>
                                                 @else
                                                     <span class="text-[9px] text-gray-300">-</span>
                                                 @endif
