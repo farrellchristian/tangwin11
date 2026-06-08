@@ -659,6 +659,7 @@ class ReportController extends Controller
             $transaction->load([
                 'store',
                 'employee',
+                'user',
                 'paymentMethod',
                 'details.service' => fn($q) => $q->withTrashed(),
                 'details.product' => fn($q) => $q->withTrashed(),
@@ -666,11 +667,28 @@ class ReportController extends Controller
                 'details.employee'
             ]);
 
-            // Format data detail item
-            $formattedDetails = $transaction->details->map(function ($detail) {
+            // --- GROUPING DETAIL ITEM (sama seperti POS controller) ---
+            // Sertakan id_employee di key agar item capster berbeda tidak di-merge
+            $groupedDetails = collect();
+            foreach ($transaction->details as $item) {
+                $key = $item->item_type . '-' .
+                       ($item->id_service ?? $item->id_product ?? $item->id_food) . '-' .
+                       $item->price_at_sale . '-' .
+                       ($item->id_employee ?? 0);
+
+                if ($groupedDetails->has($key)) {
+                    $existing = $groupedDetails->get($key);
+                    $existing->quantity += $item->quantity;
+                    $existing->subtotal += $item->subtotal;
+                } else {
+                    $groupedDetails->put($key, clone $item);
+                }
+            }
+
+            // Format data detail item setelah di-group
+            $formattedDetails = $groupedDetails->values()->map(function ($detail) {
                 $itemName = 'Item Terhapus';
 
-                // Cek null safe untuk relasi item
                 if ($detail->item_type === 'service' && $detail->service) {
                     $itemName = $detail->service->service_name;
                 } elseif ($detail->item_type === 'product' && $detail->product) {
@@ -680,13 +698,12 @@ class ReportController extends Controller
                 }
 
                 return [
-                    'item_type' => $detail->item_type,
-                    'name' => $itemName,
-                    'quantity' => $detail->quantity,
+                    'item_type'     => $detail->item_type,
+                    'name'          => $itemName,
+                    'quantity'      => $detail->quantity,
                     'price_at_sale' => (float) $detail->price_at_sale,
-                    'subtotal' => (float) $detail->subtotal,
-                    // PENGAMAN 1: Null safe untuk detail karyawan
-                    'employee_name' => $detail->employee?->employee_name ?? '-',
+                    'subtotal'      => (float) $detail->subtotal,
+                    'employee_name' => $detail->employee?->employee_name ?? null,
                 ];
             });
 
@@ -697,34 +714,27 @@ class ReportController extends Controller
 
             // Format data transaksi utama
             $formattedTransaction = [
-                'id' => $transaction->id_transaction,
-                'date' => $transactionDate->isoFormat('DD MMMM YYYY, HH:mm'),
-
-                // PENGAMAN 2: Tambahkan tanda tanya (?->) pada store
-                'store_name' => $transaction->store?->store_name ?? 'Toko Tidak Ditemukan',
-
-                // PENGAMAN 3: Tambahkan tanda tanya (?->) pada employee
-                'employee_name' => $transaction->employee?->employee_name ?? 'Karyawan Tidak Ditemukan',
-
-                // PENGAMAN 4: Tambahkan tanda tanya (?->) pada paymentMethod
+                'id'             => $transaction->id_transaction,
+                'date'           => $transactionDate->format('d M Y, H:i'),
+                'store_name'     => $transaction->store?->store_name ?? 'Toko Tidak Ditemukan',
+                'kasir'          => $transaction->user?->name ?? '-',
+                'employee_name'  => $transaction->employee?->employee_name ?? 'Karyawan Tidak Ditemukan',
                 'payment_method' => $transaction->paymentMethod?->method_name ?? 'Metode Hapus',
+                'status'         => ucfirst($transaction->status ?? 'paid'),
+                'total_amount'   => (float) $transaction->total_amount,
+                'tips'           => (float) $transaction->tips,
 
-                'status' => ucfirst($transaction->status ?? 'paid'),
-                'total_amount' => (float) $transaction->total_amount,
-                'tips' => (float) $transaction->tips,
-
-                // Pisahkan detail
+                // Pisahkan detail berdasarkan tipe
                 'services' => $formattedDetails->where('item_type', 'service')->values(),
                 'products' => $formattedDetails->where('item_type', 'product')->values(),
-                'foods' => $formattedDetails->where('item_type', 'food')->values(),
+                'foods'    => $formattedDetails->where('item_type', 'food')->values(),
             ];
 
             return response()->json([
-                'success' => true,
+                'success'     => true,
                 'transaction' => $formattedTransaction,
             ]);
         } catch (\Exception $e) {
-            // Log error lengkap agar bisa dicek di storage/logs/laravel.log
             \Log::error("Report API Error (ID: {$transaction->id_transaction}): " . $e->getMessage());
             \Log::error($e->getTraceAsString());
 

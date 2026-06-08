@@ -5,7 +5,7 @@
         </h2>
     </x-slot>
 
-    <div class="py-12" x-data="{
+    <div class="py-12" @open-expense-modal.window="openExpenseModal($event.detail)" @open-transaction-modal.window="openTransactionModal($event.detail)" x-data="{
              // State untuk Filter
              filterType: '{{ old('filter_type', $filterType) }}',
              selectedYear: '{{ old('year', $selectedYear) }}',
@@ -195,8 +195,10 @@
              // Fungsi untuk Membuka Modal Detail Transaksi
              openTransactionModal(transactionId) {
                  this.loadingTransactionDetail = true;
-                 this.showTransactionDetailModal = true;
                  this.transactionDetailData = null;
+                 
+                 // Dispatch event 'open-modal' to the x-modal component
+                 window.dispatchEvent(new CustomEvent('open-modal', { detail: 'transaction-detail-modal' }));
 
                  fetch(`/admin/reports/details/transaction/${transactionId}`)
                      .then(res => res.ok ? res.json() : Promise.reject('Gagal mengambil data transaksi.'))
@@ -205,13 +207,13 @@
                              this.transactionDetailData = data.transaction;
                          } else {
                              alert(data.message || 'Gagal memuat data.');
-                             this.showTransactionDetailModal = false;
+                             window.dispatchEvent(new CustomEvent('close-modal', { detail: 'transaction-detail-modal' }));
                          }
                      })
                      .catch(err => {
                          console.error(err);
                          alert(err.message || 'Terjadi kesalahan.');
-                         this.showTransactionDetailModal = false;
+                         window.dispatchEvent(new CustomEvent('close-modal', { detail: 'transaction-detail-modal' }));
                      })
                      .finally(() => this.loadingTransactionDetail = false);
              },
@@ -219,8 +221,10 @@
              // Fungsi untuk Membuka Modal Detail Pengeluaran Individual
              openExpenseModal(expenseId) {
                  this.loadingExpenseDetail = true;
-                 this.showExpenseDetailModal = true;
                  this.expenseDetailData = null;
+                 
+                 // Dispatch event 'open-modal' to the x-modal component
+                 window.dispatchEvent(new CustomEvent('open-modal', { detail: 'expense-detail-modal' }));
 
                  fetch(`/admin/reports/details/expense/${expenseId}`)
                      .then(res => res.ok ? res.json() : Promise.reject('Gagal mengambil data pengeluaran.'))
@@ -229,13 +233,13 @@
                              this.expenseDetailData = data.expense;
                          } else {
                              alert(data.message || 'Gagal memuat data.');
-                             this.showExpenseDetailModal = false;
+                             window.dispatchEvent(new CustomEvent('close-modal', { detail: 'expense-detail-modal' }));
                          }
                      })
                      .catch(err => {
                          console.error(err);
                          alert(err.message || 'Terjadi kesalahan.');
-                         this.showExpenseDetailModal = false;
+                         window.dispatchEvent(new CustomEvent('close-modal', { detail: 'expense-detail-modal' }));
                      })
                      .finally(() => this.loadingExpenseDetail = false);
              },
@@ -706,7 +710,7 @@
                                                         class="px-4 py-2 whitespace-nowrap text-left font-medium flex items-center gap-2">
                                                         <!-- Tombol Lihat Detail -->
                                                         <button
-                                                            @click.prevent="openTransactionModal({{ $transaction->id_transaction }})"
+                                                            @click.prevent="$dispatch('open-transaction-modal', {{ $transaction->id_transaction }})"
                                                             class="text-xs text-indigo-600 hover:text-indigo-900 font-bold transition-all hover:scale-110 active:scale-95">Detail</button>
 
                                                         <span class="text-gray-200">|</span>
@@ -815,8 +819,7 @@
                                                         x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                                         x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                                                         class="absolute right-0 bottom-7 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 w-28" style="display:none;">
-                                                        <button @click="open=false; $dispatch('open-alpine-event', 'detail-{{ $transaction->id_transaction }}')"
-                                                            @click.prevent="openTransactionModal({{ $transaction->id_transaction }})"
+                                                        <button @click.prevent="open=false; $dispatch('open-transaction-modal', {{ $transaction->id_transaction }})"
                                                             class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50 flex items-center gap-1.5">
                                                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                                                             Detail
@@ -900,13 +903,13 @@
                                                     <td
                                                         class="px-4 py-2 whitespace-nowrap text-left font-medium flex items-center gap-2">
                                                         <!-- Tombol Lihat Detail -->
-                                                        <button @click.prevent="openExpenseModal({{ $expense->id_expense }})"
+                                                        <button @click.prevent="$dispatch('open-expense-modal', {{ $expense->id_expense }})"
                                                             class="text-xs text-indigo-600 hover:text-indigo-900 font-bold transition-all">Detail</button>
 
                                                         <span class="text-gray-200">|</span>
 
                                                         <!-- Tombol Edit -->
-                                                        <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}"
+                                                        <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}?back_url={{ urlencode(request()->fullUrl()) }}"
                                                             class="text-xs text-amber-600 hover:text-amber-900 font-bold transition-all">Edit</a>
 
                                                         <span class="text-gray-200">|</span>
@@ -942,6 +945,7 @@
                                                                     action="{{ route('admin.expenses.destroy', $expense->id_expense) }}"
                                                                     class="flex justify-end gap-3">
                                                                     @csrf @method('delete')
+                                                                    <input type="hidden" name="back_url" value="{{ request()->fullUrl() }}">
                                                                     <x-secondary-button x-on:click="$dispatch('close')"
                                                                         class="rounded-xl font-bold">Batal</x-secondary-button>
                                                                     <x-danger-button
@@ -983,11 +987,11 @@
                                                         x-transition:enter="transition ease-out duration-100" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100"
                                                         x-transition:leave="transition ease-in duration-75" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
                                                         class="absolute right-0 bottom-8 z-20 bg-white border border-gray-200 rounded-xl shadow-lg py-1 w-24" style="display:none;">
-                                                        <button @click="open=false; @this.openExpenseModal({{ $expense->id_expense }})" @click.prevent="openExpenseModal({{ $expense->id_expense }})"
+                                                        <button @click.prevent="open=false; $dispatch('open-expense-modal', {{ $expense->id_expense }})"
                                                             class="w-full text-left px-3 py-1.5 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-50">
                                                             Detail
                                                         </button>
-                                                        <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}"
+                                                        <a href="{{ route('admin.expenses.edit', $expense->id_expense) }}?back_url={{ urlencode(request()->fullUrl()) }}"
                                                             class="block w-full text-left px-3 py-1.5 text-[11px] font-semibold text-amber-600 hover:bg-amber-50">
                                                             Edit
                                                         </a>
@@ -1011,6 +1015,7 @@
                                                         </div>
                                                         <form method="post" action="{{ route('admin.expenses.destroy', $expense->id_expense) }}" class="flex justify-end gap-3">
                                                             @csrf @method('delete')
+                                                            <input type="hidden" name="back_url" value="{{ request()->fullUrl() }}">
                                                             <x-secondary-button x-on:click="$dispatch('close')" class="rounded-xl font-bold">Batal</x-secondary-button>
                                                             <x-danger-button class="rounded-xl font-black bg-red-600 hover:bg-red-700">Hapus</x-danger-button>
                                                         </form>
@@ -1457,257 +1462,266 @@
             </div>
         </div>
 
-        <!-- Modal Detail Transaksi -->
-        <div x-show="showTransactionDetailModal" x-transition:enter="ease-out duration-300"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" class="fixed inset-0 z-50 overflow-y-auto"
-            aria-labelledby="modal-title-transaction" role="dialog" aria-modal="true" style="display: none;"
-            @keydown.escape.window="showTransactionDetailModal = false">
-            <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
-                <div x-show="showTransactionDetailModal" @click="showTransactionDetailModal = false"
-                    x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
-                    x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                    class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"></div>
+        <!-- Modal Detail Transaksi (Centered) -->
+        <div x-data="{ show: false }"
+             x-on:open-modal.window="$event.detail == 'transaction-detail-modal' ? show = true : null"
+             x-on:close-modal.window="$event.detail == 'transaction-detail-modal' ? show = false : null"
+             x-on:keydown.escape.window="show = false"
+             style="display: none;"
+             x-show="show"
+             class="fixed inset-0 z-50"
+             aria-modal="true" role="dialog">
+             
+            <!-- Background Overlay -->
+            <div class="absolute inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" 
+                 x-show="show" 
+                 x-transition:enter="ease-out duration-300" 
+                 x-transition:enter-start="opacity-0" 
+                 x-transition:enter-end="opacity-100" 
+                 x-transition:leave="ease-in duration-200" 
+                 x-transition:leave-start="opacity-100" 
+                 x-transition:leave-end="opacity-0"
+                 @click="show = false"></div>
+                 
+            <!-- Modal Container (Centered) -->
+            <div class="absolute inset-0 flex items-center justify-center p-3 sm:p-6 pointer-events-none">
+                <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col overflow-hidden pointer-events-auto transform transition-all"
+                     x-show="show"
+                     x-transition:enter="ease-out duration-300"
+                     x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave="ease-in duration-200"
+                     x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                     x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
 
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                <div x-show="showTransactionDetailModal" x-transition:enter="ease-out duration-300"
-                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave="ease-in duration-200"
-                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                    class="inline-flex flex-col w-full max-w-2xl my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg max-h-[85vh]">
-
-                    <div class="flex justify-between items-center p-6 border-b shrink-0 bg-white z-10">
+                    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
                         <div>
-                            <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title-transaction"
-                                x-text="`Detail Transaksi #${transactionDetailData?.id || ''}`">
-                            </h3>
-                            <p class="text-sm text-gray-500 mt-1"
-                                x-text="loadingTransactionDetail ? 'Loading...' : (transactionDetailData ? transactionDetailData.date : '')">
-                            </p>
+                            <h3 class="text-sm font-bold text-gray-900">Detail Transaksi</h3>
+                            <p class="text-xs text-gray-500 mt-0.5" 
+                               x-text="loadingTransactionDetail ? 'Loading...' : '#' + transactionDetailData?.id + ' · ' + transactionDetailData?.date + ' WIB'"></p>
                         </div>
-                        <button @click="showTransactionDetailModal = false" type="button"
-                            class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
-                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"
-                                xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd"
-                                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"></path>
-                            </svg>
+                        <button @click="show = false" class="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400 hover:text-gray-600">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                     </div>
 
-                    <div class="px-6 pb-6 pt-4 overflow-y-auto flex-1 bg-white">
-                        <!-- Tampilkan Spinner saat Loading -->
-                        <div x-show="loadingTransactionDetail" class="text-center py-10">
-                            <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg"
-                                fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                    stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor"
-                                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                </path>
-                            </svg>
-                            <p class="mt-2 text-sm text-gray-500">Mengambil data...</p>
+                    <div class="flex-1 overflow-y-auto max-h-[70vh]">
+                        <!-- Spinner Loading -->
+                        <div x-show="loadingTransactionDetail" class="flex items-center justify-center py-16">
+                            <div class="flex flex-col items-center gap-2">
+                                <svg class="w-6 h-6 text-indigo-500 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/></svg>
+                                <p class="text-xs text-gray-400">Memuat data...</p>
+                            </div>
                         </div>
 
-                        <!-- Tampilkan Konten jika data sudah ada -->
-                        <div x-show="!loadingTransactionDetail && transactionDetailData" class="space-y-6">
-
-                            {{-- Info Ringkasan (Status & Metode) --}}
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <p class="text-xs font-bold text-gray-500 uppercase">Metode Bayar</p>
-                                    <p class="text-base font-semibold text-gray-800 mt-1" x-text="transactionDetailData?.payment_method"></p>
+                        <!-- Modal Content -->
+                        <div x-show="!loadingTransactionDetail && transactionDetailData" class="flex flex-col h-full">
+                            <div class="px-5 py-4 grid grid-cols-2 gap-3 border-b border-gray-100">
+                                <div>
+                                    <p class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Kasir</p>
+                                    <p class="text-sm font-semibold text-gray-800 mt-0.5" x-text="transactionDetailData?.kasir"></p>
                                 </div>
-                                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                    <p class="text-xs font-bold text-gray-500 uppercase">Status</p>
-                                    <p class="text-base font-semibold mt-1">
-                                        <span class="px-2 py-1 rounded text-xs font-semibold uppercase"
-                                            :class="transactionDetailData?.status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'"
-                                            x-text="transactionDetailData?.status"></span>
-                                    </p>
+                                <div>
+                                    <p class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Capster</p>
+                                    <p class="text-sm font-semibold text-gray-800 mt-0.5" x-text="transactionDetailData?.employee_name"></p>
                                 </div>
-                            </div>
-
-                            {{-- Info Lokasi & PIC --}}
-                            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between text-base border-b pb-4 gap-2">
-                                <div class="flex items-center gap-2 text-gray-700">
-                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
-                                    </svg>
-                                    <span class="font-medium" x-text="transactionDetailData?.store_name"></span>
+                                <div>
+                                    <p class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Metode Bayar</p>
+                                    <p class="text-sm font-semibold mt-0.5" 
+                                       :class="{
+                                           'text-green-600': transactionDetailData?.payment_method === 'Cash',
+                                           'text-purple-600': transactionDetailData?.payment_method === 'Qris',
+                                           'text-blue-600': transactionDetailData?.payment_method === 'Transfer',
+                                           'text-gray-800': !['Cash', 'Qris', 'Transfer'].includes(transactionDetailData?.payment_method)
+                                       }"
+                                       x-text="transactionDetailData?.payment_method"></p>
                                 </div>
-                                <div class="flex items-center gap-2 text-gray-700">
-                                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                    <span class="font-medium" x-text="transactionDetailData?.employee_name"></span>
+                                <div>
+                                    <p class="text-[9px] font-semibold text-gray-400 uppercase tracking-wider">Tips</p>
+                                    <p class="text-sm font-semibold mt-0.5" 
+                                       :class="transactionDetailData?.tips > 0 ? 'text-green-600' : 'text-gray-400'"
+                                       x-text="'Rp ' + formatCurrency(transactionDetailData?.tips || 0)"></p>
                                 </div>
                             </div>
 
-                            {{-- Itemized Sections --}}
-                            <div class="space-y-4">
-                                {{-- Layanan --}}
-                                <div x-show="transactionDetailData?.services && transactionDetailData.services.length > 0">
-                                    <h4 class="text-sm font-bold text-gray-700 border-b pb-2 mb-3">Layanan</h4>
-                                    <div class="space-y-2 text-base">
+                            <!-- Item Lists -->
+                            <div class="divide-y divide-gray-100">
+                                <!-- Layanan -->
+                                <template x-if="transactionDetailData?.services?.length > 0">
+                                    <div>
+                                        <div class="px-5 py-1.5 bg-indigo-50/60">
+                                            <p class="text-[9px] font-bold text-indigo-600 uppercase tracking-wider">Layanan</p>
+                                        </div>
                                         <template x-for="item in transactionDetailData?.services" :key="item.name">
-                                            <div class="flex justify-between items-start border-b border-gray-50 pb-2">
-                                                <div>
-                                                    <p class="font-semibold text-gray-800" x-text="item.name"></p>
-                                                    <p class="text-sm text-gray-500" x-text="`x${item.quantity} - ${item.employee_name}`"></p>
+                                            <div class="px-5 py-2.5 flex items-center justify-between gap-3 hover:bg-indigo-50/30 transition">
+                                                <div class="flex items-center gap-2 min-w-0">
+                                                    <span class="text-indigo-400 flex-shrink-0">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/></svg>
+                                                    </span>
+                                                    <div class="min-w-0">
+                                                        <p class="text-xs font-semibold text-gray-800 truncate" x-text="item.name"></p>
+                                                        <template x-if="item.employee_name">
+                                                            <p class="text-[10px] text-gray-400" x-text="'by ' + item.employee_name"></p>
+                                                        </template>
+                                                    </div>
                                                 </div>
-                                                <p class="font-semibold text-gray-800" x-text="'Rp ' + formatCurrency(item.subtotal)"></p>
+                                                <div class="text-right flex-shrink-0">
+                                                    <p class="text-[10px] text-gray-500" x-text="item.quantity + 'x · Rp ' + formatCurrency(item.price_at_sale)"></p>
+                                                    <p class="text-xs font-bold text-gray-900" x-text="'Rp ' + formatCurrency(item.subtotal)"></p>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
-                                </div>
+                                </template>
 
-                                {{-- Produk --}}
-                                <div x-show="transactionDetailData?.products && transactionDetailData.products.length > 0">
-                                    <h4 class="text-sm font-bold text-gray-700 border-b pb-2 mb-3">Produk</h4>
-                                    <div class="space-y-2 text-base">
+                                <!-- Produk -->
+                                <template x-if="transactionDetailData?.products?.length > 0">
+                                    <div>
+                                        <div class="px-5 py-1.5 bg-amber-50/60">
+                                            <p class="text-[9px] font-bold text-amber-600 uppercase tracking-wider">Produk</p>
+                                        </div>
                                         <template x-for="item in transactionDetailData?.products" :key="item.name">
-                                            <div class="flex justify-between items-start border-b border-gray-50 pb-2">
-                                                <div>
-                                                    <p class="font-semibold text-gray-800" x-text="item.name"></p>
-                                                    <p class="text-sm text-gray-500" x-text="`${item.quantity} x Rp ${formatCurrency(item.price_at_sale)}`"></p>
+                                            <div class="px-5 py-2.5 flex items-center justify-between gap-3 hover:bg-amber-50/30 transition">
+                                                <div class="flex items-center gap-2 min-w-0">
+                                                    <span class="text-amber-400 flex-shrink-0">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                                    </span>
+                                                    <div class="min-w-0">
+                                                        <p class="text-xs font-semibold text-gray-800 truncate" x-text="item.name"></p>
+                                                        <template x-if="item.employee_name">
+                                                            <p class="text-[10px] text-gray-400" x-text="'by ' + item.employee_name"></p>
+                                                        </template>
+                                                    </div>
                                                 </div>
-                                                <p class="font-semibold text-gray-800" x-text="'Rp ' + formatCurrency(item.subtotal)"></p>
+                                                <div class="text-right flex-shrink-0">
+                                                    <p class="text-[10px] text-gray-500" x-text="item.quantity + 'x · Rp ' + formatCurrency(item.price_at_sale)"></p>
+                                                    <p class="text-xs font-bold text-gray-900" x-text="'Rp ' + formatCurrency(item.subtotal)"></p>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
-                                </div>
+                                </template>
 
-                                {{-- Makanan/Minuman --}}
-                                <div x-show="transactionDetailData?.foods && transactionDetailData.foods.length > 0">
-                                    <h4 class="text-sm font-bold text-gray-700 border-b pb-2 mb-3">Makanan & Minuman</h4>
-                                    <div class="space-y-2 text-base">
+                                <!-- Makanan -->
+                                <template x-if="transactionDetailData?.foods?.length > 0">
+                                    <div>
+                                        <div class="px-5 py-1.5 bg-orange-50/60">
+                                            <p class="text-[9px] font-bold text-orange-600 uppercase tracking-wider">Makanan & Minuman</p>
+                                        </div>
                                         <template x-for="item in transactionDetailData?.foods" :key="item.name">
-                                            <div class="flex justify-between items-start border-b border-gray-50 pb-2">
-                                                <div>
-                                                    <p class="font-semibold text-gray-800" x-text="item.name"></p>
-                                                    <p class="text-sm text-gray-500" x-text="`${item.quantity} x Rp ${formatCurrency(item.price_at_sale)}`"></p>
+                                            <div class="px-5 py-2.5 flex items-center justify-between gap-3 hover:bg-orange-50/30 transition">
+                                                <div class="flex items-center gap-2 min-w-0">
+                                                    <span class="text-orange-400 flex-shrink-0">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 8h1a4 4 0 0 1 0 8h-1M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8zM6 1v3M10 1v3M14 1v3"/></svg>
+                                                    </span>
+                                                    <div class="min-w-0">
+                                                        <p class="text-xs font-semibold text-gray-800 truncate" x-text="item.name"></p>
+                                                        <template x-if="item.employee_name">
+                                                            <p class="text-[10px] text-gray-400" x-text="'by ' + item.employee_name"></p>
+                                                        </template>
+                                                    </div>
                                                 </div>
-                                                <p class="font-semibold text-gray-800" x-text="'Rp ' + formatCurrency(item.subtotal)"></p>
+                                                <div class="text-right flex-shrink-0">
+                                                    <p class="text-[10px] text-gray-500" x-text="item.quantity + 'x · Rp ' + formatCurrency(item.price_at_sale)"></p>
+                                                    <p class="text-xs font-bold text-gray-900" x-text="'Rp ' + formatCurrency(item.subtotal)"></p>
+                                                </div>
                                             </div>
                                         </template>
                                     </div>
-                                </div>
+                                </template>
                             </div>
 
-                            {{-- Total Section --}}
-                            <div class="mt-6 border-t pt-4 space-y-2 text-base">
-                                <div class="flex justify-between text-gray-600" x-show="transactionDetailData?.tips > 0">
-                                    <span>Tips Karyawan</span>
-                                    <span class="font-medium" x-text="'Rp ' + formatCurrency(transactionDetailData?.tips)"></span>
-                                </div>
-                                <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg">
-                                    <span class="font-bold text-gray-900 text-lg">Total Transaksi</span>
-                                    <span class="font-bold text-indigo-700 text-xl" x-text="'Rp ' + formatCurrency(transactionDetailData?.total_amount)"></span>
-                                </div>
+                            <!-- Footer Total -->
+                            <div class="px-5 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between mt-auto">
+                                <p class="text-xs font-semibold text-gray-600">Total Bayar</p>
+                                <p class="text-base font-extrabold text-gray-900" x-text="'Rp ' + formatCurrency(transactionDetailData?.total_amount || 0)"></p>
                             </div>
-
                         </div>
+                    </div>
+
+                    <!-- Modal Actions -->
+                    <div x-show="!loadingTransactionDetail && transactionDetailData" class="px-5 py-3 border-t border-gray-100 flex items-center justify-end gap-2 bg-gray-50">
+                        <button @click="show = false" class="px-4 py-2 text-xs font-bold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition shadow-sm">
+                            Tutup
+                        </button>
+                        <button @click="window.open('{{ url('/pos/struk') }}/' + transactionDetailData.id, '_blank', 'width=400,height=600')" class="px-4 py-2 text-xs font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition shadow-sm flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                            Cetak Struk
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
     <!-- Modal Detail Pengeluaran Individual -->
-    <div x-show="showExpenseDetailModal" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
-        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-        class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title-expense" role="dialog" aria-modal="true"
-        style="display: none;" @keydown.escape.window="showExpenseDetailModal = false">
-        <div class="flex items-center justify-center min-h-screen p-4 text-center sm:block sm:p-0">
-            <div x-show="showExpenseDetailModal" @click="showExpenseDetailModal = false"
-                x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
-                x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-                class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" aria-hidden="true"></div>
+    <x-modal name="expense-detail-modal" maxWidth="2xl">
+        <div class="p-6">
+            <div class="flex justify-between items-center pb-3 border-b">
+                <div>
+                    <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title-expense">
+                        Detail Pengeluaran
+                    </h3>
+                    <p class="text-sm text-gray-500"
+                        x-text="loadingExpenseDetail ? 'Loading...' : expenseDetailData?.date">
+                    </p>
+                </div>
+                <button @click="$dispatch('close-modal', 'expense-detail-modal')" type="button"
+                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd"
+                            d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                            clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
 
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div x-show="showExpenseDetailModal" x-transition:enter="ease-out duration-300"
-                x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave="ease-in duration-200"
-                x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                class="inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
-
-                <div class="flex justify-between items-center pb-3 border-b">
-                    <div>
-                        <h3 class="text-lg font-medium leading-6 text-gray-900" id="modal-title-expense">
-                            <span x-text="`Pengeluaran #${expenseDetailData?.id}`">...</span>
-                        </h3>
-                        <p class="text-sm text-gray-500"
-                            x-text="loadingExpenseDetail ? 'Loading...' : (expenseDetailData ? expenseDetailData.date : '')">
-                        </p>
-                    </div>
-                    <button @click="showExpenseDetailModal = false" type="button"
-                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd"
-                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                clip-rule="evenodd"></path>
-                        </svg>
-                    </button>
+            <div class="mt-4 max-h-[70vh] overflow-y-auto">
+                <!-- Tampilkan Spinner saat Loading -->
+                <div x-show="loadingExpenseDetail" class="text-center py-10">
+                    <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg"
+                        fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                        </circle>
+                        <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                        </path>
+                    </svg>
+                    <p class="mt-2 text-sm text-gray-500">Mengambil data...</p>
                 </div>
 
-                <div class="mt-4 max-h-[70vh] overflow-y-auto">
-                    <!-- Tampilkan Spinner saat Loading -->
-                    <div x-show="loadingExpenseDetail" class="text-center py-10">
-                        <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto" xmlns="http://www.w3.org/2000/svg"
-                            fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                        <p class="mt-2 text-sm text-gray-500">Mengambil data...</p>
+                <!-- Tampilkan Konten jika data sudah ada -->
+                <div x-show="!loadingExpenseDetail && expenseDetailData" class="space-y-4">
+
+                    <!-- Info Kartu -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-3 bg-gray-50 rounded-lg border text-center">
+                            <p class="text-xs font-medium text-gray-500">Toko</p>
+                            <p class="mt-1 text-sm font-semibold text-gray-900"
+                                x-text="expenseDetailData?.store_name"></p>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded-lg border text-center">
+                            <p class="text-xs font-medium text-gray-500">Karyawan</p>
+                            <p class="mt-1 text-sm font-semibold text-gray-900"
+                                x-text="expenseDetailData?.employee_name"></p>
+                        </div>
                     </div>
 
-                    <!-- Tampilkan Konten jika data sudah ada -->
-                    <div x-show="!loadingExpenseDetail && expenseDetailData" class="space-y-4">
+                    <div>
+                        <h4 class="text-md font-semibold text-gray-800 border-b pb-1 mb-2">Keterangan</h4>
+                        <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-md"
+                            x-text="expenseDetailData?.description"></p>
+                    </div>
 
-                        <!-- Info Kartu -->
-                        <div class="grid grid-cols-2 gap-4">
-                            <div class="p-3 bg-gray-50 rounded-lg border text-center">
-                                <p class="text-xs font-medium text-gray-500">Toko</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-900"
-                                    x-text="expenseDetailData?.store_name"></p>
-                            </div>
-                            <div class="p-3 bg-gray-50 rounded-lg border text-center">
-                                <p class="text-xs font-medium text-gray-500">Karyawan</p>
-                                <p class="mt-1 text-sm font-semibold text-gray-900"
-                                    x-text="expenseDetailData?.employee_name"></p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 class="text-md font-semibold text-gray-800 border-b pb-1 mb-2">Keterangan</h4>
-                            <p class="text-sm text-gray-700 bg-gray-50 p-3 rounded-md"
-                                x-text="expenseDetailData?.description"></p>
-                        </div>
-
-                        <div class="border-t pt-4 mt-6 flex justify-end">
-                            <div class="text-right">
-                                <p class="text-sm text-gray-600">Total Pengeluaran</p>
-                                <p class="text-2xl font-bold text-red-600"
-                                    x-text="'- Rp ' + formatCurrency(expenseDetailData?.amount || 0)"></p>
-                            </div>
+                    <div class="border-t pt-4 mt-6 flex justify-end">
+                        <div class="text-right">
+                            <p class="text-sm text-gray-600">Total Pengeluaran</p>
+                            <p class="text-2xl font-bold text-red-600"
+                                x-text="'- Rp ' + formatCurrency(expenseDetailData?.amount || 0)"></p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </x-modal>
     </div>
 </x-app-layout>

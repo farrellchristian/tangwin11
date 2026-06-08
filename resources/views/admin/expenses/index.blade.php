@@ -27,18 +27,17 @@
                      loadingWeeks: false,
 
                      fetchMonths() {
-                         if (!this.selectedYear) { this.availableMonths = []; this.selectedMonth = ''; return; }
+                         if (!this.selectedYear) { 
+                             this.availableMonths = []; 
+                             this.selectedMonth = ''; 
+                             this.resetSubFilters(); 
+                             return Promise.resolve(); 
+                         }
                          this.loadingMonths = true;
-                         fetch(`/admin/expenses/filters/months/${this.selectedYear}`)
+                         this.availableMonths = [];
+                         return fetch(`/admin/expenses/filters/months/${this.selectedYear}`)
                              .then(res => res.ok ? res.json() : Promise.reject('Network response was not ok.'))
-                             .then(data => {
-                                 this.availableMonths = data;
-                                 if (!data.some(m => m.value === this.selectedMonth)) {
-                                     this.selectedMonth = data[0]?.value || '';
-                                 }
-                                 this.fetchDays();
-                                 this.fetchWeeks();
-                             })
+                             .then(data => { this.availableMonths = data; })
                              .catch(err => {
                                  console.error('Error fetching months:', err);
                                  this.availableMonths = [];
@@ -47,16 +46,16 @@
                              .finally(() => this.loadingMonths = false);
                      },
                      fetchDays() {
-                         if (!this.selectedYear || !this.selectedMonth || this.filterType !== 'harian') { this.availableDays = []; return; }
+                         if (!this.selectedYear || !this.selectedMonth || this.filterType !== 'harian') { 
+                             this.availableDays = []; 
+                             this.selectedDay = '';
+                             return Promise.resolve();
+                         }
                          this.loadingDays = true;
-                         fetch(`/admin/expenses/filters/days/${this.selectedYear}/${this.selectedMonth}`)
+                         this.availableDays = [];
+                         return fetch(`/admin/expenses/filters/days/${this.selectedYear}/${this.selectedMonth}`)
                              .then(res => res.ok ? res.json() : Promise.reject('Network response was not ok.'))
-                             .then(data => {
-                                 this.availableDays = data;
-                                 if (!data.includes(this.selectedDay)) {
-                                     this.selectedDay = data[0] || '';
-                                 }
-                             })
+                             .then(data => { this.availableDays = data; })
                              .catch(err => {
                                   console.error('Error fetching days:', err);
                                   this.availableDays = [];
@@ -65,22 +64,30 @@
                              .finally(() => this.loadingDays = false);
                      },
                      fetchWeeks() {
-                         if (!this.selectedYear || !this.selectedMonth || this.filterType !== 'mingguan') { this.availableWeeks = []; return; }
+                         if (!this.selectedYear || !this.selectedMonth || this.filterType !== 'mingguan') { 
+                             this.availableWeeks = []; 
+                             this.selectedWeek = '';
+                             return Promise.resolve();
+                         }
                          this.loadingWeeks = true;
-                         fetch(`/admin/expenses/filters/weeks/${this.selectedYear}/${this.selectedMonth}`)
+                         this.availableWeeks = [];
+                         return fetch(`/admin/expenses/filters/weeks/${this.selectedYear}/${this.selectedMonth}`)
                              .then(res => res.ok ? res.json() : Promise.reject('Network response was not ok.'))
-                             .then(data => {
-                                 this.availableWeeks = data;
-                                 if (!data.some(w => w.value == this.selectedWeek)) {
-                                     this.selectedWeek = data[0]?.value || '';
-                                 }
-                             })
+                             .then(data => { this.availableWeeks = data; })
                               .catch(err => {
                                   console.error('Error fetching weeks:', err);
                                   this.availableWeeks = [];
                                   this.selectedWeek = '';
                               })
                              .finally(() => this.loadingWeeks = false);
+                     },
+                     resetSubFilters() { 
+                         this.availableMonths = []; 
+                         this.selectedMonth = ''; 
+                         this.availableDays = []; 
+                         this.selectedDay = ''; 
+                         this.availableWeeks = []; 
+                         this.selectedWeek = ''; 
                      },
 
                      isLoading(type) {
@@ -91,14 +98,51 @@
                      }
                  }"
                 x-init="
-                     fetchMonths();
-                     $watch('selectedYear', value => { fetchMonths(); });
-                     $watch('selectedMonth', value => { fetchDays(); fetchWeeks(); });
-                     $watch('filterType', value => {
-                          if (value === 'harian') fetchDays();
-                          else this.availableDays = [];
-                          if (value === 'mingguan') fetchWeeks();
-                          else this.availableWeeks = [];
+                     fetchMonths().then(() => {
+                         $nextTick(() => {
+                             if(document.getElementById('month')) {
+                                 document.getElementById('month').value = '{{ old('month', $selectedMonth) }}';
+                             }
+                             fetchDays().then(() => {
+                                 $nextTick(() => { 
+                                     if(document.getElementById('day')) { 
+                                         document.getElementById('day').value = '{{ old('day', $selectedDay) }}'; 
+                                     } 
+                                 });
+                             });
+                             fetchWeeks().then(() => {
+                                 $nextTick(() => { 
+                                     if(document.getElementById('week')) { 
+                                         document.getElementById('week').value = '{{ old('week', $selectedWeek) }}'; 
+                                     } 
+                                 });
+                             });
+                         });
+                     });
+                     $watch('selectedYear', value => { 
+                         selectedMonth = ''; 
+                         selectedDay = ''; 
+                         selectedWeek = ''; 
+                         fetchMonths(); 
+                     });
+                     $watch('selectedMonth', value => { 
+                         if(value) { 
+                             selectedDay = ''; 
+                             selectedWeek = ''; 
+                             fetchDays(); 
+                             fetchWeeks(); 
+                         } else { 
+                             availableDays = []; 
+                             selectedDay = ''; 
+                             availableWeeks = []; 
+                             selectedWeek = ''; 
+                         } 
+                     });
+                     $watch('filterType', value => { 
+                         if (value === 'harian') fetchDays(); 
+                         else { availableDays = []; } 
+                         if (value === 'mingguan') fetchWeeks(); 
+                         else { availableWeeks = []; } 
                      });
                  ">
 
@@ -159,13 +203,10 @@
                         <div x-show="filterType === 'harian' || filterType === 'mingguan' || filterType === 'bulanan'">
                             <label for="month" class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Bulan</label>
                             <select name="month" id="month" x-model="selectedMonth" :disabled="loadingMonths" class="block w-full rounded-lg border-gray-200 text-sm focus:border-indigo-400 focus:ring-indigo-400 bg-gray-50 hover:bg-white transition disabled:bg-gray-100">
-                                <template x-if="loadingMonths">
-                                    <option value="">Loading...</option>
-                                </template>
-                                <template x-if="!loadingMonths && availableMonths.length === 0">
+                                <template x-if="availableMonths.length === 0 && !loadingMonths">
                                     <option value="">Tidak ada data</option>
                                 </template>
-                                <template x-if="!loadingMonths" x-for="month in availableMonths" :key="month.value">
+                                <template x-for="month in availableMonths" :key="month.value">
                                     <option :value="month.value" x-text="month.name"></option>
                                 </template>
                             </select>
@@ -175,13 +216,10 @@
                         <div x-show="filterType === 'harian'">
                             <label for="day" class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal</label>
                             <select name="day" id="day" x-model="selectedDay" :disabled="loadingDays || availableDays.length === 0" class="block w-full rounded-lg border-gray-200 text-sm focus:border-indigo-400 focus:ring-indigo-400 bg-gray-50 hover:bg-white transition disabled:bg-gray-100">
-                                <template x-if="loadingDays">
-                                    <option value="">Loading...</option>
-                                </template>
-                                <template x-if="!loadingDays && availableDays.length === 0">
+                                <template x-if="availableDays.length === 0 && !loadingDays">
                                     <option value="">Tidak ada data</option>
                                 </template>
-                                <template x-if="!loadingDays" x-for="day in availableDays" :key="day">
+                                <template x-for="day in availableDays" :key="day">
                                     <option :value="day" x-text="parseInt(day)"></option>
                                 </template>
                             </select>
@@ -191,13 +229,10 @@
                         <div x-show="filterType === 'mingguan'">
                             <label for="week" class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Minggu Ke</label>
                             <select name="week" id="week" x-model="selectedWeek" :disabled="loadingWeeks || availableWeeks.length === 0" class="block w-full rounded-lg border-gray-200 text-sm focus:border-indigo-400 focus:ring-indigo-400 bg-gray-50 hover:bg-white transition disabled:bg-gray-100">
-                                <template x-if="loadingWeeks">
-                                    <option value="">Loading...</option>
-                                </template>
-                                <template x-if="!loadingWeeks && availableWeeks.length === 0">
+                                <template x-if="availableWeeks.length === 0 && !loadingWeeks">
                                     <option value="">Tidak ada data</option>
                                 </template>
-                                <template x-if="!loadingWeeks" x-for="week in availableWeeks" :key="week.value">
+                                <template x-for="week in availableWeeks" :key="week.value">
                                     <option :value="week.value" x-text="week.name"></option>
                                 </template>
                             </select>
@@ -224,7 +259,7 @@
                                 </svg>
                                 Filter
                             </button>
-                            <a href="{{ route('admin.expenses.index') }}" class="py-2.5 px-4 bg-white border border-gray-200 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 transition md:hidden">
+                            <a href="{{ route('admin.expenses.index') }}" class="py-2.5 px-4 bg-white border border-gray-200 text-gray-600 text-sm font-semibold rounded-lg hover:bg-gray-50 transition">
                                 Reset
                             </a>
                         </div>

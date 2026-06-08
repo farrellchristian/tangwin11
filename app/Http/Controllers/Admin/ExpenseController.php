@@ -250,6 +250,10 @@ class ExpenseController extends Controller
 
         $expense->update($validatedData);
 
+        if ($request->has('back_url') && !empty($request->back_url)) {
+            return redirect($request->back_url)->with('success', 'Data pengeluaran berhasil diperbarui.');
+        }
+
         return redirect()->route('admin.expenses.index')
             ->with('success', 'Data pengeluaran berhasil diperbarui.');
     }
@@ -264,6 +268,10 @@ class ExpenseController extends Controller
         if (Auth::user()->role !== 'admin') abort(403);
 
         $expense->delete(); // Soft delete
+
+        if (request()->has('back_url') && !empty(request()->back_url)) {
+            return redirect(request()->back_url)->with('success', 'Data pengeluaran berhasil dihapus (soft delete).');
+        }
 
         return redirect()->route('admin.expenses.index')
             ->with('success', 'Data pengeluaran berhasil dihapus (soft delete).');
