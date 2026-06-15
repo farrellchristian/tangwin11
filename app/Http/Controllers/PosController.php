@@ -330,6 +330,12 @@ class PosController extends Controller
         $totalExpensesToday = $expensesToday->sum('amount');
         $countExpensesToday = $expensesToday->count();
 
+        // Hitung total tips hari ini (tips = pengeluaran kas, hak kasir/capster)
+        $totalTipsToday = $allToday->sum('tips');
+
+        // Total pengeluaran = bon/beli barang + tips
+        $totalPengeluaran = $totalExpensesToday + $totalTipsToday;
+
         // Hitung total penjualan produk (item_type = 'product') hari ini
         $allProductDetails  = $allToday->flatMap(fn($t) => $t->details)->where('item_type', 'product');
         $totalProductSales  = $allProductDetails->sum('subtotal');
@@ -352,7 +358,9 @@ class PosController extends Controller
             'total_transfer'            => $totalTransfer,
             'total_transfer_count'      => $transferTrx->count(),
             'total_income'              => $totalIncome,
-            'total_expenses'            => $totalExpensesToday,
+            'total_expenses'            => $totalPengeluaran,   // bon + tips
+            'total_expenses_bon'        => $totalExpensesToday, // hanya bon (untuk info)
+            'total_tips'                => $totalTipsToday,     // tips saja (untuk info)
             'total_expenses_count'      => $countExpensesToday,
             'total_product_sales'       => $totalProductSales,
             'total_product_sales_count' => $countProductSales,

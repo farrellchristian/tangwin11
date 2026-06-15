@@ -103,9 +103,14 @@
                         <h3 class="text-sm sm:text-xl font-extrabold text-red-600">
                             <span class="text-[10px] font-normal text-gray-400">Rp </span>{{ number_format($summary['total_expenses'], 0, ',', '.') }}
                         </h3>
+                        @if(($summary['total_expenses_count'] ?? 0) > 0)
                         <span class="text-[9px] font-semibold text-red-500 bg-red-50 border border-red-100 rounded-full px-1.5 py-0.5">({{ $summary['total_expenses_count'] }} bon)</span>
+                        @endif
                     </div>
-                    <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Bon & beli barang hari ini</p>
+                    <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Bon & tips hari ini</p>
+                    @if(($summary['total_tips'] ?? 0) > 0)
+                    <p class="text-[9px] text-orange-400 mt-0.5">Tips: Rp {{ number_format($summary['total_tips'], 0, ',', '.') }}</p>
+                    @endif
                     <div class="absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-red-50/60 to-transparent"></div>
                 </div>
 
@@ -121,7 +126,7 @@
                     <h3 class="text-sm sm:text-xl font-extrabold text-white">
                         <span class="text-[10px] font-normal text-indigo-200">Rp </span>{{ number_format(max(0, $hasil_cash_kasir), 0, ',', '.') }}
                     </h3>
-                    <p class="text-[9px] sm:text-xs text-indigo-200 mt-0.5">Cash - Pengeluaran</p>
+                    <p class="text-[9px] sm:text-xs text-indigo-200 mt-0.5">Cash - Bon - Tips</p>
                     <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full"></div>
                     <div class="absolute -right-1 -top-4 w-14 h-14 bg-white/5 rounded-full"></div>
                 </div>

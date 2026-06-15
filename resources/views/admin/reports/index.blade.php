@@ -525,10 +525,13 @@
                             </div>
                             <div class="flex items-baseline gap-1.5 flex-wrap">
                                 <h3 class="text-sm sm:text-xl font-extrabold text-red-600">
-                                    <span class="text-[10px] font-normal text-gray-400">Rp </span>{{ number_format($totalExpenses, 0, ',', '.') }}
+                                    <span class="text-[10px] font-normal text-gray-400">Rp </span>{{ number_format($totalExpenditure, 0, ',', '.') }}
                                 </h3>
                             </div>
-                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Bon & beli barang periode ini</p>
+                            <p class="text-[9px] sm:text-xs text-gray-400 mt-0.5">Bon & tips periode ini</p>
+                            @if($totalTips > 0)
+                            <p class="text-[9px] text-orange-400 mt-0.5">Tips: Rp {{ number_format($totalTips, 0, ',', '.') }}</p>
+                            @endif
                             <div class="mt-2">
                                 <button @click.prevent="openExpenditureModal()" class="text-[10px] font-medium text-red-500 hover:text-red-700">Lihat Rincian →</button>
                             </div>
@@ -546,7 +549,7 @@
                             <h3 class="text-sm sm:text-xl font-extrabold text-white">
                                 <span class="text-[10px] font-normal text-indigo-200">Rp </span>{{ number_format($hasilCashKasir, 0, ',', '.') }}
                             </h3>
-                            <p class="text-[9px] sm:text-xs text-indigo-200 mt-0.5">Cash - Pengeluaran</p>
+                            <p class="text-[9px] sm:text-xs text-indigo-200 mt-0.5">Cash - Bon - Tips</p>
                             <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full"></div>
                             <div class="absolute -right-1 -top-4 w-14 h-14 bg-white/5 rounded-full"></div>
                         </div>

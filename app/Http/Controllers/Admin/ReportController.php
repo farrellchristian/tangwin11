@@ -113,7 +113,7 @@ class ReportController extends Controller
         $totalTips = $allTrxForSummary->sum('tips');
         $totalExpenditure = $totalExpenses + $totalTips;
         $netProfitLoss    = $totalIncome - $totalExpenditure;
-        $hasilCashKasir   = max(0, $totalCash - $totalExpenses);
+        $hasilCashKasir   = max(0, $totalCash - $totalExpenditure); // Cash - (bon + tips)
 
         // === Ambil Detail Transaksi & Pengeluaran per Karyawan ===
         // Ambil semua transaksi dalam periode ini (dengan details.employee)
@@ -236,6 +236,7 @@ class ReportController extends Controller
             'totalProductSalesQty'    => $totalProductSalesQty,
             'totalExpenditure'        => $totalExpenditure,
             'totalExpenses'           => $totalExpenses,
+            'totalTips'               => $totalTips,
             'hasilCashKasir'          => $hasilCashKasir,
             'netProfitLoss'           => $netProfitLoss,
             'employeesDetails'        => $employeesDetails,
