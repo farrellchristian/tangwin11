@@ -173,6 +173,13 @@
                                     <p class="text-sm font-semibold text-gray-800 truncate">{{ $res->service->service_name ?? '-' }}</p>
                                     <p class="text-xs text-gray-500 truncate">{{ $res->employee->employee_name ?? 'Bebas Pilih' }}</p>
                                 </div>
+                                <div class="col-span-2">
+                                    <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider mb-1">Pembayaran</p>
+                                    @php $pt = strtolower($res->payment_type ?? ''); @endphp
+                                    <p class="text-sm font-semibold {{ $pt === 'cash' ? 'text-green-700' : ($pt === 'qris' ? 'text-purple-700' : 'text-gray-400') }}">
+                                        {{ $pt ? strtoupper($pt) : '-' }}
+                                    </p>
+                                </div>
                             </div>
 
                             <div class="flex gap-2">
@@ -209,6 +216,7 @@
                                 <th class="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Toko & Waktu</th>
                                 <th class="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Pelanggan</th>
                                 <th class="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Detail Layanan</th>
+                                <th class="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-[10px] font-black text-gray-400 uppercase tracking-wider">Aksi</th>
                             </tr>
@@ -245,10 +253,21 @@
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-medium text-gray-900">{{ $res->customer_name }}</div>
                                         <div class="text-xs text-gray-500">{{ $res->customer_phone }}</div>
+                                        @if($res->booking_number)
+                                            <div class="text-[10px] font-mono text-indigo-500 mt-0.5">{{ $res->booking_number }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-semibold text-gray-900">{{ $res->service->service_name ?? '-' }}</div>
                                         <div class="text-xs text-gray-500 mt-0.5">{{ $res->employee->employee_name ?? 'Bebas Pilih' }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @php
+                                            $pt = strtolower($res->payment_type ?? '');
+                                            $ptClass = $pt === 'cash' ? 'bg-green-50 text-green-700 border-green-200' : ($pt === 'qris' ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-gray-50 text-gray-400 border-gray-200');
+                                            $ptLabel = $pt ? strtoupper($pt) : '-';
+                                        @endphp
+                                        <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full border {{ $ptClass }}">{{ $ptLabel }}</span>
                                     </td>
                                     <td class="px-6 py-4">
                                         <span class="px-2.5 py-1 inline-flex text-xs font-semibold rounded-full border {{ $statusClass }}">{{ ucfirst($res->status) }}</span>
@@ -274,7 +293,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr><td colspan="5" class="px-6 py-14 text-center text-gray-400 italic">Belum ada data reservasi.</td></tr>
+                                <tr><td colspan="6" class="px-6 py-14 text-center text-gray-400 italic">Belum ada data reservasi.</td></tr>
                             @endforelse
                         </tbody>
                     </table>

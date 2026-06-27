@@ -577,7 +577,7 @@
         })
         .then(r => r.json())
         .then(data => {
-            document.getElementById('modalSubtitle').textContent = `#${data.id} · ${data.date} WIB`;
+            document.getElementById('modalSubtitle').textContent = `${data.transaction_number} · ${data.date} WIB`;
             document.getElementById('mKasir').textContent   = data.kasir;
             document.getElementById('mCapster').textContent = data.capster;
 

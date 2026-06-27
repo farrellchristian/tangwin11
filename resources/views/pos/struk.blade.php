@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Struk #{{ $transaction->id_transaction }}</title>
+    <title>Struk {{ $transaction->transaction_number ?? '#'.$transaction->id_transaction }}</title>
     <style>
         /* Reset CSS */
         * {
@@ -85,7 +85,11 @@
         <div>
             <table>
                 <tr>
-                    <td width="30%">Tgl</td>
+                    <td width="30%">No. Trx</td>
+                    <td>: {{ $transaction->transaction_number ?? '#'.$transaction->id_transaction }}</td>
+                </tr>
+                <tr>
+                    <td>Tgl</td>
                     <td>: {{ date('d/m/y H:i', strtotime($transaction->transaction_date)) }}</td>
                 </tr>
                 <tr>

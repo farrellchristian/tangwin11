@@ -195,6 +195,14 @@ class PosController extends Controller
                 'order_id' => $validatedData['order_id']
             ]);
 
+            // Generate transaction_number (format: TRX-YYYYMM-NNN, reset tiap bulan)
+            $ymTrx = now()->format('Ym');
+            $seqTrx = Transaction::whereRaw("DATE_FORMAT(created_at, '%Y%m') = ?", [$ymTrx])
+                ->where('id_transaction', '<=', $transaction->id_transaction)
+                ->count();
+            $transaction->transaction_number = 'TRX-' . $ymTrx . '-' . str_pad($seqTrx, 3, '0', STR_PAD_LEFT);
+            $transaction->save();
+
             // 3. Simpan detail transaksi dan kurangi stok (jika perlu)
             foreach ($validatedData['cart'] as $item) {
                 // Tentukan ID item berdasarkan tipe
@@ -504,7 +512,8 @@ class PosController extends Controller
         }
 
         return response()->json([
-            'id'             => $transaction->id_transaction,
+            'id'                 => $transaction->id_transaction,
+            'transaction_number' => $transaction->transaction_number ?? ('TRX-' . $transaction->id_transaction),
             'date'           => \Carbon\Carbon::parse($transaction->transaction_date)->format('d M Y, H:i'),
             'kasir'          => $transaction->user->name ?? '-',
             'capster'        => $transaction->employee->employee_name ?? '-',

@@ -129,6 +129,13 @@ class ReservationController extends Controller
                     'id_reservation'      => $reservation->id_reservation,
                 ]);
 
+                // Generate transaction_number (TRX-YYYYMM-NNN)
+                $ymTrx = now()->format('Ym');
+                $seqTrx = Transaction::whereRaw("DATE_FORMAT(created_at, '%Y%m') = ?", [$ymTrx])
+                    ->where('id_transaction', '<=', $newTx->id_transaction)->count();
+                $newTx->transaction_number = 'TRX-' . $ymTrx . '-' . str_pad($seqTrx, 3, '0', STR_PAD_LEFT);
+                $newTx->save();
+
                 TransactionDetail::create([
                     'id_transaction' => $newTx->id_transaction,
                     'item_type'      => 'service',

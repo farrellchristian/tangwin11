@@ -715,7 +715,8 @@ class ReportController extends Controller
 
             // Format data transaksi utama
             $formattedTransaction = [
-                'id'             => $transaction->id_transaction,
+                'id'                 => $transaction->id_transaction,
+                'transaction_number' => $transaction->transaction_number ?? ('TRX-' . $transaction->id_transaction),
                 'date'           => $transactionDate->format('d M Y, H:i'),
                 'store_name'     => $transaction->store?->store_name ?? 'Toko Tidak Ditemukan',
                 'kasir'          => $transaction->user?->name ?? '-',

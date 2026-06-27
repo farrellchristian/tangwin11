@@ -1501,7 +1501,7 @@
                         <div>
                             <h3 class="text-sm font-bold text-gray-900">Detail Transaksi</h3>
                             <p class="text-xs text-gray-500 mt-0.5" 
-                               x-text="loadingTransactionDetail ? 'Loading...' : '#' + transactionDetailData?.id + ' · ' + transactionDetailData?.date + ' WIB'"></p>
+                               x-text="loadingTransactionDetail ? 'Loading...' : (transactionDetailData?.transaction_number ?? ('#' + transactionDetailData?.id)) + ' · ' + transactionDetailData?.date + ' WIB'"></p>
                         </div>
                         <button @click="show = false" class="p-1.5 rounded-lg hover:bg-gray-100 transition text-gray-400 hover:text-gray-600">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>

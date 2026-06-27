@@ -18,8 +18,8 @@ class ReservationController extends Controller
         // 1. Ambil data Toko untuk dropdown filter
         $stores = Store::all();
 
-        // 2. Tentukan Rentang Tanggal Default (Bulan Ini) jika tidak ada input
-        $startDate = $request->input('start_date', Carbon::now()->startOfMonth()->format('Y-m-d'));
+        // 2. Tentukan Rentang Tanggal Default (Hari Ini s/d Akhir Bulan) jika tidak ada input
+        $startDate = $request->input('start_date', Carbon::now()->format('Y-m-d'));
         $endDate = $request->input('end_date', Carbon::now()->endOfMonth()->format('Y-m-d'));
 
         // 3. Query Dasar
@@ -75,7 +75,7 @@ class ReservationController extends Controller
 
 
         // 6. Urutkan dan Paginate
-        $reservations = $query->orderBy('booking_date', 'desc')
+        $reservations = $query->orderBy('booking_date', 'asc')
             ->orderBy('booking_time', 'asc')
             ->paginate(15) // Kita naikkan jadi 15 per halaman
             ->withQueryString(); // Agar parameter filter tetap ada saat ganti halaman
@@ -140,6 +140,13 @@ class ReservationController extends Controller
                     'order_id'            => 'RES-' . $reservation->id_reservation,
                     'id_reservation'      => $reservation->id_reservation,
                 ]);
+
+                // Generate transaction_number (TRX-YYYYMM-NNN)
+                $ymTrx = now()->format('Ym');
+                $seqTrx = Transaction::whereRaw("DATE_FORMAT(created_at, '%Y%m') = ?", [$ymTrx])
+                    ->where('id_transaction', '<=', $newTx->id_transaction)->count();
+                $newTx->transaction_number = 'TRX-' . $ymTrx . '-' . str_pad($seqTrx, 3, '0', STR_PAD_LEFT);
+                $newTx->save();
 
                 TransactionDetail::create([
                     'id_transaction' => $newTx->id_transaction,
