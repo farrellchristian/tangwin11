@@ -185,6 +185,9 @@
                                     <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">Pelanggan</p>
                                     <p class="text-sm font-semibold text-gray-800 truncate">{{ $res->customer_name }}</p>
                                     <p class="text-xs text-gray-500">{{ $res->customer_phone }}</p>
+                                    @if($res->customer_email)
+                                        <p class="text-xs text-gray-400 truncate">{{ $res->customer_email }}</p>
+                                    @endif
                                 </div>
                                 <div class="min-w-0">
                                     <p class="text-[9px] text-gray-400 uppercase font-bold tracking-wider mb-0.5">Layanan</p>
@@ -265,6 +268,9 @@
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-medium text-gray-900">{{ $res->customer_name }}</div>
                                         <div class="text-xs text-gray-500">{{ $res->customer_phone }}</div>
+                                        @if($res->customer_email)
+                                            <div class="text-xs text-gray-400 truncate">{{ $res->customer_email }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="text-sm font-semibold text-gray-900">{{ $res->service->service_name ?? '-' }}</div>

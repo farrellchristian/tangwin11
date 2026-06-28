@@ -234,6 +234,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm font-bold text-gray-900">{{ $r->customer_name }}</div>
                                         <div class="text-xs text-gray-500">{{ $r->customer_phone }}</div>
+                                        @if($r->customer_email)
+                                            <div class="text-xs text-gray-400">{{ $r->customer_email }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $r->service->service_name ?? '-' }}</div>
