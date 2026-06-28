@@ -196,11 +196,16 @@ class PosController extends Controller
             ]);
 
             // Generate transaction_number (format: TRX-YYYYMM-NNN, reset tiap bulan)
+            // Gunakan withTrashed() agar soft-deleted rows ikut diperhitungkan
+            // (unique constraint MySQL tetap berlaku untuk soft-deleted rows)
             $ymTrx = now()->format('Ym');
-            $seqTrx = Transaction::whereRaw("DATE_FORMAT(created_at, '%Y%m') = ?", [$ymTrx])
-                ->where('id_transaction', '<=', $transaction->id_transaction)
-                ->count();
-            $transaction->transaction_number = 'TRX-' . $ymTrx . '-' . str_pad($seqTrx, 3, '0', STR_PAD_LEFT);
+            $lastNumber = Transaction::withTrashed()
+                ->where('id_transaction', '!=', $transaction->id_transaction)
+                ->whereRaw("transaction_number LIKE ?", ['TRX-' . $ymTrx . '-%'])
+                ->orderByRaw("CAST(SUBSTRING_INDEX(transaction_number, '-', -1) AS UNSIGNED) DESC")
+                ->value('transaction_number');
+            $lastSeq = $lastNumber ? (int) substr($lastNumber, strrpos($lastNumber, '-') + 1) : 0;
+            $transaction->transaction_number = 'TRX-' . $ymTrx . '-' . str_pad($lastSeq + 1, 3, '0', STR_PAD_LEFT);
             $transaction->save();
 
             // 3. Simpan detail transaksi dan kurangi stok (jika perlu)
